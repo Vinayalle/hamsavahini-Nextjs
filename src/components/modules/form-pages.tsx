@@ -2,6 +2,7 @@
 
 import { RecordFormPage, type RecordFormConfig } from "./record-form-page";
 import type { FieldDef, SectionDef, Values } from "@/components/forms/entity-form";
+import type { BaseEntity } from "@/types/common";
 import { useAll } from "@/hooks/use-resource";
 import { isApiMode } from "@/lib/api/client";
 import {
@@ -160,28 +161,32 @@ export const locationConfig: RecordFormConfig<Location> = {
 export const LocationFormPage = ({ id }: { id?: string }) => <RecordFormPage id={id} config={locationConfig} />;
 
 /* ─────────────────────────── Banners ─────────────────────────── */
+/** Database mode uploads the picture to the server (saved inside the project) and keeps its file id; mock mode keeps a local preview URL. */
+const bannerImageField: FieldDef = isApiMode
+  ? { name: "imageFileId", label: "Banner image", type: "media-image", uploadPath: "/api/banners/image", previewPath: "/api/banners/image", hint: "JPEG, PNG or WebP up to 3 MB. Wide photos (1920×1080) look best on the home page." }
+  : { name: "imageUrl", label: "Banner image", type: "image" };
 export const bannerConfig: RecordFormConfig<Banner> = {
   service: bannerService, entityLabel: "banner", listHref: "/admin/banners", listLabel: "banners",
   nameOf: (b) => b.title,
-  sections: withoutFiles([
-    { title: "Banner Content", fields: [
-      { name: "title", label: "Headline", type: "text", required: true, maxLength: 100, wide: true },
-      { name: "subtitle", label: "Supporting text", type: "textarea", maxLength: 200, rows: 2 },
-      { name: "section", label: "Homepage section", type: "select", required: true, options: [{ value: "hero", label: "Hero" }, { value: "promo", label: "Promo strip" }, { value: "feature_strip", label: "Feature strip" }, { value: "cta", label: "Call to action" }] },
-      { name: "sortOrder", label: "Display order", type: "number", required: true, min: 1, max: 99 },
-      { name: "ctaLabel", label: "Button label", type: "text", required: true },
-      { name: "ctaUrl", label: "Button link", type: "url", required: true, placeholder: "/products" },
-      { name: "imageUrl", label: "Banner image", type: "image" },
+  createDescription: "Saved banners appear as slides in the website home-page hero. Unpublish one from the banners list.",
+  sections: [
+    { title: "Banner Content", description: "Shown on the website home page.", fields: [
+      { name: "title", label: "Banner title", type: "text", required: true, maxLength: 100, wide: true, hint: "The large heading, e.g. Enhancing Value Ensuring Quality." },
+      { name: "subtitle", label: "Description", type: "textarea", maxLength: 200, rows: 2, hint: "One or two short sentences under the title. Max 200 characters." },
+      bannerImageField,
+      { name: "ctaUrl", label: "Link", type: "url", required: true, placeholder: "/about", hint: "Where the button goes: /page-on-this-site or https://…" },
+      { name: "ctaLabel", label: "Button text", type: "text", required: true, maxLength: 60, defaultValue: "Know more" },
     ] },
-    { title: "Schedule & Publishing", fields: [
-      { name: "startsAt", label: "Show from", type: "date" },
-      { name: "endsAt", label: "Show until", type: "date" },
-      { name: "status", label: "Status", type: "select", required: true, options: opts("draft", "published", "archived") },
-    ] },
-  ]),
-  toValues: (b) => ({ ...b, imageUrl: b.imageUrl ?? "", startsAt: b.startsAt ?? "", endsAt: b.endsAt ?? "" }),
-  toPayload: (v) => ({ title: str(v.title), subtitle: str(v.subtitle), section: str(v.section) as Banner["section"], sortOrder: num(v.sortOrder), ctaLabel: str(v.ctaLabel), ctaUrl: str(v.ctaUrl), imageUrl: str(v.imageUrl) || undefined, startsAt: str(v.startsAt) || null, endsAt: str(v.endsAt) || null, status: str(v.status) as Banner["status"] }),
-  validate: (v) => (v.startsAt && v.endsAt && str(v.endsAt) < str(v.startsAt) ? { endsAt: "End date cannot be before the start date" } : null),
+  ],
+  toValues: (b) => ({ ...b, imageUrl: b.imageUrl ?? "", imageFileId: b.imageFileId ?? "" }),
+  // The form only edits content. A new banner is a published hero slide placed after the existing ones (the server picks the order);
+  // editing keeps the banner's current placement, status and schedule. Publish / unpublish happens from the list.
+  toPayload: (v, ex) => ({
+    title: str(v.title), subtitle: str(v.subtitle), ctaLabel: str(v.ctaLabel), ctaUrl: str(v.ctaUrl),
+    ...(isApiMode ? { imageFileId: str(v.imageFileId) || null } : { imageUrl: str(v.imageUrl) || undefined }),
+    section: ex?.section ?? "hero", status: ex?.status ?? "published", startsAt: ex?.startsAt ?? null, endsAt: ex?.endsAt ?? null,
+    sortOrder: ex?.sortOrder ?? (isApiMode ? undefined : bannerService.snapshot().reduce((m, x) => Math.max(m, x.sortOrder), 0) + 1),
+  }) as Omit<Banner, keyof BaseEntity>,
 };
 export const BannerFormPage = ({ id }: { id?: string }) => <RecordFormPage id={id} config={bannerConfig} />;
 

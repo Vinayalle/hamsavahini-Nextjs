@@ -117,6 +117,8 @@ export interface Banner extends BaseEntity {
   subtitle: string;
   section: "hero" | "promo" | "feature_strip" | "cta";
   imageUrl?: string;
+  /** Database mode: id of the uploaded banner picture (the form uploads it and sends only this id). */
+  imageFileId?: string | null;
   ctaLabel: string;
   ctaUrl: string;
   sortOrder: number;

@@ -35,7 +35,7 @@ export const NAV_GROUPS: NavGroup[] = [
     { label: "Projects / Trade Stories", href: "/admin/projects", icon: FolderKanban },
     { label: "Careers & Job Openings", href: "/admin/careers", icon: Briefcase },
     { label: "Global Operations / Locations", href: "/admin/locations", icon: Globe2 },
-    { label: "Banners & Homepage Sections", href: "/admin/banners", icon: Megaphone },
+    { label: "Banners", href: "/admin/banners", icon: Megaphone },
   ] },
   { title: "Trade Management", items: [
     { label: "Commodities", href: "/admin/commodities", icon: Boxes },

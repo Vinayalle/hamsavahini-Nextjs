@@ -4,6 +4,8 @@ import { cleanHtml } from "./sanitize";
 import type { ResourceConfig } from "./framework";
 import { dateOnly, fromYmd, iso, num, optionalDate, optionalText, patchOf, pick, publishStatus, richText, seoSchema, slug, text, ymd } from "./shared";
 import { errors } from "../errors";
+import { getDb } from "../db";
+import { isBannerKey, purgeOrphanBannerImages, removeBannerImageIfUnused } from "../banner-files";
 
 /* ───────────────────────── Posts / Insights ───────────────────────── */
 const POST_CATEGORY = { "Market Insight": "market_insight", "Company News": "company_news", Sustainability: "sustainability", "Industry Report": "industry_report" } as const;
@@ -155,29 +157,51 @@ export const locations: ResourceConfig = {
 
 /* ───────────────────────── Banners ───────────────────────── */
 const SECTIONS = ["hero", "promo", "feature_strip", "cta"] as const;
+/** Same-site path ("/products") or an https/http URL. "//host" (protocol-relative) and "javascript:" are refused. */
+const bannerLink = z.string().trim().min(1).max(300).regex(/^(\/(?!\/)|https?:\/\/)/, "Use /path or https://…");
+/** The banner picture is a file uploaded through /api/banners/image (stored inside the project), referenced by its id. */
+const bannerImage = z.guid("Choose a valid image").nullable().optional();
 const bannerBase = z.object({
-  title: text(2, 100, "Headline"), subtitle: z.string().trim().max(200).default(""), section: z.enum(SECTIONS), ctaLabel: text(1, 60, "Button label"),
-  ctaUrl: z.string().trim().min(1).max(300).regex(/^(\/|https?:\/\/)/, "Use /path or https://…"), sortOrder: z.number().int().min(0).max(999),
+  title: text(2, 100, "Headline"), subtitle: z.string().trim().max(200).default(""), section: z.enum(SECTIONS).default("hero"), ctaLabel: text(1, 60, "Button label").default("Know more"),
+  ctaUrl: bannerLink, sortOrder: z.number().int().min(0).max(999).optional(), imageFileId: bannerImage,
   status: publishStatus.default("draft"), startsAt: optionalDate, endsAt: optionalDate,
 }).refine((v) => !v.startsAt || !v.endsAt || v.endsAt >= v.startsAt, { path: ["endsAt"], message: "End date cannot be before the start date" });
 
+/** Only a banner picture uploaded through the banner upload route can be attached (not documents, not Media Library files). */
+async function bannerImageFileId(fileId: string | null | undefined): Promise<string | null> {
+  if (!fileId) return null;
+  const file = await getDb().storedFile.findUnique({ where: { id: fileId }, select: { id: true, kind: true, storageKey: true, scanStatus: true } });
+  if (!file || file.kind !== "image" || !isBannerKey(file.storageKey) || file.scanStatus === "quarantined") throw errors.invalid("Upload the banner image again", { imageFileId: "Choose a valid image" });
+  return file.id;
+}
+
 export const banners: ResourceConfig = {
-  key: "banners", permission: "banners", entity: "Banner", model: "banner",
+  key: "banners", permission: "banners", entity: "Banner", model: "banner", include: { imageFile: { select: { id: true, kind: true } } },
   toDto: (b) => ({
     id: b.id, title: b.title, subtitle: b.subtitle, section: b.section, ctaLabel: b.ctaLabel, ctaUrl: b.ctaUrl, sortOrder: b.sortOrder, status: b.status,
+    imageFileId: b.imageFile?.id ?? null, imageUrl: b.imageFile ? `/api/banners/image/${b.imageFile.id}` : undefined,
     startsAt: ymd(b.startsAt), endsAt: ymd(b.endsAt), createdAt: iso(b.createdAt), updatedAt: iso(b.updatedAt),
   }),
   label: (b) => b.title,
   search: ["title", "subtitle"], sorts: ["sortOrder", "title", "status", "section", "updatedAt"], defaultSort: { by: "sortOrder", dir: "asc" },
   filters: { status: (v) => ({ status: v }), section: (v) => ({ section: v }) },
   createSchema: bannerBase, patchSchema: z.object({
-    title: text(2, 100), subtitle: z.string().trim().max(200), section: z.enum(SECTIONS), ctaLabel: text(1, 60), ctaUrl: z.string().trim().min(1).max(300).regex(/^(\/|https?:\/\/)/, "Use /path or https://…"),
-    sortOrder: z.number().int().min(0).max(999), status: publishStatus, startsAt: optionalDate, endsAt: optionalDate,
+    title: text(2, 100, "Headline"), subtitle: z.string().trim().max(200), section: z.enum(SECTIONS), ctaLabel: text(1, 60, "Button label"), ctaUrl: bannerLink,
+    sortOrder: z.number().int().min(0).max(999), imageFileId: bannerImage, status: publishStatus, startsAt: optionalDate, endsAt: optionalDate,
   }).partial(),
-  buildCreate: (i) => ({ title: i.title, subtitle: i.subtitle, section: i.section, ctaLabel: i.ctaLabel, ctaUrl: i.ctaUrl, sortOrder: i.sortOrder, status: i.status, startsAt: fromYmd(i.startsAt), endsAt: fromYmd(i.endsAt) }),
-  buildUpdate: (p) => pick(p, {
-    title: (v: string) => ({ title: v }), subtitle: (v: string) => ({ subtitle: v }), section: (v: string) => ({ section: v }), ctaLabel: (v: string) => ({ ctaLabel: v }), ctaUrl: (v: string) => ({ ctaUrl: v }),
-    sortOrder: (v: number) => ({ sortOrder: v }), status: (v: string) => ({ status: v }), startsAt: (v: string | null) => ({ startsAt: fromYmd(v) }), endsAt: (v: string | null) => ({ endsAt: fromYmd(v) }),
+  buildCreate: async (i) => ({ title: i.title, subtitle: i.subtitle, section: i.section, ctaLabel: i.ctaLabel, ctaUrl: i.ctaUrl, sortOrder: i.sortOrder ?? (((await getDb().banner.aggregate({ _max: { sortOrder: true } }))._max.sortOrder ?? 0) + 1), status: i.status, imageFileId: await bannerImageFileId(i.imageFileId), startsAt: fromYmd(i.startsAt), endsAt: fromYmd(i.endsAt) }),
+  buildUpdate: async (p) => ({
+    ...pick(p, {
+      title: (v: string) => ({ title: v }), subtitle: (v: string) => ({ subtitle: v }), section: (v: string) => ({ section: v }), ctaLabel: (v: string) => ({ ctaLabel: v }), ctaUrl: (v: string) => ({ ctaUrl: v }),
+      sortOrder: (v: number) => ({ sortOrder: v }), status: (v: string) => ({ status: v }), startsAt: (v: string | null) => ({ startsAt: fromYmd(v) }), endsAt: (v: string | null) => ({ endsAt: fromYmd(v) }),
+    }),
+    ...(p.imageFileId !== undefined ? { imageFileId: await bannerImageFileId(p.imageFileId) } : {}),
   }),
+  // Deleting a banner deletes its picture too (file and record), unless another banner still uses it; replaced pictures are swept up here as well.
+  afterDelete: async (row, db) => {
+    const d = db as ReturnType<typeof getDb>;
+    await removeBannerImageIfUnused(d, row.imageFileId);
+    await purgeOrphanBannerImages(d);
+  },
   status: { field: "status", mode: "publish", values: ["draft", "published", "archived"] },
 };

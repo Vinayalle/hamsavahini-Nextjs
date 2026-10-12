@@ -28,14 +28,13 @@ export default function BannersPage() {
   ];
   return (
     <>
-      <PageHeader title="Banners & Homepage Sections" description="Control hero banners, promotions and calls to action on the homepage." actions={add} />
+      <PageHeader title="Banners" description="Hero banners shown as slides on the website home page: title, description, image and link." actions={add} />
       <ResourceList service={bannerService} entityLabel="banner" nameOf={(b) => b.title} columns={columns} selectable archivable
         defaultSort={{ by: "sortOrder", dir: "asc" }} searchPlaceholder="Search banners…"
         editHref={(b) => `/admin/banners/${b.id}/edit`}
         statuses={[{ value: "published" }, { value: "draft" }]} currentStatus={(b) => b.status} emptyAction={add}
         filters={[
           { key: "status", label: "Status", options: [{ value: "published", label: "Published" }, { value: "draft", label: "Draft" }, { value: "archived", label: "Archived" }] },
-          { key: "section", label: "Section", options: Object.entries(SECTION).map(([value, label]) => ({ value, label })) },
         ]} />
     </>
   );

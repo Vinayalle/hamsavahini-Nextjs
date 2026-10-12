@@ -61,7 +61,7 @@ const ALLOWED: Record<string, string[]> = {
   "/api/projects": ["title", "slug", "client", "commodity", "region", "summary", "content", "startDate", "endDate", "projectStatus", "status", "featured"],
   "/api/careers": ["title", "slug", "department", "location", "employmentType", "experience", "description", "requirements", "deadline", "openings", "status"],
   "/api/locations": ["name", "type", "country", "city", "address", "description", "operations", "capacity", "latitude", "longitude", "phone", "email", "active"],
-  "/api/banners": ["title", "subtitle", "section", "ctaLabel", "ctaUrl", "sortOrder", "status", "startsAt", "endsAt"],
+  "/api/banners": ["title", "subtitle", "section", "ctaLabel", "ctaUrl", "sortOrder", "imageFileId", "status", "startsAt", "endsAt"],
   "/api/commodities": ["name", "slug", "code", "group", "unit", "description", "status"],
   "/api/commodity-prices": ["commodityId", "price", "currency", "unit", "market", "effectiveDate", "status"],
   "/api/trade-opportunities": ["title", "commodityId", "type", "category", "quantity", "originRegion", "destinationRegion", "incoterm", "validUntil", "description", "status"],

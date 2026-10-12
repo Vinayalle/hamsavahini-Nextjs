@@ -72,4 +72,4 @@ Rules that keep the structure clean: `components/web` and `components/admin` do 
 ## Known gaps in the website
 
 - `src/components/web/Footer.tsx` still says "Dakshināk" and its links (`/about-us`, `/contact-us` ...) differ from the Header (`/about`, `/contact`).
-- No public pages, published-content queries or public submission endpoints (enquiry, RFQ, job application) exist yet; `/` is a placeholder.
+- Only the home-page hero reads published content so far (see *Banners and the website hero* in `docs/cms-modules.md`). The other public pages (About, Products ... the Header links point at them and currently 404) and public submission endpoints (enquiry, RFQ, job application) are not built yet.
