@@ -58,8 +58,10 @@ export interface AuthConfig {
   reauthWindowSeconds: number;
   /** Only when a trusted reverse proxy sets X-Forwarded-For may the client IP be read from it. */
   trustProxy: boolean;
-  /** Role codes that must use MFA. */
+  /** Role codes that must use a second sign-in step. */
   mfaRoleCodes: string[];
+  /** The second step: a 6-digit code emailed to the user (default) or an authenticator-app code (TOTP). */
+  mfaMethod: "email" | "totp";
   secureCookies: boolean;
   mfaIssuer: string;
   argon: { memoryCost: number; timeCost: number; parallelism: number };
@@ -100,6 +102,7 @@ export function getAuthConfig(): AuthConfig {
     trustProxy: bool("AUTH_TRUST_PROXY", false),
     mfaRoleCodes: (process.env.AUTH_MFA_ROLE_CODES || "super_admin,admin").split(",").map((s) => s.trim()).filter(Boolean),
     secureCookies: production ? true : bool("AUTH_SECURE_COOKIES", false),
+    mfaMethod: (process.env.AUTH_MFA_METHOD || "email") === "totp" ? "totp" : "email",
     mfaIssuer: process.env.AUTH_MFA_ISSUER || "Hamsavahin Admin",
     argon,
   };

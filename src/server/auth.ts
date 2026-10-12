@@ -12,6 +12,7 @@ import { dummyPasswordHash, hashPassword, hashToken, passwordNeedsRehash, readCo
 import { signAccessToken, signPendingMfaToken, verifyAccessToken, verifyPendingMfaToken } from "./tokens";
 import { COOKIES } from "./cookies";
 import { loadAccess, type RoleSummary } from "./authz/access";
+import { maskEmail, sendLoginCode } from "./loginotp";
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
@@ -31,8 +32,13 @@ const emailKey = (email: string) => keyedDigest("rl-email", email).slice(0, 32);
 
 /* ───────────────────────── MFA policy ───────────────────────── */
 
-/** MFA is mandatory for anyone holding a role whose code is configured (default: super_admin, admin). */
+/**
+ * A second sign-in step is mandatory when:
+ *  - AUTH_MFA_METHOD=email (default): for EVERY employee, every sign-in (a code is emailed after the password), or
+ *  - AUTH_MFA_METHOD=totp: for anyone holding a role whose code is configured (default: super_admin, admin).
+ */
 export async function requiresMfa(db: Db, userId: string): Promise<boolean> {
+  if (getAuthConfig().mfaMethod === "email") return true;
   const codes = getAuthConfig().mfaRoleCodes;
   const n = await db.userRole.count({ where: { userId, role: { code: { in: codes } } } });
   return n > 0;
@@ -86,7 +92,7 @@ export async function createSession(
 
 export type LoginResult =
   | ({ kind: "session" } & IssuedSession)
-  | { kind: "mfa"; enrolled: boolean; cookies: string[] };
+  | { kind: "mfa"; method: "email" | "totp"; enrolled: boolean; maskedEmail?: string; cookies: string[] };
 
 /** Progressive, self-healing lockout: 5 failures -> 1 min, then doubling to a 30 min ceiling. Never permanent. */
 export function lockDurationMs(failures: number): number {
@@ -126,12 +132,18 @@ export async function login(request: Request, emailInput: string, password: stri
   const rehash = passwordNeedsRehash(user.passwordHash) ? await hashPassword(password) : null;
   const identity = { id: user.id, name: user.name, email: user.email, employeeId: user.employeeId };
 
-  if (false as boolean) {
+  if (await requiresMfa(db, user.id)) {
     await db.adminUser.update({ where: { id: user.id }, data: { failedLoginCount: 0, lockedUntil: null, ...(rehash ? { passwordHash: rehash } : {}) } });
-    const enrolled = !!(await db.mfaCredential.findFirst({ where: { userId: user.id, enabledAt: { not: null } }, select: { userId: true } }));
-    const pending = await signPendingMfaToken({ sub: user.id });
+    const pending = signPendingMfaToken({ sub: user.id });
     await recordActivity(db, { actorName: user.name, action: "login", entityType: "Session", entityId: user.id, entityLabel: `${user.name} passed password check; second factor required`, ip });
-    return { kind: "mfa", enrolled, cookies: [setCookie("mfa", pending, getAuthConfig().mfaPendingTtlSeconds)] };
+    const cookies = async () => [setCookie("mfa", await pending, getAuthConfig().mfaPendingTtlSeconds)];
+    if (getAuthConfig().mfaMethod === "email") {
+      // The password was correct, so the account is already confirmed to the caller; we can say if the email could not be sent.
+      await sendLoginCode(request, user);
+      return { kind: "mfa", method: "email", enrolled: true, maskedEmail: maskEmail(user.email), cookies: await cookies() };
+    }
+    const enrolled = !!(await db.mfaCredential.findFirst({ where: { userId: user.id, enabledAt: { not: null } }, select: { userId: true } }));
+    return { kind: "mfa", method: "totp", enrolled, cookies: await cookies() };
   }
 
   const issued = await db.$transaction(async (tx) => {

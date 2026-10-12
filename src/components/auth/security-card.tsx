@@ -12,6 +12,7 @@ import { useAuth } from "@/lib/auth";
 import { MfaEnrollment, RecoveryCodes } from "./mfa";
 
 interface MfaStatus {
+  method?: "email" | "totp";
   enabled: boolean;
   required: boolean;
   recoveryCodesRemaining: number;
@@ -26,6 +27,14 @@ export function SecurityCard() {
   const [busy, setBusy] = useState(false);
   if (!isApiMode || !status.data) return null;
   const s = status.data;
+  if (s.method === "email") {
+    return (
+      <Card>
+        <CardHeader title="Sign-in verification" description="Every sign-in is confirmed with a one-time code emailed to your registered address." />
+        <div className="p-5 text-sm text-muted">There is nothing to set up: no authenticator app is used. Keep your email account secure, since it receives your sign-in codes.</div>
+      </Card>
+    );
+  }
 
   const reload = async () => {
     await Promise.all([status.reload(), refresh()]);

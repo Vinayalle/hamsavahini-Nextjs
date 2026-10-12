@@ -72,6 +72,7 @@ export const LIMITS = {
   forgotSource: { max: 20, windowSeconds: 60 * 60 },
   resetSource: { max: 20, windowSeconds: 30 * 60 },
   mfaAccount: { max: 10, windowSeconds: 15 * 60 },
+  loginCodeAccount: { max: 10, windowSeconds: 60 * 60 },
   mfaSource: { max: 60, windowSeconds: 15 * 60 },
   refreshSource: { max: 120, windowSeconds: 5 * 60 },
   reauthAccount: { max: 8, windowSeconds: 15 * 60 },

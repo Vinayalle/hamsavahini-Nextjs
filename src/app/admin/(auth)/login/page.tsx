@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/fields";
 import { Field } from "@/components/forms/form-parts";
 import { PasswordInput } from "@/components/auth/password-field";
-import { MfaChallenge, MfaEnrollment, RecoveryCodes } from "@/components/auth/mfa";
+import { EmailCodeChallenge, MfaChallenge, MfaEnrollment, RecoveryCodes } from "@/components/auth/mfa";
 import { ApiClientError, useAuth } from "@/lib/auth";
 import { isApiMode } from "@/lib/api/client";
 
@@ -21,7 +21,7 @@ const schema = z.object({
   password: isApiMode ? z.string().min(1, "Password is required") : z.string().min(8, "Password must be at least 8 characters"),
 });
 type Values = z.infer<typeof schema>;
-type Step = "credentials" | "mfa" | "enroll" | "recovery";
+type Step = "credentials" | "email" | "mfa" | "enroll" | "recovery";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,6 +32,7 @@ export default function LoginPage() {
   const [step, setStep] = useState<Step>("credentials");
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
   const [notice, setNotice] = useState("");
+  const [maskedEmail, setMaskedEmail] = useState<string | undefined>();
   const restoring = useRef(false);
   const { register, control, handleSubmit, setError, setValue, formState: { errors, isSubmitting } } = useForm<Values>({
     resolver: zodResolver(schema),
@@ -63,6 +64,10 @@ export default function LoginPage() {
       const r = await signIn(values.email, values.password);
       if (r.status === "mfa_required") {
         setValue("password", "");
+        if (r.method === "email") {
+          setMaskedEmail(r.maskedEmail);
+          return setStep("email");
+        }
         return setStep(r.enrolled ? "mfa" : "enroll");
       }
       router.replace(destination);
@@ -123,6 +128,15 @@ export default function LoginPage() {
                   </div>
                 )}
               </form>
+            </>
+          )}
+
+          {step === "email" && (
+            <>
+              <h2 className="text-2xl font-semibold tracking-tight text-ink">Check your email</h2>
+              <p className="mt-1 text-sm text-muted">One more step to finish signing in.</p>
+              <EmailCodeChallenge maskedEmail={maskedEmail} onSubmit={async (input) => { await completeMfa(input); router.replace(destination); }} onExpired={() => backToStart()} />
+              <button type="button" className="mt-4 text-sm text-muted hover:text-ink" onClick={() => backToStart("")}>Back to sign in</button>
             </>
           )}
 

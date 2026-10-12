@@ -35,6 +35,8 @@ enum UserStatus {
 
 enum ChallengePurpose {
   activation
+  /// Emailed one-time code that completes sign-in for roles that require a second factor (AUTH_MFA_METHOD=email).
+  login
 }
 
 enum RoleStatus {

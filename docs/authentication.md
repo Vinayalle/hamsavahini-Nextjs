@@ -7,11 +7,11 @@ Applies to `NEXT_PUBLIC_DATA_SOURCE=api` (PostgreSQL + server-side authenticatio
 | Concern | Implementation |
 |---|---|
 | First login | Admin invites → employee requests an **email OTP** → verifies → creates a password. Roles come only from the invitation (RBAC); verifying an email grants nothing. |
-| Later logins | Email + password. **No OTP on every login.** |
+| Later logins | Email + password, then (default, `AUTH_MFA_METHOD=email`) a **6-digit code emailed to the employee at every sign-in**, for every role. No authenticator app. |
 | Password storage | **Argon2id**, 64 MiB / 3 passes / 1 lane (≈200 ms), parameters embedded in each hash; **rehashed on login** if parameters are raised. |
 | Password policy | One module (`src/lib/authz/password-policy.ts`) shared by server and UI: ≥12 chars, upper/lower/digit/special, must not contain name / email / username / company name (case-, separator-, accent- and leetspeak-insensitive), offline common-password blocklist. Enforced on activation, reset and change. |
 | Sessions | Short-lived **access JWT** (HS256, 15 min) + **rotating opaque refresh token** (hash only in DB) in **HttpOnly** cookies. Reuse of a rotated refresh token revokes the whole session. |
-| MFA | **TOTP** (RFC 6238) mandatory for roles `super_admin` and `admin` (configurable). Secrets encrypted with **AES-256-GCM**; replay-protected; 10 single-use recovery codes (keyed digests). |
+| Second step | Default **email code** for everyone (HMAC-digested, 5-minute expiry, single use, 5 attempts, resend cooldown). Optional alternative `AUTH_MFA_METHOD=totp`: authenticator app (RFC 6238) for `super_admin`/`admin` only, secrets encrypted with **AES-256-GCM**, replay-protected, 10 recovery codes. |
 | Step-up | Sensitive operations need a recent re-authentication (password + second factor). |
 | Rate limiting | Database-backed counters shared by all instances; progressive (never permanent) account lockout; generic error responses. |
 | CSRF | Same-origin (`Origin` = `Host`) + JSON-only bodies + `SameSite` cookies (Lax access, Strict for the rest). |
@@ -28,6 +28,9 @@ Applies to `NEXT_PUBLIC_DATA_SOURCE=api` (PostgreSQL + server-side authenticatio
 A reset token cannot be used as an activation grant and vice-versa (distinct `UserTokenType`s, checked on use).
 
 ### Login
+**Email-code mode (default).** After a correct password the server emails a 6-digit code (nodemailer) and sets only a 5-minute `hv_mfa` proof cookie; no session exists yet. `POST /api/auth/mfa/verify {code}` consumes the code (single use, 5 attempts, atomic) and creates the session; `POST /api/auth/mfa/resend` re-sends after a 60 s cooldown (a new code invalidates the old one). A wrong password sends nothing. If the email cannot be sent the user gets a clear 503 and no session or usable code is left behind. The code is never logged, stored in plain text or returned in a response. **SMTP must work, or nobody can sign in**: set `SMTP_USER`/`SMTP_PASSWORD`. A mailbox compromise is an account compromise, which is the trade-off of email codes versus an authenticator app.
+
+The rest of this section describes the authenticator-app mode (`AUTH_MFA_METHOD=totp`).
 `POST /api/auth/login` → generic `401 invalid_credentials` for wrong password, unknown, deactivated, not-yet-activated and locked accounts (a dummy Argon2id verification equalises timing).
 - Role needs MFA → response `{status:"mfa_required", enrolled}` and **only** a 5-minute `hv_mfa` proof cookie; no session exists yet. Then `POST /api/auth/mfa/verify` (TOTP or recovery code), or `mfa/enroll/start` + `mfa/enroll/confirm` (QR + recovery codes shown once).
 - Otherwise a session (refresh-token family) and the cookies are created.

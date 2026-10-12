@@ -37,6 +37,17 @@ export function otpEmail(name: string, code: string, minutes: number): Rendered 
   };
 }
 
+export function loginCodeEmail(name: string, code: string, minutes: number): Rendered {
+  const spaced = `${code.slice(0, 3)} ${code.slice(3)}`;
+  return {
+    subject: `${BRAND}: your sign-in code`,
+    text: `Hello ${name},\n\nYour Hamsavahin sign-in code is ${spaced}.\nIt expires in ${minutes} minutes and can be used once.\n\nIf you did not try to sign in, change your password now and tell your administrator.\n`,
+    html: layout("Your sign-in code", p(`Hello ${esc(name)},`) + p("Use this code to finish signing in to the Hamsavahin admin:") +
+      `<p style="margin:18px 0;font-size:32px;letter-spacing:6px;font-weight:700;font-family:Consolas,monospace">${esc(spaced)}</p>` +
+      p(`It expires in <strong>${minutes} minutes</strong> and can be used only once.`) + p("<strong>If you did not try to sign in, change your password now and tell your administrator.</strong>")),
+  };
+}
+
 export function invitationEmail(name: string, activateUrl: string, days: number): Rendered {
   return {
     subject: `You have been invited to the ${BRAND} admin`,
