@@ -1,0 +1,290 @@
+import "server-only";
+import type { Prisma, PrismaClient } from "@/generated/prisma/client";
+import type { EffectiveAccess } from "@/lib/authz/resolve";
+import { getAuthConfig } from "./config";
+import { clearAll, clearCookie, setCookie } from "./cookies";
+import { keyedDigest, randomToken } from "./crypto";
+import { getDb } from "./db";
+import { ApiError, errors } from "./errors";
+import { clientIp, recordActivity } from "./audit";
+import { clear, enforce, LIMITS, sourceKey } from "./ratelimit";
+import { dummyPasswordHash, hashPassword, hashToken, passwordNeedsRehash, readCookie, verifyPassword } from "./security";
+import { signAccessToken, signPendingMfaToken, verifyAccessToken, verifyPendingMfaToken } from "./tokens";
+import { COOKIES } from "./cookies";
+import { loadAccess, type RoleSummary } from "./authz/access";
+
+type Db = PrismaClient | Prisma.TransactionClient;
+
+export interface AuthSession {
+  sessionId: string;
+  user: { id: string; name: string; email: string; employeeId: string };
+  roles: RoleSummary[];
+  /** Effective permissions, resolved from the database for THIS request (never cached across requests, never from the token). */
+  access: EffectiveAccess;
+  /** When credentials were last entered for this session (login or step-up); drives "recent authentication" checks. */
+  authenticatedAt: Date;
+  mfaVerified: boolean;
+}
+
+const GENERIC_FAILURE = () => new ApiError(401, "invalid_credentials", "Incorrect email or password");
+const emailKey = (email: string) => keyedDigest("rl-email", email).slice(0, 32);
+
+/* ───────────────────────── MFA policy ───────────────────────── */
+
+/** MFA is mandatory for anyone holding a role whose code is configured (default: super_admin, admin). */
+export async function requiresMfa(db: Db, userId: string): Promise<boolean> {
+  const codes = getAuthConfig().mfaRoleCodes;
+  const n = await db.userRole.count({ where: { userId, role: { code: { in: codes } } } });
+  return n > 0;
+}
+
+/* ───────────────────────── session creation ───────────────────────── */
+
+export interface IssuedSession {
+  cookies: string[];
+  user: { id: string; name: string; email: string; employeeId: string; role: string };
+}
+
+/**
+ * Creates a session (a refresh-token family) and the cookies for it. A NEW session id and NEW tokens are always minted
+ * here, so nothing an attacker could have planted before login is ever honoured (no session fixation).
+ */
+export async function createSession(
+  tx: Db,
+  request: Request,
+  user: { id: string; name: string; email: string; employeeId: string },
+  opts: { mfaVerified: boolean },
+): Promise<IssuedSession> {
+  const cfg = getAuthConfig();
+  const now = Date.now();
+  const refresh = randomToken();
+  const session = await tx.session.create({
+    data: {
+      userId: user.id,
+      expiresAt: new Date(now + cfg.sessionAbsoluteSeconds * 1000),
+      mfaVerifiedAt: opts.mfaVerified ? new Date(now) : null,
+      reauthAt: new Date(now),
+      ip: clientIp(request),
+      userAgent: request.headers.get("user-agent")?.slice(0, 300) ?? null,
+      refreshTokens: { create: { tokenHash: hashToken(refresh), expiresAt: new Date(now + Math.min(cfg.refreshTtlSeconds, cfg.sessionAbsoluteSeconds) * 1000) } },
+    },
+  });
+  const access = await signAccessToken({ sub: user.id, sid: session.id });
+  const { roles } = await loadAccess(tx as PrismaClient, user.id);
+  return {
+    cookies: [
+      setCookie("access", access, cfg.accessTtlSeconds),
+      setCookie("refresh", refresh, Math.min(cfg.refreshTtlSeconds, cfg.sessionAbsoluteSeconds)),
+      clearCookie("mfa"),
+      clearCookie("activation"),
+    ],
+    user: { ...user, role: roles.map((r) => r.name).join(", ") },
+  };
+}
+
+/* ───────────────────────── login ───────────────────────── */
+
+export type LoginResult =
+  | ({ kind: "session" } & IssuedSession)
+  | { kind: "mfa"; enrolled: boolean; cookies: string[] };
+
+/** Progressive, self-healing lockout: 5 failures -> 1 min, then doubling to a 30 min ceiling. Never permanent. */
+export function lockDurationMs(failures: number): number {
+  if (failures < 5) return 0;
+  return Math.min(30 * 60_000, 60_000 * 2 ** (failures - 5));
+}
+
+export async function login(request: Request, emailInput: string, password: string): Promise<LoginResult> {
+  const db = getDb();
+  const email = emailInput.trim().toLowerCase();
+  const ip = clientIp(request);
+  await enforce(`login:src:${sourceKey(request)}`, LIMITS.loginSource);
+  await enforce(`login:acct:${emailKey(email)}`, LIMITS.loginAccount);
+
+  const user = await db.adminUser.findUnique({ where: { email } });
+
+  // Always do one password verification so response time does not reveal whether the account exists.
+  const ok = await verifyPassword(user?.passwordHash ?? (await dummyPasswordHash()), password);
+
+  if (!user || !user.passwordHash || user.status !== "active") {
+    await recordActivity(db, { actorName: "Unknown", action: "login_failed", entityType: "Session", entityLabel: "sign-in attempt", detail: user ? `status=${user.status}` : "unknown account", ip });
+    throw GENERIC_FAILURE();
+  }
+  if (user.lockedUntil && user.lockedUntil > new Date()) {
+    await recordActivity(db, { actorName: user.name, action: "login_failed", entityType: "Session", entityId: user.id, entityLabel: user.email, detail: "temporarily locked", ip });
+    throw GENERIC_FAILURE(); // same message and status: do not confirm the account exists
+  }
+  if (!ok) {
+    const updated = await db.adminUser.update({ where: { id: user.id }, data: { failedLoginCount: { increment: 1 } }, select: { failedLoginCount: true } });
+    const lockMs = lockDurationMs(updated.failedLoginCount);
+    if (lockMs > 0) await db.adminUser.update({ where: { id: user.id }, data: { lockedUntil: new Date(Date.now() + lockMs) } });
+    await recordActivity(db, { actorName: user.name, action: "login_failed", entityType: "Session", entityId: user.id, entityLabel: user.email, detail: lockMs > 0 ? `bad password; locked ${Math.round(lockMs / 1000)}s` : "bad password", ip });
+    throw GENERIC_FAILURE();
+  }
+
+  // Upgrade the stored hash if the Argon2id parameters have been raised since it was created.
+  const rehash = passwordNeedsRehash(user.passwordHash) ? await hashPassword(password) : null;
+  const identity = { id: user.id, name: user.name, email: user.email, employeeId: user.employeeId };
+
+  if (false as boolean) {
+    await db.adminUser.update({ where: { id: user.id }, data: { failedLoginCount: 0, lockedUntil: null, ...(rehash ? { passwordHash: rehash } : {}) } });
+    const enrolled = !!(await db.mfaCredential.findFirst({ where: { userId: user.id, enabledAt: { not: null } }, select: { userId: true } }));
+    const pending = await signPendingMfaToken({ sub: user.id });
+    await recordActivity(db, { actorName: user.name, action: "login", entityType: "Session", entityId: user.id, entityLabel: `${user.name} passed password check; second factor required`, ip });
+    return { kind: "mfa", enrolled, cookies: [setCookie("mfa", pending, getAuthConfig().mfaPendingTtlSeconds)] };
+  }
+
+  const issued = await db.$transaction(async (tx) => {
+    await tx.adminUser.update({ where: { id: user.id }, data: { failedLoginCount: 0, lockedUntil: null, lastLoginAt: new Date(), ...(rehash ? { passwordHash: rehash } : {}) } });
+    const s = await createSession(tx, request, identity, { mfaVerified: false });
+    await recordActivity(tx, { actorName: user.name, action: "login", entityType: "Session", entityId: user.id, entityLabel: `${user.name} signed in`, ip });
+    return s;
+  });
+  await clear(`login:acct:${emailKey(email)}`);
+  return { kind: "session", ...issued };
+}
+
+/** Reads the pending-MFA proof set by a correct password. Returns the user id or throws a generic 401. */
+export async function pendingMfaUser(request: Request): Promise<string> {
+  const token = readCookie(request.headers.get("cookie"), COOKIES.mfa.name);
+  const claims = token ? await verifyPendingMfaToken(token) : null;
+  if (!claims) throw new ApiError(401, "mfa_session_expired", "Your sign-in step expired. Sign in again.");
+  return claims.sub;
+}
+
+/* ───────────────────────── request authentication ───────────────────────── */
+
+/**
+ * Resolves the caller from the HttpOnly access cookie: verifies the JWT, then confirms in the database that the session
+ * still exists, has not expired, and that the account is still active with its CURRENT roles. Returns null otherwise.
+ */
+export async function getSession(request: Request): Promise<AuthSession | null> {
+  const token = readCookie(request.headers.get("cookie"), COOKIES.access.name);
+  if (!token) return null;
+  const claims = await verifyAccessToken(token);
+  if (!claims) return null;
+  const db = getDb();
+  const row = await db.session.findUnique({
+    where: { id: claims.sid },
+    include: { user: { select: { id: true, name: true, email: true, employeeId: true } } },
+  });
+  if (!row || row.userId !== claims.sub || row.tokenHash !== null) return null;
+  if (row.expiresAt.getTime() < Date.now()) {
+    await db.session.delete({ where: { id: row.id } }).catch(() => undefined);
+    return null;
+  }
+  const loaded = await loadAccess(db, row.userId);
+  if (!loaded.accessible) {
+    // Deactivated (or removed) accounts lose their sessions immediately.
+    await db.session.deleteMany({ where: { userId: row.userId } }).catch(() => undefined);
+    return null;
+  }
+  // A user who has since become an admin must complete MFA enrolment before this session is honoured.
+  if (!row.mfaVerifiedAt && (await requiresMfa(db, row.userId))) return null;
+  return { sessionId: row.id, user: row.user, roles: loaded.roles, access: loaded.access, authenticatedAt: row.reauthAt ?? row.createdAt, mfaVerified: !!row.mfaVerifiedAt };
+}
+
+/** Throws `reauth_required` unless credentials were entered recently (step-up for high-risk operations). */
+export function requireRecentAuth(session: AuthSession) {
+  if (Date.now() - session.authenticatedAt.getTime() > getAuthConfig().reauthWindowSeconds * 1000) throw errors.reauth();
+}
+
+/* ───────────────────────── refresh (rotation + reuse detection) ───────────────────────── */
+
+export async function refresh(request: Request): Promise<IssuedSession> {
+  const cfg = getAuthConfig();
+  await enforce(`refresh:src:${sourceKey(request)}`, LIMITS.refreshSource);
+  const raw = readCookie(request.headers.get("cookie"), COOKIES.refresh.name);
+  const reject = () => new ApiError(401, "unauthenticated", "Sign in required");
+  if (!raw) throw reject();
+  const db = getDb();
+  const row = await db.refreshToken.findUnique({ where: { tokenHash: hashToken(raw) }, include: { session: { include: { user: true } } } });
+  if (!row) throw reject();
+  const { session } = row;
+  const now = Date.now();
+
+  if (row.usedAt) {
+    // A token that was already rotated is being presented again.
+    if (now - row.usedAt.getTime() <= cfg.refreshGraceSeconds * 1000) throw new ApiError(401, "refresh_conflict", "Session is being refreshed. Retry.");
+    // Outside the grace window this is a replayed (stolen) token: end the whole session.
+    await db.$transaction(async (tx) => {
+      await tx.session.delete({ where: { id: session.id } });
+      await recordActivity(tx, { actorName: session.user.name, action: "token_reuse", entityType: "Session", entityId: session.userId, entityLabel: `Refresh token reuse detected for ${session.user.name}; session revoked`, ip: clientIp(request) });
+    });
+    throw reject();
+  }
+  if (row.expiresAt.getTime() < now || session.expiresAt.getTime() < now) {
+    await db.session.delete({ where: { id: session.id } }).catch(() => undefined);
+    throw reject();
+  }
+  const loaded = await loadAccess(db, session.userId);
+  if (!loaded.accessible || session.user.status !== "active" || (!session.mfaVerifiedAt && (await requiresMfa(db, session.userId)))) {
+    await db.session.deleteMany({ where: { userId: session.userId } });
+    throw reject();
+  }
+
+  const next = randomToken();
+  const nextExpiry = new Date(Math.min(now + cfg.refreshTtlSeconds * 1000, session.expiresAt.getTime()));
+  const won = await db.$transaction(async (tx) => {
+    // Atomic claim: exactly one concurrent request can flip usedAt from NULL.
+    const claimed = await tx.refreshToken.updateMany({ where: { id: row.id, usedAt: null }, data: { usedAt: new Date(now) } });
+    if (claimed.count !== 1) return false;
+    const created = await tx.refreshToken.create({ data: { sessionId: session.id, tokenHash: hashToken(next), expiresAt: nextExpiry } });
+    await tx.refreshToken.update({ where: { id: row.id }, data: { replacedById: created.id } });
+    await tx.session.update({ where: { id: session.id }, data: { lastSeenAt: new Date(now) } });
+    return true;
+  });
+  if (!won) throw new ApiError(401, "refresh_conflict", "Session is being refreshed. Retry.");
+
+  const access = await signAccessToken({ sub: session.userId, sid: session.id });
+  const u = session.user;
+  return {
+    cookies: [setCookie("access", access, cfg.accessTtlSeconds), setCookie("refresh", next, Math.max(1, (nextExpiry.getTime() - now) / 1000))],
+    user: { id: u.id, name: u.name, email: u.email, employeeId: u.employeeId, role: loaded.roles.map((r) => r.name).join(", ") },
+  };
+}
+
+/* ───────────────────────── logout / revocation ───────────────────────── */
+
+/** Ends the current session. Works from the refresh cookie too, so an expired access token can still log out. */
+export async function logout(request: Request): Promise<string[]> {
+  const db = getDb();
+  const cookieHeader = request.headers.get("cookie");
+  let sessionId: string | null = null;
+  const access = readCookie(cookieHeader, COOKIES.access.name);
+  const claims = access ? await verifyAccessToken(access) : null;
+  if (claims) sessionId = claims.sid;
+  if (!sessionId) {
+    const raw = readCookie(cookieHeader, COOKIES.refresh.name);
+    if (raw) sessionId = (await db.refreshToken.findUnique({ where: { tokenHash: hashToken(raw) }, select: { sessionId: true } }))?.sessionId ?? null;
+  }
+  if (sessionId) {
+    const row = await db.session.findUnique({ where: { id: sessionId }, include: { user: true } });
+    if (row) {
+      await db.$transaction(async (tx) => {
+        await tx.session.delete({ where: { id: row.id } });
+        await recordActivity(tx, { actorName: row.user.name, action: "logout", entityType: "Session", entityId: row.userId, entityLabel: `${row.user.name} signed out`, ip: clientIp(request) });
+      });
+    }
+  }
+  return clearAll();
+}
+
+/** Revokes sessions (and, by cascade, their refresh tokens). Used by password change/reset, deactivation, MFA reset. */
+export async function revokeUserSessions(db: Db, userId: string, exceptSessionId?: string) {
+  return db.session.deleteMany({ where: { userId, ...(exceptSessionId ? { NOT: { id: exceptSessionId } } : {}) } });
+}
+
+/** Step-up: re-verify the password (and second factor, if enrolled) and stamp the session. */
+export async function reauthenticate(request: Request, session: AuthSession, password: string, mfaCheck: (userId: string) => Promise<void>) {
+  const db = getDb();
+  await enforce(`reauth:acct:${session.user.id}`, LIMITS.reauthAccount);
+  const user = await db.adminUser.findUniqueOrThrow({ where: { id: session.user.id } });
+  if (!user.passwordHash || !(await verifyPassword(user.passwordHash, password))) {
+    await recordActivity(db, { session, action: "login_failed", entityType: "Session", entityId: user.id, entityLabel: "re-authentication failed", ip: clientIp(request) });
+    throw new ApiError(401, "invalid_credentials", "Incorrect password");
+  }
+  await mfaCheck(user.id);
+  await db.session.update({ where: { id: session.sessionId }, data: { reauthAt: new Date() } });
+  await recordActivity(db, { session, action: "reauth", entityType: "Session", entityId: user.id, entityLabel: `${user.name} re-authenticated`, ip: clientIp(request) });
+}

@@ -1,0 +1,1066 @@
+// Hamsavahin CMS database schema (PostgreSQL).
+//
+// Conventions
+//  - Primary keys: UUID v7 (time-ordered, index friendly, not guessable like serial ids).
+//  - Every table has createdAt/updatedAt unless it is append-only (ActivityLog) or a pure join table.
+//  - Enum members are lowercase so API values equal the values the admin UI already uses.
+//  - Slugs/codes/emails are stored normalised (lowercase / uppercase) by the server and are UNIQUE.
+//  - Foreign keys: `Restrict` where deleting the parent would orphan or destroy business/personal data;
+//    `Cascade` only for pure children (specifications, role permissions, notes); `SetNull` for optional
+//    attribution (assignee, author) so history survives staff leaving.
+//  - Connection string comes from DATABASE_URL (see prisma.config.ts). No credentials live in this repo.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────── Enums ─────────────────────────
+
+enum PublishStatus {
+  draft
+  published
+  archived
+}
+
+enum UserStatus {
+  active
+  invited
+  suspended
+}
+
+enum ChallengePurpose {
+  activation
+}
+
+enum RoleStatus {
+  active
+  inactive
+}
+
+/// Record-level scope of a grant. "assigned" = only records assigned to the user (RFQs, enquiries).
+enum GrantScope {
+  all
+  assigned
+}
+
+enum OverrideEffect {
+  allow
+  deny
+}
+
+enum UserTokenType {
+  invite
+  password_reset
+  /// Issued after a correct email OTP; lets the employee set their first password (single use, short lived).
+  activation_grant
+}
+
+enum PostCategory {
+  market_insight
+  company_news
+  sustainability
+  industry_report
+}
+
+enum ProjectStage {
+  planning
+  active
+  completed
+  on_hold
+}
+
+enum CareerStatus {
+  draft
+  open
+  closed
+}
+
+enum EmploymentType {
+  full_time
+  part_time
+  contract
+  internship
+}
+
+enum ApplicationStatus {
+  new
+  screening
+  interview
+  offer
+  hired
+  rejected
+}
+
+enum LocationType {
+  headquarters
+  regional_office
+  mine
+  sourcing_location
+  supplier
+  processing_facility
+  warehouse
+  port_terminal
+  market
+  trading_destination
+  representative
+}
+
+enum BannerSection {
+  hero
+  promo
+  feature_strip
+  cta
+}
+
+enum CommodityGroup {
+  Energy
+  Metals
+  Agriculture
+  Chemicals
+  Minerals
+}
+
+enum PriceStatus {
+  draft
+  published
+}
+
+enum Currency {
+  USD
+  EUR
+  INR
+  AED
+  CNY
+}
+
+/// PDF 11C: the sections of the Live Commodity Desk.
+enum OpportunityCategory {
+  available_for_sale
+  buying_requirement
+  active_enquiry
+  spot
+  long_term
+  upcoming_shipment
+}
+
+/// PDF 5: product availability status.
+enum AvailabilityStatus {
+  available
+  limited_availability
+  under_negotiation
+  sold
+  out_of_stock
+}
+
+enum OpportunityType {
+  buy
+  sell
+}
+
+enum OpportunityStatus {
+  draft
+  available
+  limited_availability
+  under_negotiation
+  sold
+  requirement_open
+  closed
+}
+
+enum RfqStatus {
+  new
+  contacted
+  under_discussion
+  quotation_sent
+  closed
+}
+
+enum EnquiryStatus {
+  new
+  contacted
+  closed
+  spam
+}
+
+enum EnquirySource {
+  contact_page
+  footer_form
+  product_page
+}
+
+enum StoredFileKind {
+  image
+  video
+  document
+  resume
+}
+
+enum FileVisibility {
+  public
+  private
+  restricted
+}
+
+enum FileScanStatus {
+  pending
+  clean
+  quarantined
+}
+
+enum ProductDocumentType {
+  datasheet
+  coa
+  msds
+  brochure
+  other
+}
+
+enum LibraryDocumentCategory {
+  certificate
+  policy
+  brochure
+  datasheet
+  legal
+  report
+}
+
+enum NotificationStatus {
+  queued
+  sent
+  failed
+}
+
+enum ActivityAction {
+  created
+  updated
+  deleted
+  published
+  archived
+  status_changed
+  login
+  login_failed
+  logout
+  viewed_sensitive
+  access_changed
+  invited
+  password_reset
+  otp_requested
+  otp_verified
+  otp_failed
+  mfa_enrolled
+  mfa_disabled
+  mfa_reset
+  mfa_failed
+  token_reuse
+  reauth
+  account_activated
+}
+
+// ───────────────────────── Admin users, RBAC, sessions ─────────────────────────
+//
+// Four distinct concepts (see docs/rbac-architecture.md):
+//   User (AdminUser)  - the employee account
+//   Role              - a reusable set of permissions
+//   Permission        - (resource, action) from the code catalogue src/lib/authz/catalog.ts
+//   Assignments       - UserRole (many roles per user) + UserPermissionOverride (individual allow/deny)
+
+model Role {
+  id          String           @id @default(uuid(7)) @db.Uuid
+  name        String           @unique
+  /// Stable machine code, e.g. super_admin. UNIQUE. The Super Admin is identified by code, never by display name.
+  code        String           @unique
+  description String
+  /// System roles cannot be deleted. The Super Admin role is additionally read-only.
+  isSystem    Boolean          @default(false)
+  status      RoleStatus       @default(active)
+  createdAt   DateTime         @default(now()) @db.Timestamptz
+  updatedAt   DateTime         @updatedAt @db.Timestamptz
+  permissions RolePermission[]
+  users       UserRole[]
+}
+
+/// One row per (resource, action) in the catalogue. Synchronised by the seed; never edited by users.
+model Permission {
+  id        String                   @id @default(uuid(7)) @db.Uuid
+  /// Page/resource key, e.g. "products", "rfqs".
+  resource  String
+  /// e.g. "view", "edit", "publish".
+  action    String
+  /// Catalogue module the resource belongs to (for grouping in the UI).
+  module    String
+  roles     RolePermission[]
+  overrides UserPermissionOverride[]
+
+  @@unique([resource, action])
+  @@index([module])
+}
+
+model RolePermission {
+  roleId       String     @db.Uuid
+  permissionId String     @db.Uuid
+  scope        GrantScope @default(all)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Restrict)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+}
+
+model AdminUser {
+  id                 String      @id @default(uuid(7)) @db.Uuid
+  /// Human employee number, e.g. EMP-0007. UNIQUE.
+  employeeId         String      @unique
+  /// Stored lower-cased by the server; UNIQUE.
+  email              String      @unique
+  name               String
+  phone              String?
+  department         String?
+  designation        String?
+  profileImageFileId String?     @db.Uuid
+  profileImage       StoredFile? @relation("UserProfileImage", fields: [profileImageFileId], references: [id], onDelete: SetNull)
+  reportingManagerId String?     @db.Uuid
+  reportingManager   AdminUser?  @relation("Reporting", fields: [reportingManagerId], references: [id], onDelete: SetNull)
+  reports            AdminUser[] @relation("Reporting")
+  /// argon2id hash. NULL while the account is only invited.
+  passwordHash       String?
+  /// invited = pending invitation, active, suspended = deactivated. Only `active` accounts can sign in.
+  status             UserStatus  @default(invited)
+  twoFactorEnabled   Boolean     @default(false)
+  failedLoginCount   Int         @default(0)
+  lockedUntil        DateTime?   @db.Timestamptz
+  lastLoginAt        DateTime?   @db.Timestamptz
+  passwordChangedAt  DateTime?   @db.Timestamptz
+  /// Set when the employee proved ownership of the registered mailbox (email OTP).
+  emailVerifiedAt    DateTime?   @db.Timestamptz
+  deactivatedAt      DateTime?   @db.Timestamptz
+  createdAt          DateTime    @default(now()) @db.Timestamptz
+  updatedAt          DateTime    @updatedAt @db.Timestamptz
+
+  roles               UserRole[]               @relation("UserRoles")
+  rolesAssigned       UserRole[]               @relation("RoleAssigner")
+  overrides           UserPermissionOverride[] @relation("OverrideTarget")
+  overridesCreated    UserPermissionOverride[] @relation("OverrideAuthor")
+  dashboardPreference UserDashboardPreference?
+  mfaCredential       MfaCredential?
+  mfaRecoveryCodes    MfaRecoveryCode[]
+  authChallenges      AuthChallenge[]
+  sessions            Session[]
+  tokens              UserToken[]
+  activity            ActivityLog[]
+  permissionChanges   PermissionChangeLog[]
+  uploadedFiles       StoredFile[]
+  assignedRfqs        Rfq[]
+  assignedEnquiries   ContactEnquiry[]
+  rfqNotes            RfqNote[]
+  enquiryNotes        EnquiryNote[]
+  applicationNotes    ApplicationNote[]
+
+  @@index([status])
+  @@index([department])
+  @@index([reportingManagerId])
+}
+
+/// Many-to-many: an employee can hold several roles. Their permissions are combined (see resolve.ts).
+model UserRole {
+  userId       String     @db.Uuid
+  roleId       String     @db.Uuid
+  user         AdminUser  @relation("UserRoles", fields: [userId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  assignedAt   DateTime   @default(now()) @db.Timestamptz
+  assignedById String?    @db.Uuid
+  assignedBy   AdminUser? @relation("RoleAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+}
+
+/// Individual exceptions to the role-derived permissions. A DENY always beats role grants and ALLOW overrides.
+model UserPermissionOverride {
+  id           String         @id @default(uuid(7)) @db.Uuid
+  userId       String         @db.Uuid
+  user         AdminUser      @relation("OverrideTarget", fields: [userId], references: [id], onDelete: Cascade)
+  permissionId String         @db.Uuid
+  permission   Permission     @relation(fields: [permissionId], references: [id], onDelete: Restrict)
+  effect       OverrideEffect
+  scope        GrantScope     @default(all)
+  reason       String?
+  createdById  String?        @db.Uuid
+  createdBy    AdminUser?     @relation("OverrideAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime       @default(now()) @db.Timestamptz
+  updatedAt    DateTime       @updatedAt @db.Timestamptz
+
+  @@unique([userId, permissionId])
+  @@index([permissionId])
+}
+
+/// Per-employee dashboard: which widgets, in which order, and which quick actions. Absent = role-derived default.
+model UserDashboardPreference {
+  userId       String    @id @db.Uuid
+  user         AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// [{ "key": "total_products", "enabled": true, "order": 0 }, ...]
+  widgets      Json
+  /// ["add_product", ...]
+  quickActions Json
+  updatedById  String?   @db.Uuid
+  updatedAt    DateTime  @updatedAt @db.Timestamptz
+}
+
+/// Append-only history of access changes (role assignments, overrides, role permission edits, status changes).
+/// Never updated or deleted by the application. Survives deletion of the actor or target.
+model PermissionChangeLog {
+  id          String     @id @default(uuid(7)) @db.Uuid
+  actorId     String?    @db.Uuid
+  actor       AdminUser? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorName   String
+  /// "user" | "role"
+  targetType  String
+  targetId    String     @db.Uuid
+  targetLabel String
+  /// role_assigned | role_removed | override_set | override_removed | role_permissions_changed | status_changed | dashboard_changed | user_created
+  kind        String
+  /// Structured before/after, e.g. { "added": ["products:edit"], "removed": [] }. Never contains secrets.
+  change      Json
+  createdAt   DateTime   @default(now()) @db.Timestamptz
+
+  @@index([targetType, targetId, createdAt(sort: Desc)])
+  @@index([actorId, createdAt(sort: Desc)])
+}
+
+/// A login session = one refresh-token family. The browser holds a short-lived access JWT and a rotating opaque refresh
+/// token; the database holds only HASHES of refresh tokens. Deleting the row revokes the session everywhere at once.
+model Session {
+  id            String         @id @default(uuid(7)) @db.Uuid
+  userId        String         @db.Uuid
+  user          AdminUser      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// DEPRECATED (cookie-session era). Always NULL for new sessions; old rows simply expire.
+  tokenHash     String?        @unique
+  createdAt     DateTime       @default(now()) @db.Timestamptz
+  lastSeenAt    DateTime       @default(now()) @db.Timestamptz
+  expiresAt     DateTime       @db.Timestamptz
+  /// When the second factor was last satisfied for this session (NULL = password only).
+  mfaVerifiedAt DateTime?      @db.Timestamptz
+  /// Last time the user re-entered their credentials (step-up for high-risk actions).
+  reauthAt      DateTime?      @db.Timestamptz
+  ip            String?
+  userAgent     String?
+  refreshTokens RefreshToken[]
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Rotating refresh tokens. Each is single-use: presenting a used token again means it was stolen, and the whole
+/// session (family) is revoked.
+model RefreshToken {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  sessionId    String    @db.Uuid
+  session      Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  tokenHash    String    @unique
+  createdAt    DateTime  @default(now()) @db.Timestamptz
+  expiresAt    DateTime  @db.Timestamptz
+  usedAt       DateTime? @db.Timestamptz
+  replacedById String?   @db.Uuid
+
+  @@index([sessionId])
+  @@index([expiresAt])
+}
+
+/// Email one-time codes (first-time activation). Only a keyed digest of the code is stored; codes are single use,
+/// expire quickly, have an attempt limit, and issuing a new one invalidates the previous.
+model AuthChallenge {
+  id            String           @id @default(uuid(7)) @db.Uuid
+  userId        String           @db.Uuid
+  user          AdminUser        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose       ChallengePurpose
+  codeDigest    String
+  attempts      Int              @default(0)
+  maxAttempts   Int              @default(5)
+  expiresAt     DateTime         @db.Timestamptz
+  consumedAt    DateTime?        @db.Timestamptz
+  invalidatedAt DateTime?        @db.Timestamptz
+  createdAt     DateTime         @default(now()) @db.Timestamptz
+  ip            String?
+
+  @@index([userId, purpose, createdAt(sort: Desc)])
+}
+
+/// TOTP second factor. The shared secret is stored ENCRYPTED (AES-256-GCM, key from the environment) because the
+/// server must be able to recompute codes. `lastUsedStep` blocks replay of an already-accepted code.
+model MfaCredential {
+  userId       String    @id @db.Uuid
+  user         AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  secretEnc    String
+  /// NULL while enrolment is pending (QR shown but not yet confirmed).
+  enabledAt    DateTime? @db.Timestamptz
+  lastUsedStep BigInt?
+  createdAt    DateTime  @default(now()) @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @db.Timestamptz
+}
+
+/// One-time recovery codes. Stored as keyed digests (the codes are high-entropy random values), single use.
+model MfaRecoveryCode {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  userId     String    @db.Uuid
+  user       AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeDigest String
+  usedAt     DateTime? @db.Timestamptz
+  createdAt  DateTime  @default(now()) @db.Timestamptz
+
+  @@unique([userId, codeDigest])
+  @@index([userId])
+}
+
+/// Fixed-window counters shared by every app instance (login, OTP, recovery limits).
+model RateLimit {
+  key         String   @id
+  windowStart DateTime @db.Timestamptz
+  count       Int
+}
+
+/// Single-use invitation / password-reset tokens (hash only).
+model UserToken {
+  id        String        @id @default(uuid(7)) @db.Uuid
+  userId    String        @db.Uuid
+  user      AdminUser     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      UserTokenType
+  tokenHash String        @unique
+  expiresAt DateTime      @db.Timestamptz
+  usedAt    DateTime?     @db.Timestamptz
+  createdAt DateTime      @default(now()) @db.Timestamptz
+
+  @@index([userId, type])
+}
+
+// ───────────────────────── Object storage metadata ─────────────────────────
+
+/// Metadata for every object in S3-compatible storage. Bytes never live in Postgres.
+/// `visibility = private` objects (resumes, internal documents) are only ever reachable through
+/// short-lived signed URLs minted by the API after a permission check.
+model StoredFile {
+  id           String         @id @default(uuid(7)) @db.Uuid
+  storageKey   String         @unique
+  originalName String
+  mimeType     String
+  sizeBytes    BigInt
+  sha256       String?
+  kind         StoredFileKind
+  visibility   FileVisibility @default(private)
+  scanStatus   FileScanStatus @default(pending)
+  uploadedById String?        @db.Uuid
+  uploadedBy   AdminUser?     @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime       @default(now()) @db.Timestamptz
+
+  profileImageOf   AdminUser[]    @relation("UserProfileImage")
+  mediaAsset       MediaAsset?
+  libraryDocument  DocumentFile?
+  productImages    ProductImage[]
+  productDocuments ProductDocument[]
+  postCovers       Post[]
+  banners          Banner[]
+  applications     JobApplication[]
+
+  @@index([kind, createdAt])
+  @@index([uploadedById])
+}
+
+model MediaAsset {
+  id        String     @id @default(uuid(7)) @db.Uuid
+  fileId    String     @unique @db.Uuid
+  file      StoredFile @relation(fields: [fileId], references: [id], onDelete: Restrict)
+  name      String
+  altText   String     @default("")
+  folder    String     @default("Uploads")
+  width     Int?
+  height    Int?
+  createdAt DateTime   @default(now()) @db.Timestamptz
+  updatedAt DateTime   @updatedAt @db.Timestamptz
+
+  @@index([folder])
+}
+
+model DocumentFile {
+  id         String                  @id @default(uuid(7)) @db.Uuid
+  fileId     String                  @unique @db.Uuid
+  file       StoredFile              @relation(fields: [fileId], references: [id], onDelete: Restrict)
+  title      String
+  category   LibraryDocumentCategory
+  version    String
+  /// Mirrors the file's visibility; internal documents are never publicly addressable.
+  visibility FileVisibility          @default(public)
+  status     PublishStatus           @default(draft)
+  createdAt  DateTime                @default(now()) @db.Timestamptz
+  updatedAt  DateTime                @updatedAt @db.Timestamptz
+
+  @@index([status, category])
+}
+
+// ───────────────────────── Product catalogue ─────────────────────────
+
+model Category {
+  id          String         @id @default(uuid(7)) @db.Uuid
+  name        String
+  slug        String         @unique
+  description String         @default("")
+  parentId    String?        @db.Uuid
+  parent      Category?      @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Category[]     @relation("CategoryTree")
+  sortOrder   Int            @default(0)
+  status      PublishStatus  @default(draft)
+  createdAt   DateTime       @default(now()) @db.Timestamptz
+  updatedAt   DateTime       @updatedAt @db.Timestamptz
+  products    Product[]
+
+  @@index([parentId])
+  @@index([status, sortOrder])
+}
+
+model Product {
+  id               String        @id @default(uuid(7)) @db.Uuid
+  /// Stored upper-cased; UNIQUE.
+  code             String        @unique
+  slug             String        @unique
+  name             String
+  categoryId       String        @db.Uuid
+  category         Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  shortDescription String
+  description      String
+  status           PublishStatus @default(draft)
+  featured         Boolean       @default(false)
+  publishedAt      DateTime?     @db.Timestamptz
+  /// PDF 5: origin / source, availability, grade, applications, packaging, loading port, target market.
+  origin           String?
+  availableQuantity Decimal?     @db.Decimal(18, 3)
+  quantityUnit     String?
+  grade            String?
+  applications     String[]      @default([])
+  packaging        String?
+  loadingPort      String?
+  targetMarket     String?
+  availability     AvailabilityStatus @default(available)
+  metaTitle        String        @default("")
+  metaDescription  String        @default("")
+  canonicalUrl     String?
+  keywords         String[]      @default([])
+  createdAt        DateTime      @default(now()) @db.Timestamptz
+  updatedAt        DateTime      @updatedAt @db.Timestamptz
+
+  specifications ProductSpecification[]
+  images         ProductImage[]
+  documents      ProductDocument[]
+
+  @@index([categoryId])
+  @@index([status, updatedAt(sort: Desc)])
+  @@index([featured, status])
+  @@index([name])
+}
+
+model ProductSpecification {
+  id        String  @id @default(uuid(7)) @db.Uuid
+  productId String  @db.Uuid
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  label     String
+  value     String
+  unit      String?
+  sortOrder Int     @default(0)
+
+  @@unique([productId, label])
+}
+
+/// Exactly one primary image per product is enforced by a partial unique index created in the
+/// first migration (see prisma/migrations/*_init/migration.sql): UNIQUE (productId) WHERE isPrimary.
+model ProductImage {
+  id        String     @id @default(uuid(7)) @db.Uuid
+  productId String     @db.Uuid
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  fileId    String     @db.Uuid
+  file      StoredFile @relation(fields: [fileId], references: [id], onDelete: Restrict)
+  alt       String     @default("")
+  isPrimary Boolean    @default(false)
+  sortOrder Int        @default(0)
+  createdAt DateTime   @default(now()) @db.Timestamptz
+
+  @@unique([productId, fileId])
+  @@index([productId, sortOrder])
+}
+
+model ProductDocument {
+  id        String              @id @default(uuid(7)) @db.Uuid
+  productId String              @db.Uuid
+  product   Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  fileId    String              @db.Uuid
+  file      StoredFile          @relation(fields: [fileId], references: [id], onDelete: Restrict)
+  type      ProductDocumentType @default(other)
+  createdAt DateTime            @default(now()) @db.Timestamptz
+
+  @@unique([productId, fileId])
+  @@index([productId])
+}
+
+// ───────────────────────── Content ─────────────────────────
+
+model Post {
+  id              String        @id @default(uuid(7)) @db.Uuid
+  slug            String        @unique
+  title           String
+  excerpt         String
+  /// Sanitised HTML (sanitised on the server before storage).
+  contentHtml     String
+  category        PostCategory
+  authorName      String
+  coverFileId     String?       @db.Uuid
+  coverFile       StoredFile?   @relation(fields: [coverFileId], references: [id], onDelete: SetNull)
+  tags            String[]      @default([])
+  metaTitle       String        @default("")
+  metaDescription String        @default("")
+  keywords        String[]      @default([])
+  status          PublishStatus @default(draft)
+  publishedAt     DateTime?     @db.Timestamptz
+  createdAt       DateTime      @default(now()) @db.Timestamptz
+  updatedAt       DateTime      @updatedAt @db.Timestamptz
+
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([category])
+}
+
+model Project {
+  id            String        @id @default(uuid(7)) @db.Uuid
+  slug          String        @unique
+  title         String
+  summary       String
+  contentHtml   String
+  client        String
+  commodityName String
+  region        String
+  startDate     DateTime      @db.Date
+  endDate       DateTime?     @db.Date
+  stage         ProjectStage  @default(planning)
+  status        PublishStatus @default(draft)
+  featured      Boolean       @default(false)
+  createdAt     DateTime      @default(now()) @db.Timestamptz
+  updatedAt     DateTime      @updatedAt @db.Timestamptz
+
+  @@index([status, stage])
+  @@index([featured, status])
+}
+
+model Career {
+  id               String         @id @default(uuid(7)) @db.Uuid
+  slug             String         @unique
+  title            String
+  department       String
+  location         String
+  employmentType   EmploymentType
+  experience       String
+  descriptionHtml  String
+  requirementsHtml String
+  deadline         DateTime       @db.Date
+  openings         Int            @default(1)
+  status           CareerStatus   @default(draft)
+  createdAt        DateTime       @default(now()) @db.Timestamptz
+  updatedAt        DateTime       @updatedAt @db.Timestamptz
+
+  applications JobApplication[]
+
+  @@index([status, deadline])
+  @@index([department])
+}
+
+/// Personal data. Restrict on career deletion so applicants are never silently lost.
+/// Resume bytes are a PRIVATE StoredFile (kind = resume) served only via signed URLs.
+model JobApplication {
+  id              String            @id @default(uuid(7)) @db.Uuid
+  careerId        String            @db.Uuid
+  career          Career            @relation(fields: [careerId], references: [id], onDelete: Restrict)
+  applicantName   String
+  email           String
+  phone           String
+  currentCompany  String?
+  experienceYears Int
+  coverNote       String            @default("")
+  resumeFileId    String?           @db.Uuid
+  resumeFile      StoredFile?       @relation(fields: [resumeFileId], references: [id], onDelete: SetNull)
+  status          ApplicationStatus @default(new)
+  consentAt       DateTime?         @db.Timestamptz
+  /// Set when personal data was erased under the retention policy.
+  anonymizedAt    DateTime?         @db.Timestamptz
+  createdAt       DateTime          @default(now()) @db.Timestamptz
+  updatedAt       DateTime          @updatedAt @db.Timestamptz
+
+  notes ApplicationNote[]
+
+  @@index([careerId, status])
+  @@index([email])
+  @@index([status, createdAt(sort: Desc)])
+}
+
+model ApplicationNote {
+  id            String         @id @default(uuid(7)) @db.Uuid
+  applicationId String         @db.Uuid
+  application   JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  authorId      String?        @db.Uuid
+  author        AdminUser?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorName    String
+  text          String
+  createdAt     DateTime       @default(now()) @db.Timestamptz
+
+  @@index([applicationId, createdAt])
+}
+
+model Location {
+  id        String       @id @default(uuid(7)) @db.Uuid
+  name      String
+  type      LocationType
+  country   String
+  city      String
+  address   String
+  description String     @default("")
+  operations  String?
+  capacity    String?
+  phone     String
+  email     String
+  latitude  Decimal?     @db.Decimal(9, 6)
+  longitude Decimal?     @db.Decimal(9, 6)
+  active    Boolean      @default(true)
+  sortOrder Int          @default(0)
+  createdAt DateTime     @default(now()) @db.Timestamptz
+  updatedAt DateTime     @updatedAt @db.Timestamptz
+
+  @@unique([name, city])
+  @@index([country])
+  @@index([active, sortOrder])
+}
+
+model Banner {
+  id          String        @id @default(uuid(7)) @db.Uuid
+  title       String
+  subtitle    String        @default("")
+  section     BannerSection
+  imageFileId String?       @db.Uuid
+  imageFile   StoredFile?   @relation(fields: [imageFileId], references: [id], onDelete: SetNull)
+  ctaLabel    String
+  ctaUrl      String
+  sortOrder   Int           @default(0)
+  status      PublishStatus @default(draft)
+  startsAt    DateTime?     @db.Timestamptz
+  endsAt      DateTime?     @db.Timestamptz
+  createdAt   DateTime      @default(now()) @db.Timestamptz
+  updatedAt   DateTime      @updatedAt @db.Timestamptz
+
+  @@index([section, status, sortOrder])
+}
+
+// ───────────────────────── Trade ─────────────────────────
+
+model Commodity {
+  id          String         @id @default(uuid(7)) @db.Uuid
+  name        String
+  slug        String         @unique
+  /// Stored upper-cased; UNIQUE.
+  code        String         @unique
+  group       CommodityGroup
+  unit        String
+  description String
+  status      PublishStatus  @default(draft)
+  createdAt   DateTime       @default(now()) @db.Timestamptz
+  updatedAt   DateTime       @updatedAt @db.Timestamptz
+
+  prices        CommodityPrice[]
+  opportunities TradeOpportunity[]
+
+  @@index([group, status])
+}
+
+/// Prices are entered by hand. There is deliberately no live market-data integration.
+model CommodityPrice {
+  id            String      @id @default(uuid(7)) @db.Uuid
+  commodityId   String      @db.Uuid
+  commodity     Commodity   @relation(fields: [commodityId], references: [id], onDelete: Restrict)
+  price         Decimal     @db.Decimal(18, 4)
+  currency      Currency    @default(USD)
+  unit          String
+  market        String
+  effectiveDate DateTime    @db.Date
+  status        PriceStatus @default(draft)
+  createdAt     DateTime    @default(now()) @db.Timestamptz
+  updatedAt     DateTime    @updatedAt @db.Timestamptz
+
+  @@unique([commodityId, market, effectiveDate])
+  @@index([commodityId, effectiveDate(sort: Desc)])
+  @@index([status, effectiveDate(sort: Desc)])
+}
+
+model TradeOpportunity {
+  id                String            @id @default(uuid(7)) @db.Uuid
+  title             String
+  commodityId       String            @db.Uuid
+  commodity         Commodity         @relation(fields: [commodityId], references: [id], onDelete: Restrict)
+  type              OpportunityType
+  category          OpportunityCategory @default(available_for_sale)
+  quantityValue     Decimal           @db.Decimal(18, 3)
+  quantityUnit      String
+  originRegion      String
+  destinationRegion String
+  incoterm          String
+  validUntil        DateTime          @db.Date
+  description       String
+  status            OpportunityStatus @default(draft)
+  createdAt         DateTime          @default(now()) @db.Timestamptz
+  updatedAt         DateTime          @updatedAt @db.Timestamptz
+
+  @@index([status, validUntil])
+  @@index([commodityId])
+}
+
+model Rfq {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  /// Human reference derived from `seq`, e.g. RFQ-2026-1041. UNIQUE.
+  reference      String    @unique
+  seq            Int       @unique @default(autoincrement())
+  companyName    String
+  contactName    String
+  email          String
+  phone          String
+  country        String
+  requirement    String
+  quantity       Decimal   @db.Decimal(18, 3)
+  quantityUnit   String
+  targetPrice    String?
+  incoterm       String
+  deliveryPort   String
+  message        String
+  status         RfqStatus @default(new)
+  assignedToId   String?   @db.Uuid
+  assignedTo     AdminUser? @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  consentAt      DateTime? @db.Timestamptz
+  createdAt      DateTime  @default(now()) @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @db.Timestamptz
+
+  notes RfqNote[]
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([assignedToId])
+  @@index([email])
+}
+
+model RfqNote {
+  id         String     @id @default(uuid(7)) @db.Uuid
+  rfqId      String     @db.Uuid
+  rfq        Rfq        @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  authorId   String?    @db.Uuid
+  author     AdminUser? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorName String
+  text       String
+  createdAt  DateTime   @default(now()) @db.Timestamptz
+
+  @@index([rfqId, createdAt])
+}
+
+model ContactEnquiry {
+  id           String        @id @default(uuid(7)) @db.Uuid
+  name         String
+  email        String
+  phone        String?
+  company      String?
+  subject      String
+  message      String
+  source       EnquirySource
+  status       EnquiryStatus @default(new)
+  assignedToId String?       @db.Uuid
+  assignedTo   AdminUser?    @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  consentAt    DateTime?     @db.Timestamptz
+  createdAt    DateTime      @default(now()) @db.Timestamptz
+  updatedAt    DateTime      @updatedAt @db.Timestamptz
+
+  notes EnquiryNote[]
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([assignedToId])
+  @@index([email])
+}
+
+model EnquiryNote {
+  id         String         @id @default(uuid(7)) @db.Uuid
+  enquiryId  String         @db.Uuid
+  enquiry    ContactEnquiry @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  authorId   String?        @db.Uuid
+  author     AdminUser?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorName String
+  text       String
+  createdAt  DateTime       @default(now()) @db.Timestamptz
+
+  @@index([enquiryId, createdAt])
+}
+
+// ───────────────────────── Notifications ─────────────────────────
+
+model EmailTemplate {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  /// Stable machine key the backend looks up, e.g. enquiry_ack. UNIQUE.
+  key       String   @unique
+  name      String
+  subject   String
+  body      String
+  variables String[] @default([])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  logs NotificationLog[]
+}
+
+model NotificationLog {
+  id                String             @id @default(uuid(7)) @db.Uuid
+  templateId        String?            @db.Uuid
+  template          EmailTemplate?     @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  /// Snapshot so history stays readable if the template is renamed or deleted.
+  templateKey       String
+  recipient         String
+  subject           String
+  status            NotificationStatus @default(queued)
+  error             String?
+  attempts          Int                @default(0)
+  providerMessageId String?
+  sentAt            DateTime?          @db.Timestamptz
+  createdAt         DateTime           @default(now()) @db.Timestamptz
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([recipient])
+  @@index([templateId])
+}
+
+// ───────────────────────── Audit & settings ─────────────────────────
+
+/// Append-only. The application never updates or deletes rows; production should additionally
+/// REVOKE UPDATE, DELETE on this table from the application role.
+model ActivityLog {
+  id          String         @id @default(uuid(7)) @db.Uuid
+  actorId     String?        @db.Uuid
+  actor       AdminUser?     @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  /// Snapshot of the actor's name at the time of the action.
+  actorName   String
+  action      ActivityAction
+  entityType  String
+  entityId    String?
+  entityLabel String
+  detail      String?
+  ip          String?
+  createdAt   DateTime       @default(now()) @db.Timestamptz
+
+  @@index([createdAt(sort: Desc)])
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt(sort: Desc)])
+}
+
+/// One row per settings section: general | navigation | seo | contact | footer.
+/// `value` is validated against a Zod schema on write.
+model SiteSetting {
+  key         String    @id
+  value       Json
+  updatedById String?   @db.Uuid
+  updatedAt   DateTime  @updatedAt @db.Timestamptz
+}
