@@ -1,0 +1,862 @@
+mobile:
+<div class="elementor-slides-wrapper elementor-main-swiper swiper swiper-initialized swiper-horizontal swiper-pointer-events swiper-autoheight">
+                <div class="swiper-wrapper the7-elementor-slides" id="swiper-wrapper-ad5798e6fd50fe6b" aria-live="off" style="cursor: grab; transition-duration: 0ms; transform: translate3d(-1600px, 0px, 0px); height: 530px;"><div class="elementor-repeater-item-d04a43f the7-swiper-slide swiper-slide-duplicate swiper-slide-duplicate-prev" data-swiper-slide-index="0" role="group" aria-label="1 / 4" style="width: 320px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="343" class="elementor elementor-343 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Your Global  <br class="">Gateway To Minerals</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>Sourcing the best is what we do best.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/minerals/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div><div class="elementor-repeater-item-2184110 the7-swiper-slide swiper-slide-duplicate swiper-slide-duplicate-active" data-swiper-slide-index="1" role="group" aria-label="2 / 4" style="width: 320px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="341" class="elementor elementor-341 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child animated" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate animated fadeInUp" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Enhancing Value <br class="desktop_break">Ensuring Quality</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate animated fadeInUp" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>We have the expertise and experience to deliver.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate animated fadeInUp" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/about-us/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div><div class="elementor-repeater-item-89643d5 the7-swiper-slide swiper-slide-duplicate swiper-slide-duplicate-next" data-swiper-slide-index="2" role="group" aria-label="3 / 4" style="width: 320px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="69" class="elementor elementor-69 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Any Mineral   <br class="">To Any Industry</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e elementor-widget-mobile__width-initial switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>Our vision is to be the premier destination for all minerals.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/minerals/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div><div class="elementor-repeater-item-14a673e the7-swiper-slide swiper-slide-duplicate" data-swiper-slide-index="3" role="group" aria-label="4 / 4" style="width: 320px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="41" class="elementor elementor-41 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">From The Right Mines  <br class="desktop_break">To The Right Markets
+</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>We get it right throughout the supply chain.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/about-us/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div>
+					            <div class="elementor-repeater-item-d04a43f the7-swiper-slide swiper-slide-prev" data-swiper-slide-index="0" role="group" aria-label="1 / 4" style="width: 320px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="343" class="elementor elementor-343 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Your Global  <br class="">Gateway To Minerals</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>Sourcing the best is what we do best.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/minerals/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div>
+			            <div class="elementor-repeater-item-2184110 the7-swiper-slide swiper-slide-active" data-swiper-slide-index="1" role="group" aria-label="2 / 4" style="width: 320px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="341" class="elementor elementor-341 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child animated" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate animated fadeInUp" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Enhancing Value <br class="desktop_break">Ensuring Quality</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate animated fadeInUp" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>We have the expertise and experience to deliver.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate animated fadeInUp" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/about-us/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div>
+			            <div class="elementor-repeater-item-89643d5 the7-swiper-slide swiper-slide-next" data-swiper-slide-index="2" role="group" aria-label="3 / 4" style="width: 320px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="69" class="elementor elementor-69 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Any Mineral   <br class="">To Any Industry</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e elementor-widget-mobile__width-initial switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>Our vision is to be the premier destination for all minerals.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/minerals/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div>
+			            <div class="elementor-repeater-item-14a673e the7-swiper-slide" data-swiper-slide-index="3" role="group" aria-label="4 / 4" style="width: 320px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="41" class="elementor elementor-41 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">From The Right Mines  <br class="desktop_break">To The Right Markets
+</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>We get it right throughout the supply chain.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/about-us/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div>
+			                <div class="elementor-repeater-item-d04a43f the7-swiper-slide swiper-slide-duplicate swiper-slide-duplicate-prev" data-swiper-slide-index="0" role="group" aria-label="1 / 4" style="width: 320px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="343" class="elementor elementor-343 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Your Global  <br class="">Gateway To Minerals</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>Sourcing the best is what we do best.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/minerals/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div><div class="elementor-repeater-item-2184110 the7-swiper-slide swiper-slide-duplicate swiper-slide-duplicate-active" data-swiper-slide-index="1" role="group" aria-label="2 / 4" style="width: 320px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="341" class="elementor elementor-341 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child animated" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate animated fadeInUp" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Enhancing Value <br class="desktop_break">Ensuring Quality</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate animated fadeInUp" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>We have the expertise and experience to deliver.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate animated fadeInUp" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/about-us/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div><div class="elementor-repeater-item-89643d5 the7-swiper-slide swiper-slide-duplicate swiper-slide-duplicate-next" data-swiper-slide-index="2" role="group" aria-label="3 / 4" style="width: 320px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="69" class="elementor elementor-69 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Any Mineral   <br class="">To Any Industry</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e elementor-widget-mobile__width-initial switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>Our vision is to be the premier destination for all minerals.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/minerals/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div><div class="elementor-repeater-item-14a673e the7-swiper-slide swiper-slide-duplicate" data-swiper-slide-index="3" role="group" aria-label="4 / 4" style="width: 320px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="41" class="elementor elementor-41 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">From The Right Mines  <br class="desktop_break">To The Right Markets
+</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>We get it right throughout the supply chain.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/about-us/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div></div>
+					<div class="swiper-pagination owl-dots bullets-etefu swiper-pagination-clickable swiper-pagination-bullets swiper-pagination-horizontal"><button role="button" class="owl-dot" aria-label="Go to slide 01" tabindex="0"><span></span></button><button role="button" class="owl-dot active" aria-label="Go to slide 11" tabindex="0" aria-current="true"><span></span></button><button role="button" class="owl-dot" aria-label="Go to slide 21" tabindex="0"><span></span></button><button role="button" class="owl-dot" aria-label="Go to slide 31" tabindex="0"><span></span></button></div>        <div class="the7-swiper-button the7-swiper-button-prev elementor-icon" tabindex="0" role="button" aria-label="Previous slide" aria-controls="swiper-wrapper-ad5798e6fd50fe6b">
+			<svg aria-hidden="true" class="e-font-icon-svg e-fas-chevron-left" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg"><path d="M34.52 239.03L228.87 44.69c9.37-9.37 24.57-9.37 33.94 0l22.67 22.67c9.36 9.36 9.37 24.52.04 33.9L131.49 256l154.02 154.75c9.34 9.38 9.32 24.54-.04 33.9l-22.67 22.67c-9.37 9.37-24.57 9.37-33.94 0L34.52 272.97c-9.37-9.37-9.37-24.57 0-33.94z"></path></svg>        </div>
+        <div class="the7-swiper-button the7-swiper-button-next elementor-icon" tabindex="0" role="button" aria-label="Next slide" aria-controls="swiper-wrapper-ad5798e6fd50fe6b">
+			<svg aria-hidden="true" class="e-font-icon-svg e-fas-chevron-right" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg"><path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"></path></svg>        </div>
+		            <span class="swiper-notification" aria-live="assertive" aria-atomic="true"></span></div>
+
+
+
+
+
+
+desktop:
+<div class="elementor-element elementor-element-feddc78 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="feddc78" data-element_type="container">
+				<div class="elementor-element elementor-element-3d20020 hp_slider elementor-widget-the7-slider-common owl-carousel elementor-widget-loop-the7-slider elementor-widget elementor-widget-the7-slider e-widget-swiper" data-id="3d20020" data-element_type="widget" data-settings="{&quot;arrows&quot;:&quot;never&quot;,&quot;infinite&quot;:&quot;yes&quot;,&quot;transition&quot;:&quot;slide&quot;,&quot;slides_to_scroll&quot;:&quot;single&quot;,&quot;transition_speed&quot;:500,&quot;autoplay&quot;:&quot;yes&quot;,&quot;autoplay_speed&quot;:5000,&quot;slides_per_view&quot;:&quot;1&quot;,&quot;slides_gap&quot;:{&quot;unit&quot;:&quot;px&quot;,&quot;size&quot;:0,&quot;sizes&quot;:[]},&quot;slides_gap_tablet&quot;:{&quot;unit&quot;:&quot;px&quot;,&quot;size&quot;:&quot;&quot;,&quot;sizes&quot;:[]},&quot;slides_gap_mobile&quot;:{&quot;unit&quot;:&quot;px&quot;,&quot;size&quot;:&quot;&quot;,&quot;sizes&quot;:[]},&quot;bullets&quot;:&quot;show&quot;}" data-widget_type="the7-slider.default" style="--widget-width: 1264.67px; --widget-height: 508.333px; opacity: 1;">
+				<div class="elementor-widget-container">
+			        <div class="elementor-swiper">
+            <div class="elementor-slides-wrapper elementor-main-swiper swiper swiper-initialized swiper-horizontal swiper-pointer-events swiper-autoheight">
+                <div class="swiper-wrapper the7-elementor-slides" id="swiper-wrapper-d21485bd10e67f122" aria-live="off" style="cursor: grab; transition-duration: 0ms; transform: translate3d(-7590px, 0px, 0px); height: 451px;"><div class="elementor-repeater-item-d04a43f the7-swiper-slide swiper-slide-duplicate" data-swiper-slide-index="0" role="group" aria-label="1 / 4" style="width: 1265px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="343" class="elementor elementor-343 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Your Global  <br class="">Gateway To Minerals</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>Sourcing the best is what we do best.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/minerals/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div><div class="elementor-repeater-item-2184110 the7-swiper-slide swiper-slide-duplicate swiper-slide-duplicate-prev" data-swiper-slide-index="1" role="group" aria-label="2 / 4" style="width: 1265px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="341" class="elementor elementor-341 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Enhancing Value <br class="desktop_break">Ensuring Quality</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>We have the expertise and experience to deliver.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/about-us/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div><div class="elementor-repeater-item-89643d5 the7-swiper-slide swiper-slide-duplicate swiper-slide-duplicate-active" data-swiper-slide-index="2" role="group" aria-label="3 / 4" style="width: 1265px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="69" class="elementor elementor-69 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate animated fadeInUp" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Any Mineral   <br class="">To Any Industry</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e elementor-widget-mobile__width-initial switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>Our vision is to be the premier destination for all minerals.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/minerals/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div><div class="elementor-repeater-item-14a673e the7-swiper-slide swiper-slide-duplicate swiper-slide-duplicate-next" data-swiper-slide-index="3" role="group" aria-label="4 / 4" style="width: 1265px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="41" class="elementor elementor-41 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">From The Right Mines  <br class="desktop_break">To The Right Markets
+</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>We get it right throughout the supply chain.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/about-us/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div>
+					            <div class="elementor-repeater-item-d04a43f the7-swiper-slide" data-swiper-slide-index="0" role="group" aria-label="1 / 4" style="width: 1265px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="343" class="elementor elementor-343 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Your Global  <br class="">Gateway To Minerals</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>Sourcing the best is what we do best.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/minerals/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div>
+			            <div class="elementor-repeater-item-2184110 the7-swiper-slide swiper-slide-prev" data-swiper-slide-index="1" role="group" aria-label="2 / 4" style="width: 1265px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="341" class="elementor elementor-341 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Enhancing Value <br class="desktop_break">Ensuring Quality</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>We have the expertise and experience to deliver.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/about-us/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div>
+			            <div class="elementor-repeater-item-89643d5 the7-swiper-slide swiper-slide-active" data-swiper-slide-index="2" role="group" aria-label="3 / 4" style="width: 1265px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="69" class="elementor elementor-69 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate animated fadeInUp" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Any Mineral   <br class="">To Any Industry</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e elementor-widget-mobile__width-initial switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>Our vision is to be the premier destination for all minerals.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/minerals/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div>
+			            <div class="elementor-repeater-item-14a673e the7-swiper-slide swiper-slide-next" data-swiper-slide-index="3" role="group" aria-label="4 / 4" style="width: 1265px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="41" class="elementor elementor-41 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">From The Right Mines  <br class="desktop_break">To The Right Markets
+</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>We get it right throughout the supply chain.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/about-us/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div>
+			                <div class="elementor-repeater-item-d04a43f the7-swiper-slide swiper-slide-duplicate" data-swiper-slide-index="0" role="group" aria-label="1 / 4" style="width: 1265px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="343" class="elementor elementor-343 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Your Global  <br class="">Gateway To Minerals</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>Sourcing the best is what we do best.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/minerals/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div><div class="elementor-repeater-item-2184110 the7-swiper-slide swiper-slide-duplicate swiper-slide-duplicate-prev" data-swiper-slide-index="1" role="group" aria-label="2 / 4" style="width: 1265px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="341" class="elementor elementor-341 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Enhancing Value <br class="desktop_break">Ensuring Quality</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>We have the expertise and experience to deliver.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/about-us/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div><div class="elementor-repeater-item-89643d5 the7-swiper-slide swiper-slide-duplicate swiper-slide-duplicate-active" data-swiper-slide-index="2" role="group" aria-label="3 / 4" style="width: 1265px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="69" class="elementor elementor-69 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate animated fadeInUp" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">Any Mineral   <br class="">To Any Industry</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e elementor-widget-mobile__width-initial switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>Our vision is to be the premier destination for all minerals.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/minerals/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div><div class="elementor-repeater-item-14a673e the7-swiper-slide swiper-slide-duplicate swiper-slide-duplicate-next" data-swiper-slide-index="3" role="group" aria-label="4 / 4" style="width: 1265px;">
+                <div class="the7-swiper-slide-inner">
+					        <div data-elementor-type="the7-slider" data-elementor-id="41" class="elementor elementor-41 the7-slide-content" data-elementor-post-type="elementor_library">
+            <div class="elementor-section-wrap">
+				<div class="elementor-element elementor-element-b298984 e-con-full e-flex e-con e-parent" data-id="b298984" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+		<div class="elementor-element elementor-element-9e69636 e-con-full banner_cont e-flex e-con e-child" data-id="9e69636" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;the7_animation_mobile&quot;:&quot;none&quot;,&quot;animation_mobile&quot;:&quot;none&quot;}">
+		<div class="elementor-element elementor-element-6d4c0a5 e-con-full banner_empty_layer e-flex e-con e-child" data-id="6d4c0a5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;,&quot;position&quot;:&quot;absolute&quot;}">
+				</div>
+		<div class="elementor-element elementor-element-acb1432 e-con-full banner_postition e-flex e-con e-child" data-id="acb1432" data-element_type="container">
+				<div class="elementor-element elementor-element-5400452 elementor-widget elementor-widget-heading the7-animate elementor-invisible the7-hidden" data-id="5400452" data-element_type="widget" data-settings="{&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="heading.default">
+				<div class="elementor-widget-container">
+			<div class="elementor-heading-title elementor-size-default">From The Right Mines  <br class="desktop_break">To The Right Markets
+</div>		</div>
+				</div>
+				<div class="elementor-element elementor-element-048485e switzer_font elementor-widget elementor-widget-text-editor the7-animate elementor-invisible the7-hidden" data-id="048485e" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:100,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="text-editor.default">
+				<div class="elementor-widget-container">
+							<p>We get it right throughout the supply chain.</p>						</div>
+				</div>
+				<div class="elementor-element elementor-element-5c357a5 elementor-tablet-align-center elementor-mobile-align-center elementor-widget-mobile__width-inherit common_btn elementor-widget elementor-widget-button the7-animate elementor-invisible the7-hidden" data-id="5c357a5" data-element_type="widget" data-settings="{&quot;_animation_delay&quot;:200,&quot;the7__animation&quot;:&quot;fadeInUp&quot;,&quot;_animation&quot;:&quot;none&quot;,&quot;the7__animation_mobile&quot;:&quot;fadeInUp&quot;,&quot;_animation_mobile&quot;:&quot;none&quot;,&quot;the7__animation_tablet&quot;:&quot;fadeInUp&quot;,&quot;_animation_tablet&quot;:&quot;none&quot;}" data-widget_type="button.default">
+				<div class="elementor-widget-container">
+					<div class="elementor-button-wrapper">
+			<a class="elementor-button elementor-button-link elementor-size-sm" href="https://www.dakshinak.com/about-us/">
+						<span class="elementor-button-content-wrapper">
+									<span class="elementor-button-text">Know more</span>
+					</span>
+					</a>
+		</div>
+				</div>
+				</div>
+				</div>
+				</div>
+				</div>
+		            </div>
+        </div>
+		                </div>
+            </div></div>
+					<div class="swiper-pagination owl-dots bullets-etefu swiper-pagination-clickable swiper-pagination-bullets swiper-pagination-horizontal"><button role="button" class="owl-dot" aria-label="Go to slide 01" tabindex="0"><span></span></button><button role="button" class="owl-dot" aria-label="Go to slide 11" tabindex="0"><span></span></button><button role="button" class="owl-dot active" aria-label="Go to slide 21" tabindex="0" aria-current="true"><span></span></button><button role="button" class="owl-dot" aria-label="Go to slide 31" tabindex="0"><span></span></button></div>        <div class="the7-swiper-button the7-swiper-button-prev elementor-icon" tabindex="0" role="button" aria-label="Previous slide" aria-controls="swiper-wrapper-d21485bd10e67f122">
+			<svg aria-hidden="true" class="e-font-icon-svg e-fas-chevron-left" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg"><path d="M34.52 239.03L228.87 44.69c9.37-9.37 24.57-9.37 33.94 0l22.67 22.67c9.36 9.36 9.37 24.52.04 33.9L131.49 256l154.02 154.75c9.34 9.38 9.32 24.54-.04 33.9l-22.67 22.67c-9.37 9.37-24.57 9.37-33.94 0L34.52 272.97c-9.37-9.37-9.37-24.57 0-33.94z"></path></svg>        </div>
+        <div class="the7-swiper-button the7-swiper-button-next elementor-icon" tabindex="0" role="button" aria-label="Next slide" aria-controls="swiper-wrapper-d21485bd10e67f122">
+			<svg aria-hidden="true" class="e-font-icon-svg e-fas-chevron-right" viewBox="0 0 320 512" xmlns="http://www.w3.org/2000/svg"><path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"></path></svg>        </div>
+		            <span class="swiper-notification" aria-live="assertive" aria-atomic="true"></span></div>
+        </div>
+				</div>
+				</div>
+				</div>

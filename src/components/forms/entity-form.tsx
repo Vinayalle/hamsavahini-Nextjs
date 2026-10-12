@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Controller, useForm, type FieldValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ImagePlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { ApiClientError } from "@/lib/api/client";
+import { ApiClientError, apiFetch } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Switch, Textarea } from "@/components/ui/fields";
 import { Field, FormActions, FormSection, RichTextEditor, TagInput } from "./form-parts";
@@ -17,7 +17,7 @@ import { slugify } from "@/lib/utils";
 
 export type FieldType =
   | "text" | "textarea" | "richtext" | "select" | "number" | "date" | "email" | "url" | "tel"
-  | "switch" | "tags" | "slug" | "image" | "file";
+  | "switch" | "tags" | "slug" | "image" | "media-image" | "file";
 
 export interface FieldDef {
   name: string;
@@ -39,6 +39,11 @@ export interface FieldDef {
   switchText?: [string, string];
   /** Value is set programmatically (e.g. file metadata); not rendered. */
   hidden?: boolean;
+  /** Initial value for a NEW record (instead of empty). */
+  defaultValue?: unknown;
+  /** For `media-image` fields: the upload endpoint (returns `{ id }`) and the URL prefix that previews `<prefix>/<id>`. */
+  uploadPath?: string;
+  previewPath?: string;
 }
 
 export interface SectionDef {
@@ -74,7 +79,7 @@ export function buildSchema(fields: FieldDef[]) {
         s = f.required ? z.string().trim().min(1, req).email("Enter a valid email") : z.string().trim().refine((v) => !v || z.string().email().safeParse(v).success, "Enter a valid email");
         break;
       case "url":
-        s = z.string().trim().refine((v) => (!v && !f.required) || /^(https?:\/\/|\/)/i.test(v), "Enter a valid URL (https://… or /path)");
+        s = z.string().trim().refine((v) => (!v && !f.required) || /^(https?:\/\/|\/(?!\/))/i.test(v), "Enter a valid URL (https://… or /path)");
         break;
       case "slug":
         s = z.string().trim().min(1, req ?? "Slug is required").regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers and hyphens");
@@ -103,6 +108,7 @@ export function defaultsFor(sections: SectionDef[]): Values {
 
 /** Default (empty) value for a field type. */
 export function emptyValue(f: FieldDef): unknown {
+  if (f.defaultValue !== undefined) return f.defaultValue;
   if (f.type === "switch") return false;
   if (f.type === "tags") return [];
   if (f.type === "number") return f.required ? (undefined as unknown as number) : NaN;
@@ -129,6 +135,48 @@ function ImageField({ value, onChange, id, label }: { value: string; onChange: (
           {value && <Button variant="ghost" size="sm" onClick={() => onChange("")}><Trash2 className="size-3.5 text-danger-600" /> Remove</Button>}
         </div>
         <p className="text-xs text-faint">JPEG, PNG or WebP up to 3 MB. Local preview only; not uploaded.</p>
+        <input id={id} ref={ref} type="file" hidden accept={IMAGE_RULES.accept.join(",")} aria-label={label} onChange={(e) => { void pick(e.target.files?.[0]); e.target.value = ""; }} />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Database-mode picture field: the file is uploaded to the server straight away (validated there, stored inside the project) and the
+ * form keeps only the returned file id. The preview comes from a permission-checked route.
+ */
+function MediaImageField({ value, onChange, id, label, uploadPath, previewPath, hint }: { value: string; onChange: (v: string) => void; id: string; label: string; uploadPath: string; previewPath: string; hint?: string }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [broken, setBroken] = useState(false);
+  const pick = async (file?: File) => {
+    if (!file) return;
+    const err = validateFile(file, IMAGE_RULES);
+    if (err) return void toast.error(err);
+    setBusy(true);
+    try {
+      const fd = new FormData();
+      fd.set("file", file);
+      const asset = await apiFetch<{ id: string }>(uploadPath, { method: "POST", body: fd });
+      setBroken(false);
+      onChange(asset.id);
+    } catch (e) {
+      toast.error(e instanceof ApiClientError ? e.message : "The image could not be uploaded");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="flex items-center gap-4">
+      <div className="flex h-24 w-40 shrink-0 items-center justify-center overflow-hidden rounded-md border border-line bg-canvas">
+        {value && !broken ? <img src={`${previewPath}/${value}`} alt={`${label} preview`} onError={() => setBroken(true)} className="size-full object-cover" /> : <ImagePlus className="size-6 text-faint" aria-hidden />}
+      </div>
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <Button variant="secondary" size="sm" disabled={busy} onClick={() => ref.current?.click()}>{busy ? "Uploading…" : value ? "Replace" : "Choose image"}</Button>
+          {value && !busy && <Button variant="ghost" size="sm" onClick={() => onChange("")}><Trash2 className="size-3.5 text-danger-600" /> Remove</Button>}
+        </div>
+        <p className="text-xs text-faint">{hint ?? "JPEG, PNG or WebP up to 3 MB."}</p>
         <input id={id} ref={ref} type="file" hidden accept={IMAGE_RULES.accept.join(",")} aria-label={label} onChange={(e) => { void pick(e.target.files?.[0]); e.target.value = ""; }} />
       </div>
     </div>
@@ -166,7 +214,7 @@ function FieldGrid({ fields, form, slugTouched }: FieldsProps) {
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {fields.filter((f) => !f.hidden).map((f) => {
         const error = errors[f.name]?.message as string | undefined;
-        const wide = f.wide || ["textarea", "richtext", "tags", "image"].includes(f.type);
+        const wide = f.wide || ["textarea", "richtext", "tags", "image", "media-image"].includes(f.type);
         const common = { id: f.name, "aria-invalid": !!error } as const;
         let control_: React.ReactNode;
         switch (f.type) {
@@ -204,6 +252,9 @@ function FieldGrid({ fields, form, slugTouched }: FieldsProps) {
             break;
           case "image":
             control_ = <Controller control={control} name={f.name} render={({ field }) => <ImageField id={f.name} label={f.label} value={(field.value as string) ?? ""} onChange={(v) => setValue(f.name, v, { shouldDirty: true })} />} />;
+            break;
+          case "media-image":
+            control_ = <Controller control={control} name={f.name} render={({ field }) => <MediaImageField id={f.name} label={f.label} uploadPath={f.uploadPath ?? ""} previewPath={f.previewPath ?? ""} hint={f.hint} value={(field.value as string) ?? ""} onChange={(v) => setValue(f.name, v, { shouldDirty: true })} />} />;
             break;
           case "file":
             control_ = <Controller control={control} name={f.name} render={({ field }) => (

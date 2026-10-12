@@ -41,15 +41,17 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false, // do not advertise the framework
   async headers() {
-    // The media file route sets its own, stricter headers (sandboxing CSP, private caching) because it serves user-uploaded files,
+    // The file routes set their own, stricter headers (sandboxing CSP, caching) because they serve user-uploaded files,
     // so the generic site-wide headers must not overwrite them.
-    const notMediaFile = "((?!api/media/[^/]+/file).*)";
+    const notMediaFile = "((?!api/media/[^/]+/file|api/public/banner-image/[^/]+).*)";
     return [
       { source: `/:path${notMediaFile}`, headers: baseHeaders },
       // The admin application and every API answer: never indexed, never cached by browsers or shared caches.
       { source: "/admin/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }, { key: "Cache-Control", value: "no-store" }] },
-      { source: "/api/:path((?!media/[^/]+/file).*)", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }, { key: "Cache-Control", value: "no-store" }] },
+      { source: "/api/:path((?!media/[^/]+/file|public/banner-image/[^/]+).*)", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }, { key: "Cache-Control", value: "no-store" }] },
       { source: "/api/media/:id/file", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
+      // Public website pictures set their own sandboxing CSP and public caching.
+      { source: "/api/public/banner-image/:id", headers: [{ key: "X-Robots-Tag", value: "noindex" }] },
     ];
   },
 };

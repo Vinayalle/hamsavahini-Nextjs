@@ -172,7 +172,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-neutral-200">
       <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-10">
-        <div className="flex h-[88px] items-center justify-between">
+        <div className="flex h-[calc(var(--site-header-h)-1px)] items-center justify-between">
 
           {/* LOGO */}
           <Link
@@ -309,7 +309,7 @@ export default function Header() {
           mobileOpen ? "block" : "hidden"
         }`}
       >
-        <div className="max-h-[calc(100vh-88px)] overflow-y-auto px-5 py-5">
+        <div className="max-h-[calc(100svh-var(--site-header-h))] overflow-y-auto px-5 py-5">
 
           {menuItems.map((item) => (
             <div

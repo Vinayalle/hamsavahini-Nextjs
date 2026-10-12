@@ -4,6 +4,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Total height of the sticky navbar (88px bar + 1px border). The hero is exactly 100svh minus this. */
+  --site-header-h: 89px;
+  --brand-red: #ee3a42;
 }
 
 * {
