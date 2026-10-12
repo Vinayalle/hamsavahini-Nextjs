@@ -95,7 +95,7 @@ export function EmailCodeChallenge({ maskedEmail, onSubmit, onExpired }: { maske
 
   return (
     <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
-      <p className="text-sm text-ink">We emailed a 6-digit sign-in code to <strong>{maskedEmail ?? "your email address"}</strong>. It expires in 5 minutes.</p>
+      <p className="text-sm text-ink">We emailed a 6-digit sign-in code to <strong>{maskedEmail ?? "your email address"}</strong>. It expires in 10 minutes.</p>
       <Field label="Sign-in code" htmlFor="email-code" required>
         <CodeInput id="email-code" value={code} autoFocus onChange={(v) => { setCode(v); setError(""); }} />
       </Field>

@@ -95,7 +95,7 @@ describe("email code at every sign-in, for every employee", () => {
     expect(row.codeDigest).toMatch(/^[0-9a-f]{64}$/);
     expect(row.codeDigest).toBe(keyedDigest("login-otp", row.id, uid.staff, code));
     expect(JSON.stringify([row, await db().activityLog.findMany(), await db().notificationLog.findMany()])).not.toContain(code);
-    expect(row.expiresAt.getTime() - row.createdAt.getTime()).toBeCloseTo(5 * 60_000, -3);
+    expect(row.expiresAt.getTime() - row.createdAt.getTime()).toBeCloseTo(10 * 60_000, -3);
     expect(sink[0].html).toContain("Hamsavahin");
   });
 

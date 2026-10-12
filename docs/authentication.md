@@ -11,7 +11,7 @@ Applies to `NEXT_PUBLIC_DATA_SOURCE=api` (PostgreSQL + server-side authenticatio
 | Password storage | **Argon2id**, 64 MiB / 3 passes / 1 lane (≈200 ms), parameters embedded in each hash; **rehashed on login** if parameters are raised. |
 | Password policy | One module (`src/lib/authz/password-policy.ts`) shared by server and UI: ≥12 chars, upper/lower/digit/special, must not contain name / email / username / company name (case-, separator-, accent- and leetspeak-insensitive), offline common-password blocklist. Enforced on activation, reset and change. |
 | Sessions | Short-lived **access JWT** (HS256, 15 min) + **rotating opaque refresh token** (hash only in DB) in **HttpOnly** cookies. Reuse of a rotated refresh token revokes the whole session. |
-| Second step | Default **email code** for everyone (HMAC-digested, 5-minute expiry, single use, 5 attempts, resend cooldown). Optional alternative `AUTH_MFA_METHOD=totp`: authenticator app (RFC 6238) for `super_admin`/`admin` only, secrets encrypted with **AES-256-GCM**, replay-protected, 10 recovery codes. |
+| Second step | Default **email code** for everyone (HMAC-digested, 10-minute expiry, single use, 5 attempts, resend cooldown). Optional alternative `AUTH_MFA_METHOD=totp`: authenticator app (RFC 6238) for `super_admin`/`admin` only, secrets encrypted with **AES-256-GCM**, replay-protected, 10 recovery codes. |
 | Step-up | Sensitive operations need a recent re-authentication (password + second factor). |
 | Rate limiting | Database-backed counters shared by all instances; progressive (never permanent) account lockout; generic error responses. |
 | CSRF | Same-origin (`Origin` = `Host`) + JSON-only bodies + `SameSite` cookies (Lax access, Strict for the rest). |
@@ -21,18 +21,18 @@ Applies to `NEXT_PUBLIC_DATA_SOURCE=api` (PostgreSQL + server-side authenticatio
 
 ### Activation (first-time)
 1. A user with `users:create` creates the employee (status `invited`) → an *invitation marker* (hashed, expiring, default 7 days) is stored and an invitation email is sent. The email carries **no secret**, just a link to `/admin/activate`.
-2. `POST /api/auth/activate/request-otp` (or `/api/auth/verification/resend`): identical response whether or not the address has an invitation. Eligible accounts get a 6-digit code (`crypto.randomInt`); only `HMAC-SHA256(pepper, challengeId‖userId‖code)` is stored. Expires in 5 minutes; resend cooldown 60 s; issuing a new code invalidates the previous one; requests for one account are serialised with a row lock.
+2. `POST /api/auth/activate/request-otp` (or `/api/auth/verification/resend`): identical response whether or not the address has an invitation. Eligible accounts get a 6-digit code (`crypto.randomInt`); only `HMAC-SHA256(pepper, challengeId‖userId‖code)` is stored. Expires in 10 minutes; resend cooldown 60 s; issuing a new code invalidates the previous one; requests for one account are serialised with a row lock.
 3. `POST /api/auth/activate/verify-otp`: attempt budget claimed atomically (5), constant-time comparison, single-use (`consumedAt` claimed atomically). Success sets an **HttpOnly `hv_act` cookie** holding a 10-minute single-use *activation grant* (stored as SHA-256). The grant is never in a JSON body.
 4. `POST /api/auth/activate/set-password`: validates the grant, applies the shared policy (a rejected password does **not** burn the grant), hashes with Argon2id, sets `status=active`, `emailVerifiedAt`, consumes the grant and invitation. **Does not sign the user in**; they then sign in normally (admins must enrol MFA at that point).
 
 A reset token cannot be used as an activation grant and vice-versa (distinct `UserTokenType`s, checked on use).
 
 ### Login
-**Email-code mode (default).** After a correct password the server emails a 6-digit code (nodemailer) and sets only a 5-minute `hv_mfa` proof cookie; no session exists yet. `POST /api/auth/mfa/verify {code}` consumes the code (single use, 5 attempts, atomic) and creates the session; `POST /api/auth/mfa/resend` re-sends after a 60 s cooldown (a new code invalidates the old one). A wrong password sends nothing. If the email cannot be sent the user gets a clear 503 and no session or usable code is left behind. The code is never logged, stored in plain text or returned in a response. **SMTP must work, or nobody can sign in**: set `SMTP_USER`/`SMTP_PASSWORD`. A mailbox compromise is an account compromise, which is the trade-off of email codes versus an authenticator app.
+**Email-code mode (default).** After a correct password the server emails a 6-digit code (nodemailer) and sets only a 10-minute `hv_mfa` proof cookie; no session exists yet. `POST /api/auth/mfa/verify {code}` consumes the code (single use, 5 attempts, atomic) and creates the session; `POST /api/auth/mfa/resend` re-sends after a 60 s cooldown (a new code invalidates the old one). A wrong password sends nothing. If the email cannot be sent the user gets a clear 503 and no session or usable code is left behind. The code is never logged, stored in plain text or returned in a response. **SMTP must work, or nobody can sign in**: set `SMTP_USER`/`SMTP_PASSWORD`. A mailbox compromise is an account compromise, which is the trade-off of email codes versus an authenticator app.
 
 The rest of this section describes the authenticator-app mode (`AUTH_MFA_METHOD=totp`).
 `POST /api/auth/login` → generic `401 invalid_credentials` for wrong password, unknown, deactivated, not-yet-activated and locked accounts (a dummy Argon2id verification equalises timing).
-- Role needs MFA → response `{status:"mfa_required", enrolled}` and **only** a 5-minute `hv_mfa` proof cookie; no session exists yet. Then `POST /api/auth/mfa/verify` (TOTP or recovery code), or `mfa/enroll/start` + `mfa/enroll/confirm` (QR + recovery codes shown once).
+- Role needs MFA → response `{status:"mfa_required", enrolled}` and **only** a 10-minute `hv_mfa` proof cookie; no session exists yet. Then `POST /api/auth/mfa/verify` (TOTP or recovery code), or `mfa/enroll/start` + `mfa/enroll/confirm` (QR + recovery codes shown once).
 - Otherwise a session (refresh-token family) and the cookies are created.
 - Lockout: 5 consecutive failures → 1 min, doubling to a 30-min ceiling, self-healing. Plus per-account (8 / 15 min) and per-source (60 / 15 min) rate limits.
 
@@ -41,7 +41,7 @@ The rest of this section describes the authenticator-app mode (`AUTH_MFA_METHOD=
 |---|---|---|---|---|
 | `hv_at` | access JWT (`iss`,`aud`,`sub`,`sid`,`jti`,`iat`,`exp`,`use`) | `/` | Lax | 15 min |
 | `hv_rt` | opaque 256-bit refresh token | `/api/auth` | Strict | idle window 8 h, absolute session cap 24 h |
-| `hv_mfa` | pending-MFA JWT | `/api/auth` | Strict | 5 min |
+| `hv_mfa` | pending-MFA JWT | `/api/auth` | Strict | 10 min |
 | `hv_act` | activation grant | `/api/auth` | Strict | 10 min |
 
 `Secure` is always set in production. **Nothing is stored in localStorage/sessionStorage.** The JWT carries identity only. **Every request** re-checks in the database that the session exists and is unexpired, the account is active, MFA was completed if required, and recomputes permissions, so a revoked permission, a deactivation or a role change applies to the very next request.

@@ -177,7 +177,7 @@ describe("first-time activation", () => {
     const row = await db().authChallenge.findFirstOrThrow({ where: { userId: u.id } });
     expect(row.codeDigest).toMatch(/^[0-9a-f]{64}$/);
     expect(JSON.stringify(row)).not.toContain(code);
-    expect(row.expiresAt.getTime() - row.createdAt.getTime()).toBeCloseTo(5 * 60_000, -3); // five minutes
+    expect(row.expiresAt.getTime() - row.createdAt.getTime()).toBeCloseTo(10 * 60_000, -3); // ten minutes
   });
 
   it("gives an identical response whether or not the address has a pending invitation, and sends nothing otherwise", async () => {

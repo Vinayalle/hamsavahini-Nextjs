@@ -13,7 +13,7 @@ import { enforce, LIMITS, sourceKey } from "./ratelimit";
  * EMAIL CODE AS THE SECOND SIGN-IN STEP (AUTH_MFA_METHOD=email, the default).
  *
  * After a correct password, roles that require a second factor receive a 6-digit code at their registered email (nodemailer).
- * Same protections as activation codes: only a keyed HMAC digest is stored, 5-minute expiry, single use, 5 attempts (claimed
+ * Same protections as activation codes: only a keyed HMAC digest is stored, 10-minute expiry, single use, 5 attempts (claimed
  * atomically), a resend cooldown, a new code invalidates the previous one, and the code is never logged or put in a response.
  */
 const BAD_CODE = () => new ApiError(401, "invalid_code", "That code is not valid");
