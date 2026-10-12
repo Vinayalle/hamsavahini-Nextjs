@@ -44,8 +44,13 @@ Set `SMTP_*` and `MAIL_FROM` (see `.env.example`) for activation/reset emails; w
 ## Structure
 
 ```
-src/app/admin/(auth)/login        login, outside the dashboard shell
-src/app/admin/(shell)/...         every authenticated page (shared AdminShell via layout.tsx)
+src/app/(site)                    public website, served at /            (own root layout, indexable)
+src/components/web                website-only components (Header, Footer ...)
+src/app/(admin)/admin/(auth)/...  login, activate, reset, outside the shell    -> /admin/login
+src/app/(admin)/admin/(shell)/... every authenticated page (shared AdminShell)  -> /admin/...
+src/app/api                       backend routes                         -> /api/...
+src/server                        backend only: auth, RBAC, CMS resources, storage, mail
+(full map and security notes: docs/architecture.md)
 src/components/admin              shell, sidebar, header, breadcrumbs, DataTable, ResourceList, dialogs, drawers…
 src/components/forms              EntityForm (config-driven), uploaders, rich-text editor, tag input
 src/components/modules            module-specific forms/workflows (products, settings, RFQ/case drawer…)

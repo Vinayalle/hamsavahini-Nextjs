@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { ChevronDown, Menu, X, ArrowUpRight } from "lucide-react";
 
 type MenuItem = {
