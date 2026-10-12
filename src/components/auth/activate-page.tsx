@@ -44,7 +44,7 @@ export function ActivatePage() {
       await apiFetch(resend ? "/api/auth/verification/resend" : "/api/auth/activate/request-otp", { method: "POST", body: { email: email.trim() } });
       cooldown.start(COOLDOWN_SECONDS);
       setStep("code");
-      setNotice(`If ${email.trim()} has a pending invitation, we sent a 6-digit code. It expires in 5 minutes.`);
+      setNotice(`If ${email.trim()} has a pending invitation, we sent a 6-digit code. It expires in 10 minutes.`);
     } catch (err) {
       setError(msg(err));
     } finally {

@@ -10,6 +10,7 @@ import { enforce, LIMITS, sourceKey } from "./ratelimit";
 import { randomBytes } from "node:crypto";
 import { base32Encode, generateTotpSecret, matchTotp, otpauthUri } from "./totp";
 import { deferDelivery, sendSecurityNotice } from "./notify";
+import { sendLoginCode, verifyLoginCode } from "./loginotp";
 
 /**
  * TOTP MFA.
@@ -86,7 +87,12 @@ export async function verifyMfaInput(request: Request, userId: string, input: { 
 /** Completes login for a user who has passed the password step. */
 export async function completeLoginMfa(request: Request, input: { code?: string; recoveryCode?: string }): Promise<IssuedSession & { recoveryCodesRemaining: number }> {
   const userId = await pendingMfaUser(request);
-  await verifyMfaInput(request, userId, input);
+  if (getAuthConfig().mfaMethod === "email") {
+    if (!input.code) throw BAD_CODE();
+    await verifyLoginCode(request, userId, input.code.replace(/\s/g, ""));
+  } else {
+    await verifyMfaInput(request, userId, input);
+  }
   const db = getDb();
   const user = await db.adminUser.findUniqueOrThrow({ where: { id: userId }, select: { id: true, name: true, email: true, employeeId: true } });
   const issued = await db.$transaction(async (tx) => {
@@ -100,7 +106,19 @@ export async function completeLoginMfa(request: Request, input: { code?: string;
 
 /* ───────────────────────── enrolment ───────────────────────── */
 
+const emailOnly = () => errors.conflict("This server signs you in with emailed codes; there is no authenticator app to set up.");
+
+/** Re-sends the sign-in code (honours the resend cooldown; a new code replaces the old one). */
+export async function resendLoginCode(request: Request) {
+  if (getAuthConfig().mfaMethod !== "email") throw emailOnly();
+  const userId = await pendingMfaUser(request);
+  const user = await getDb().adminUser.findUnique({ where: { id: userId }, select: { id: true, name: true, email: true, status: true } });
+  if (!user || user.status !== "active") throw new ApiError(401, "mfa_session_expired", "Your sign-in step expired. Sign in again.");
+  return sendLoginCode(request, user);
+}
+
 export async function startEnrollment(request: Request, subject: MfaSubject) {
+  if (getAuthConfig().mfaMethod === "email") throw emailOnly();
   await enforce(`mfa:src:${sourceKey(request)}`, LIMITS.mfaSource);
   const db = getDb();
   const user = await db.adminUser.findUniqueOrThrow({ where: { id: subject.userId }, select: { id: true, email: true, status: true, mfaCredential: true } });
@@ -119,6 +137,7 @@ export async function startEnrollment(request: Request, subject: MfaSubject) {
 
 /** Confirms the first code, enables MFA and returns the one-time recovery codes. Signs in a pending user. */
 export async function confirmEnrollment(request: Request, subject: MfaSubject, code: string): Promise<{ recoveryCodes: string[]; issued: IssuedSession | null }> {
+  if (getAuthConfig().mfaMethod === "email") throw emailOnly();
   await enforce(`mfa:src:${sourceKey(request)}`, LIMITS.mfaSource);
   await enforce(`mfa:acct:${subject.userId}`, LIMITS.mfaAccount);
   const db = getDb();
@@ -168,7 +187,7 @@ export async function mfaStatus(userId: string) {
     db.mfaRecoveryCode.count({ where: { userId, usedAt: null } }),
     requiresMfa(db, userId),
   ]);
-  return { enabled: !!enabled, required, recoveryCodesRemaining: enabled ? remaining : 0 };
+  return { method: getAuthConfig().mfaMethod, enabled: !!enabled, required, recoveryCodesRemaining: enabled ? remaining : 0 };
 }
 
 /* ───────────────────────── removal ───────────────────────── */

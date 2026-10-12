@@ -26,12 +26,14 @@ export interface SessionUser {
 }
 
 export interface MfaState {
+  /** "email": a code is emailed at every sign-in (default). "totp": authenticator app for admin roles. */
+  method?: "email" | "totp";
   enabled: boolean;
   required: boolean;
   recoveryCodesRemaining: number;
 }
 
-export type SignInResult = { status: "authenticated" } | { status: "mfa_required"; enrolled: boolean };
+export type SignInResult = { status: "authenticated" } | { status: "mfa_required"; method: "email" | "totp"; enrolled: boolean; maskedEmail?: string };
 
 export interface AuthService {
   signIn(email: string): SessionUser;
@@ -185,8 +187,8 @@ function useApiAuth(): AuthApi {
     await loadMe();
   }, []);
   const signIn = useCallback(async (email: string, password: string): Promise<SignInResult> => {
-    const r = await apiFetch<{ status: "authenticated" | "mfa_required"; enrolled?: boolean }>("/api/auth/login", { method: "POST", body: { email, password } });
-    if (r.status === "mfa_required") return { status: "mfa_required", enrolled: !!r.enrolled };
+    const r = await apiFetch<{ status: "authenticated" | "mfa_required"; method?: "email" | "totp"; enrolled?: boolean; maskedEmail?: string }>("/api/auth/login", { method: "POST", body: { email, password } });
+    if (r.status === "mfa_required") return { status: "mfa_required", method: r.method ?? "totp", enrolled: !!r.enrolled, maskedEmail: r.maskedEmail };
     resetApiCaches();
     await loadMe();
     return { status: "authenticated" };

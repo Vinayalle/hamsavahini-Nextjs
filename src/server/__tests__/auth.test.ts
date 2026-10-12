@@ -177,7 +177,7 @@ describe("first-time activation", () => {
     const row = await db().authChallenge.findFirstOrThrow({ where: { userId: u.id } });
     expect(row.codeDigest).toMatch(/^[0-9a-f]{64}$/);
     expect(JSON.stringify(row)).not.toContain(code);
-    expect(row.expiresAt.getTime() - row.createdAt.getTime()).toBeCloseTo(5 * 60_000, -3); // five minutes
+    expect(row.expiresAt.getTime() - row.createdAt.getTime()).toBeCloseTo(10 * 60_000, -3); // ten minutes
   });
 
   it("gives an identical response whether or not the address has a pending invitation, and sends nothing otherwise", async () => {
@@ -570,7 +570,7 @@ describe("MFA", () => {
     const u = await makeUser("newadmin@t.dev", roleIds.admin, "active", PASSWORD, { name: "Nia Fresh" });
     await db().mfaCredential.deleteMany({ where: { userId: u.id } });
     const l = await post(login.POST as H, "/api/auth/login", { email: "newadmin@t.dev", password: PASSWORD });
-    expect(l.data).toEqual({ status: "mfa_required", enrolled: false });
+    expect(l.data).toEqual({ status: "mfa_required", method: "totp", enrolled: false });
     const jar = cookieJar(l);
     const start = await post(mfaStart.POST as H, "/api/auth/mfa/enroll/start", {}, { cookie: cookieHeader(jar) });
     expect(start.status).toBe(200);
@@ -597,7 +597,7 @@ describe("MFA", () => {
     expect(JSON.stringify(rows)).not.toContain(done.data.recoveryCodes[0]);
     const session = cookieJar(done);
     const who = await get(me.GET as H, "/api/auth/me", asAccess(session));
-    expect(who.data.mfa).toEqual({ enabled: true, required: true, recoveryCodesRemaining: 10 });
+    expect(who.data.mfa).toEqual({ method: "totp", enabled: true, required: true, recoveryCodesRemaining: 10 });
     expect(JSON.stringify(who.data)).not.toContain(secret);
     expect((await post(mfaStart.POST as H, "/api/auth/mfa/enroll/start", {}, { cookie: asAccess(session) })).status).toBe(409); // cannot silently re-enrol
     expect(await db().activityLog.count({ where: { action: "mfa_enrolled", entityId: u.id } })).toBe(1);

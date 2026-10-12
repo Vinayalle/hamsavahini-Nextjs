@@ -42,6 +42,8 @@ const M = [
   { name: "step-up: never required", tests: AUTH, file: "src/server/auth.ts", from: "if (Date.now() - session.authenticatedAt.getTime() > getAuthConfig().reauthWindowSeconds * 1000) throw errors.reauth();", to: "" },
   { name: "csrf: same-origin check removed", tests: AUTH, file: "src/server/http.ts", from: "if (!UNSAFE.has(request.method)) return;", to: "return;" },
   { name: "hash: memory parameter not compared for rehash", tests: AUTH, file: "src/server/security.ts", from: "return Number(m[1]) !== want.memoryCost || ", to: "return " },
+  { name: "email code: digest comparison disabled", tests: ["src/server/__tests__/auth-email-mfa.test.ts"], file: "src/server/loginotp.ts", from: "if (!safeEqualHex(digest(challenge.id, userId, code), challenge.codeDigest)) {", to: "if (false as boolean) {" },
+  { name: "email code: second step skipped for ordinary employees", tests: ["src/server/__tests__/auth-email-mfa.test.ts"], file: "src/server/auth.ts", from: 'if (getAuthConfig().mfaMethod === "email") return true;', to: 'if (getAuthConfig().mfaMethod === "email") return false;' },
   // ── CMS modules and file storage
   { name: "modules: PATCH re-applies schema defaults (resets unsent fields)", tests: MODULES, file: "src/server/resources/shared.ts", from: "  return z.object(shape) as never;", to: "  return schema.partial() as never;" },
   { name: "modules: assigned-only scope ignored in lists", tests: MODULES, file: "src/server/resources/framework.ts", from: "  return assignedFilter(session, cfg.permission, action);", to: "  authorize(session, cfg.permission, action);\n  return undefined;" },

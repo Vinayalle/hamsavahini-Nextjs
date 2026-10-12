@@ -58,8 +58,10 @@ export interface AuthConfig {
   reauthWindowSeconds: number;
   /** Only when a trusted reverse proxy sets X-Forwarded-For may the client IP be read from it. */
   trustProxy: boolean;
-  /** Role codes that must use MFA. */
+  /** Role codes that must use a second sign-in step. */
   mfaRoleCodes: string[];
+  /** The second step: a 6-digit code emailed to the user (default) or an authenticator-app code (TOTP). */
+  mfaMethod: "email" | "totp";
   secureCookies: boolean;
   mfaIssuer: string;
   argon: { memoryCost: number; timeCost: number; parallelism: number };
@@ -90,16 +92,17 @@ export function getAuthConfig(): AuthConfig {
     refreshTtlSeconds: int("AUTH_REFRESH_TTL_SECONDS", 8 * 3600, 60, 30 * 86400),
     sessionAbsoluteSeconds: int("AUTH_SESSION_ABSOLUTE_SECONDS", 24 * 3600, 120, 30 * 86400),
     refreshGraceSeconds: int("AUTH_REFRESH_GRACE_SECONDS", 10, 0, 60),
-    otpTtlSeconds: int("AUTH_OTP_TTL_SECONDS", 5 * 60, 30, 900),
+    otpTtlSeconds: int("AUTH_OTP_TTL_SECONDS", 10 * 60, 30, 900),
     otpMaxAttempts: int("AUTH_OTP_MAX_ATTEMPTS", 5, 1, 10),
     otpResendCooldownSeconds: int("AUTH_OTP_RESEND_COOLDOWN_SECONDS", 60, 0, 600),
     activationGrantTtlSeconds: int("AUTH_ACTIVATION_GRANT_TTL_SECONDS", 10 * 60, 30, 1800),
     inviteTtlSeconds: int("AUTH_INVITE_TTL_SECONDS", 7 * 86400, 3600, 30 * 86400),
-    mfaPendingTtlSeconds: int("AUTH_MFA_PENDING_TTL_SECONDS", 5 * 60, 30, 1800),
+    mfaPendingTtlSeconds: int("AUTH_MFA_PENDING_TTL_SECONDS", 10 * 60, 30, 1800),
     reauthWindowSeconds: int("AUTH_REAUTH_WINDOW_SECONDS", 5 * 60, 30, 3600),
     trustProxy: bool("AUTH_TRUST_PROXY", false),
     mfaRoleCodes: (process.env.AUTH_MFA_ROLE_CODES || "super_admin,admin").split(",").map((s) => s.trim()).filter(Boolean),
     secureCookies: production ? true : bool("AUTH_SECURE_COOKIES", false),
+    mfaMethod: (process.env.AUTH_MFA_METHOD || "email") === "totp" ? "totp" : "email",
     mfaIssuer: process.env.AUTH_MFA_ISSUER || "Hamsavahin Admin",
     argon,
   };
