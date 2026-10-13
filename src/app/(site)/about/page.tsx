@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { LuAtom as Atom, LuAward as Award, LuBadgeCheck as BadgeCheck, LuBrickWall as BrickWall, LuBuilding2 as Building2, LuCircleCheck as CheckCircle2, LuChevronDown as ChevronDown, LuChevronRight as ChevronRight, LuClock as Clock, LuEye as Eye, LuFactory as Factory, LuFileCheck2 as FileCheck2, LuFlaskConical as FlaskConical, LuFlame as Flame, LuGlassWater as GlassWater, LuGem as Gem, LuGlobe as Globe, LuHandshake as Handshake, LuLayers as Layers, LuLeaf as Leaf, LuChartLine as LineChart, LuMountain as Mountain, LuPickaxe as Pickaxe, LuScale as Scale, LuShieldCheck as ShieldCheck, LuShip as Ship, LuTarget as Target, LuTelescope as Telescope, LuZap as Zap } from "react-icons/lu";
 import type { IconType } from "react-icons";
 import { fontVars } from "@/components/web/fonts";
-import { Reveal, ScrollProgress, TimelineRail } from "@/components/web/about/motion";
+import { Reveal, ScrollProgress, TimelineRail } from "@/components/web/motion";
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -176,7 +176,7 @@ export default function AboutPage() {
       </section>
 
       {/* ───────── Vision and mission ───────── */}
-      <section aria-label="Vision and mission" className="relative overflow-hidden bg-neutral-100">
+      <section id="vision" aria-label="Vision and mission" className="relative scroll-mt-[var(--site-header-h)] overflow-hidden bg-neutral-100">
         <div aria-hidden className="pointer-events-none absolute -left-24 top-10 size-72 rounded-full bg-[var(--brand-red)]/10 blur-3xl" />
         <div className={`${container} relative grid gap-6 py-14 md:grid-cols-2 md:gap-8 md:py-24`}>
           <Reveal variant="left">
@@ -269,7 +269,7 @@ export default function AboutPage() {
       </section>
 
       {/* ───────── Why partner with us (dark, glass cards) ───────── */}
-      <section aria-labelledby="why-title" className="relative isolate overflow-hidden bg-neutral-950 text-white">
+      <section id="why" aria-labelledby="why-title" className="relative isolate scroll-mt-[var(--site-header-h)] overflow-hidden bg-neutral-950 text-white">
         <div aria-hidden className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(55%_80%_at_85%_0%,rgba(238,58,66,0.35),transparent_62%),radial-gradient(40%_60%_at_5%_100%,rgba(238,58,66,0.18),transparent_62%)]" />
           <div className="about-grid absolute inset-0 opacity-[0.07]" />

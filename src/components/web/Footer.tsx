@@ -1,184 +1,73 @@
-"use client";
-
 import Link from "next/link";
-import { LuArrowUp as ArrowUp, LuMapPin as MapPin, LuPhone as Phone, LuMail as Mail } from "react-icons/lu";
+import { LuArrowUp, LuFacebook, LuGem, LuLinkedin, LuMail, LuMapPin, LuPhone, LuTwitter, LuYoutube } from "react-icons/lu";
+import { COMPANY, FOOTER_COLUMNS } from "@/content/site";
+import type { PublicSettings } from "@/server/services/public";
+import { ButtonLink } from "./ui";
 
-const footerSections = [
-  {
-    title: "Company",
-    links: [
-      { label: "Home", href: "/" },
-      { label: "About Us", href: "/about-us" },
-      { label: "Global Operations", href: "/global-operations" },
-      { label: "Our Capabilities", href: "/our-capabilities" },
-      { label: "Careers", href: "/careers" },
-    ],
-  },
-  {
-    title: "Products & Trading",
-    links: [
-      { label: "Products", href: "/products" },
-      { label: "Live Commodity Desk", href: "/live-commodity-desk" },
-      { label: "Projects / Trade Stories", href: "/projects" },
-      { label: "Insights", href: "/insights" },
-    ],
-  },
-  {
-    title: "Quality & Responsibility",
-    links: [
-      { label: "Quality & Compliance", href: "/quality-compliance" },
-      { label: "Sustainability", href: "/sustainability" },
-    ],
-  },
-];
-
-export default function Footer() {
+/**
+ * Site footer. Contact details, the "about" text, social links and the copyright line come from Admin -> Settings (Contact and Footer).
+ * Nothing is invented: a contact line that has not been entered in the admin is simply not shown.
+ */
+export default function Footer({ settings }: { settings: PublicSettings }) {
+  const year = new Date().getFullYear();
+  const socials = [
+    { label: "LinkedIn", href: settings.socials.linkedin, icon: LuLinkedin },
+    { label: "X (Twitter)", href: settings.socials.twitter, icon: LuTwitter },
+    { label: "Facebook", href: settings.socials.facebook, icon: LuFacebook },
+    { label: "YouTube", href: settings.socials.youtube, icon: LuYoutube },
+  ].filter((s) => s.href);
+  const hasContact = !!(settings.address || settings.phone || settings.email);
   return (
-    <footer className="bg-[#211f20] w-full text-white">
-      {/* Contact CTA */}
-      <div className="mx-auto max-w-7xl px-5 pt-14 pb-12 md:px-10 lg:px-12">
-        <div className="flex flex-col justify-between gap-7 border-b border-white/15 pb-12 md:flex-row md:items-center">
+    <footer className="bg-[#171516] text-white" aria-label="Site footer">
+      <div className="mx-auto max-w-[1200px] px-5 py-14 sm:px-8 md:py-20 lg:px-10">
+        <div className="grid gap-12 lg:grid-cols-[1.3fr_2.7fr]">
           <div>
-            <h2 className="max-w-2xl text-3xl font-semibold leading-tight md:text-4xl">
-              Partner With Us for Superior
-              <br className="hidden md:block" /> Mineral Sourcing
-            </h2>
-
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-gray-300 md:text-base">
-              Connecting global industries with quality minerals,
-              reliable sourcing, and responsible supply chain solutions.
-            </p>
-          </div>
-
-          <Link
-            href="/contact-us"
-            className="inline-flex w-fit shrink-0 items-center justify-center rounded-lg border border-red-500 bg-white px-7 py-3 text-sm font-medium text-red-600 transition hover:bg-red-600 hover:text-white"
-          >
-            Get in touch
-          </Link>
-        </div>
-
-        {/* Footer columns */}
-        <div className="grid grid-cols-1 gap-10 py-12 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8">
-          {/* Company information */}
-          <div className="lg:col-span-2">
-            <Link
-              href="/"
-              className="inline-block text-3xl font-bold tracking-tight"
-            >
-              <span className="text-red-500">D</span>akshināk
+            <Link href="/" className="inline-flex items-center gap-3" aria-label="Hamsavahin Aarth Mines, home">
+              <span aria-hidden className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--brand-red)] to-rose-700"><LuGem className="size-6" /></span>
+              <span className="leading-none">
+                <span className="block font-[family-name:var(--font-hero-title)] text-[22px] tracking-wide">Hamsavahin</span>
+                <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.28em] text-white/60">Aarth Mines</span>
+              </span>
             </Link>
-
-            <p className="mt-4 max-w-sm text-sm leading-6 text-gray-300">
-              Your trusted partner for mineral sourcing, global commodity
-              trading, and dependable industrial supply solutions.
-            </p>
-
-            <div className="mt-7 space-y-5 text-sm text-gray-200">
-              <div className="flex items-start gap-3">
-                <MapPin
-                  size={19}
-                  className="mt-1 shrink-0 text-red-400"
-                />
-                <p className="leading-6">
-                  Add your registered office address here.
-                </p>
-              </div>
-
-              <a
-                href="tel:+919000000000"
-                className="flex items-center gap-3 transition hover:text-red-400"
-              >
-                <Phone size={18} className="shrink-0 text-red-400" />
-                +91 90000 00000
-              </a>
-
-              <a
-                href="mailto:info@example.com"
-                className="flex items-center gap-3 transition hover:text-red-400"
-              >
-                <Mail size={18} className="shrink-0 text-red-400" />
-                info@example.com
-              </a>
-            </div>
-          </div>
-
-          {/* Navigation groups */}
-          {footerSections.map((section) => (
-            <div key={section.title}>
-              <h3 className="mb-5 text-base font-semibold">
-                {section.title}
-              </h3>
-
-              <ul className="space-y-4">
-                {section.links.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-gray-300 transition hover:text-red-400"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
+            <p className="mt-5 max-w-sm text-[15px] leading-7 text-white/70">{settings.footerAbout || COMPANY.description}</p>
+            {hasContact && (
+              <address className="mt-6 space-y-3 text-[15px] not-italic text-white/80">
+                {settings.address && <p className="flex gap-3"><LuMapPin className="mt-1 size-4 shrink-0 text-[var(--brand-red)]" aria-hidden /><span className="whitespace-pre-line">{settings.address}</span></p>}
+                {settings.phone && <p className="flex gap-3"><LuPhone className="mt-1 size-4 shrink-0 text-[var(--brand-red)]" aria-hidden /><a href={`tel:${settings.phone.replace(/[^+\d]/g, "")}`} className="hover:text-white">{settings.phone}</a></p>}
+                {settings.email && <p className="flex gap-3"><LuMail className="mt-1 size-4 shrink-0 text-[var(--brand-red)]" aria-hidden /><a href={`mailto:${settings.email}`} className="break-all hover:text-white">{settings.email}</a></p>}
+              </address>
+            )}
+            {socials.length > 0 && (
+              <ul className="mt-6 flex gap-3" aria-label="Social media">
+                {socials.map((s) => (
+                  <li key={s.label}><a href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label} className="flex size-10 items-center justify-center rounded-lg border border-white/15 text-white/80 transition hover:border-[var(--brand-red)] hover:bg-[var(--brand-red)] hover:text-white"><s.icon className="size-[18px]" aria-hidden /></a></li>
                 ))}
               </ul>
-            </div>
-          ))}
-
-          {/* Contact navigation */}
-          <div className="lg:col-span-1">
-            <h3 className="mb-5 text-base font-semibold">Connect With Us</h3>
-
-            <p className="text-sm leading-6 text-gray-300">
-              Have a sourcing requirement or a business enquiry?
-              Our team is ready to assist.
-            </p>
-
-            <Link
-              href="/contact-us"
-              className="mt-5 inline-block text-sm font-medium text-red-400 transition hover:text-white"
-            >
-              Contact Us →
-            </Link>
+            )}
+            <div className="mt-8"><ButtonLink href="/contact-us" variant="outline" className="!border-white/40 !text-white hover:!bg-white hover:!text-neutral-900">Get in touch</ButtonLink></div>
           </div>
+
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3">
+            {FOOTER_COLUMNS.map((col) => (
+              <div key={col.title}>
+                <h2 className="mb-4 text-sm font-bold uppercase tracking-[0.18em] text-white">{col.title}</h2>
+                <ul className="space-y-2.5">
+                  {col.links.map((l) => (
+                    <li key={l.href + l.label}><Link href={l.href} className="text-[15px] leading-6 text-white/65 transition-colors hover:text-white">{l.label}</Link></li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
         </div>
 
-        {/* Bottom bar */}
-        <div className="flex flex-col justify-between gap-4 border-t border-white/15 pt-6 text-sm text-gray-400 md:flex-row md:items-center">
-          <p>
-            © {new Date().getFullYear()} Dakshināk. All rights reserved.
-          </p>
-
-          <div className="flex flex-wrap gap-x-6 gap-y-3">
-            <Link
-              href="/privacy-policy"
-              className="transition hover:text-white"
-            >
-              Privacy Policy
-            </Link>
-
-            <Link
-              href="/terms-and-conditions"
-              className="transition hover:text-white"
-            >
-              Terms & Conditions
-            </Link>
-
-            <Link href="/contact-us" className="transition hover:text-white">
-              Contact Us
-            </Link>
+        <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-8 text-sm text-white/55 md:flex-row md:items-center">
+          <p>{settings.copyright || `© ${year} ${COMPANY.name}. All rights reserved.`}</p>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <Link href="/privacy-policy" className="hover:text-white">Privacy policy</Link>
+            <Link href="/terms" className="hover:text-white">Terms of use</Link>
+            <a href="#top" className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-white/80 transition hover:border-[var(--brand-red)] hover:bg-[var(--brand-red)] hover:text-white">Back to top <LuArrowUp className="size-4" aria-hidden /></a>
           </div>
-
-          <button
-            type="button"
-            onClick={() =>
-              window.scrollTo({ top: 0, behavior: "smooth" })
-            }
-            aria-label="Back to top"
-            className="flex h-10 w-10 items-center justify-center self-start rounded-md bg-white/5 transition hover:bg-red-600 hover:text-white md:self-auto"
-          >
-            <ArrowUp size={20} />
-          </button>
         </div>
       </div>
     </footer>

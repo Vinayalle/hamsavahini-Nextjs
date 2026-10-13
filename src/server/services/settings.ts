@@ -5,6 +5,7 @@ import { recordActivity } from "../audit";
 import { errors } from "../errors";
 import { authorize } from "../rbac";
 import type { AuthSession } from "../auth";
+import { clearSiteSettingsCache } from "./public";
 
 /** Website settings sections. Each is stored as one JSON document (SiteSetting key `site.<section>`) and has its own permission. */
 const str = (max: number) => z.string().trim().max(max);
@@ -56,5 +57,6 @@ export async function putSetting(session: AuthSession, section: string, body: un
     });
     await recordActivity(tx, { session, action: "updated", entityType: "Settings", entityLabel: `${section} settings`, detail: "Website settings updated" });
   });
+  clearSiteSettingsCache(); // the public website shows the new contact details / footer immediately
   return getSetting(session, section);
 }
