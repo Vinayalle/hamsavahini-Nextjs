@@ -69,7 +69,6 @@ Rules that keep the structure clean: `components/web` and `components/admin` do 
 - **Website is indexable** and carries no admin text, cookies or API calls (verified by a browser test).
 - If the website needs a third-party script, font or embed, add that exact host to the CSP in `next.config.ts`; do not use wildcards.
 
-## Known gaps in the website
+## The public website
 
-- `src/components/web/Footer.tsx` still says "Dakshināk" and its links (`/about-us`, `/contact-us` ...) differ from the Header (`/about`, `/contact`).
-- Only the home-page hero reads published content so far (see *Banners and the website hero* in `docs/cms-modules.md`). The other public pages (About, Products ... the Header links point at them and currently 404) and public submission endpoints (enquiry, RFQ, job application) are not built yet.
+Pages, data sources, forms and security are described in [website.md](website.md). In short: `src/app/(site)` holds the pages, `src/components/web` the header, footer, hero, forms and shared sections, `src/content` the written content and menus, and `src/server/services/public.ts` / `submissions.ts` the read-only data and the three public forms. Public pages are always rendered fresh and always send complete HTML.

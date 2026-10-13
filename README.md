@@ -54,7 +54,7 @@ Set `SMTP_*` and `MAIL_FROM` (see `.env.example`) for activation/reset emails; w
 ## Structure
 
 ```
-src/app/(site)                    public website, served at /            (own root layout, indexable)
+src/app/(site)                    public website, served at /            (own root layout, indexable; see docs/website.md)
 src/components/web                website-only components (Header, Footer ...)
 src/app/(admin)/admin/(auth)/...  login, activate, reset, outside the shell    -> /admin/login
 src/app/(admin)/admin/(shell)/... every authenticated page (shared AdminShell)  -> /admin/...

@@ -1,25 +1,49 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Header from "@/components/web/Header";
 import Footer from "@/components/web/Footer";
+import { JsonLd } from "@/components/web/ui";
+import { COMPANY } from "@/content/site";
+import { getSiteSettings } from "@/server/services/public";
 import "./globals.css";
 
 /**
  * ROOT LAYOUT OF THE PUBLIC WEBSITE (served at "/").
  * Independent of the admin: its own <html>/<body>, its own stylesheet and its own metadata (indexable by search engines).
  * Nothing from the admin application is imported here, and the admin never imports from here.
+ *
+ * Pages are rendered on every request (the content comes from the admin CMS and must be current), and always send their complete HTML.
  */
-export const metadata: Metadata = {
-  title: { default: "Hamsavahin", template: "%s | Hamsavahin" },
-  description: "Global minerals, metals sourcing and trading company.",
-};
+export const dynamic = "force-dynamic";
 
-export default function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+const base = (process.env.APP_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+
+export const metadata: Metadata = {
+  metadataBase: new URL(base),
+  title: { default: `${COMPANY.name} | Global mineral sourcing and trading`, template: `%s | ${COMPANY.short}` },
+  description: COMPANY.description,
+  applicationName: COMPANY.name,
+  openGraph: { type: "website", siteName: COMPANY.name, title: COMPANY.name, description: COMPANY.description, locale: "en_IN" },
+  twitter: { card: "summary_large_image", title: COMPANY.name, description: COMPANY.description },
+  alternates: { canonical: "./" },
+};
+export const viewport: Viewport = { themeColor: "#ee3a42", width: "device-width", initialScale: 1 };
+
+export default async function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const settings = await getSiteSettings();
+  const sameAs = Object.values(settings.socials).filter(Boolean);
   return (
     <html lang="en">
-      <body>
+      <body id="top">
+        <JsonLd
+          data={{
+            "@context": "https://schema.org", "@type": "Organization", name: COMPANY.name, url: base, description: COMPANY.description,
+            ...(sameAs.length ? { sameAs } : {}),
+            ...(settings.email || settings.phone ? { contactPoint: { "@type": "ContactPoint", contactType: "sales", ...(settings.email ? { email: settings.email } : {}), ...(settings.phone ? { telephone: settings.phone } : {}) } } : {}),
+          }}
+        />
         <Header />
-        <main>{children}</main>
-        <Footer />
+        <main id="main" className="overflow-x-clip">{children}</main>
+        <Footer settings={settings} />
       </body>
     </html>
   );

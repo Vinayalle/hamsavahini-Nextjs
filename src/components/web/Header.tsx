@@ -1,382 +1,135 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { LuChevronDown as ChevronDown, LuMenu as Menu, LuX as X, LuArrowUpRight as ArrowUpRight } from "react-icons/lu";
+import { usePathname } from "next/navigation";
+import { LuArrowUpRight, LuChevronDown, LuGem, LuMenu, LuX } from "react-icons/lu";
+import { NAV, type NavItem } from "@/content/site";
+import { fontVars } from "./fonts";
 
-type MenuItem = {
-  label: string;
-  href?: string;
-  children?: {
-    label: string;
-    href: string;
-    description?: string;
-  }[];
-};
-
-const menuItems: MenuItem[] = [
-  {
-    label: "About Us",
-    children: [
-      {
-        label: "Company Overview",
-        href: "/about",
-        description: "Who we are and what we do",
-      },
-      {
-        label: "Our Story",
-        href: "/about/our-story",
-        description: "Our journey and vision",
-      },
-      {
-        label: "Quality & Compliance",
-        href: "/quality-compliance",
-        description: "Our quality standards",
-      },
-      {
-        label: "Sustainability",
-        href: "/sustainability",
-        description: "Responsible business practices",
-      },
-    ],
-  },
-
-  {
-    label: "Products",
-    children: [
-      {
-        label: "All Products",
-        href: "/products",
-        description: "Explore our complete product portfolio",
-      },
-      {
-        label: "Minerals",
-        href: "/products/minerals",
-        description: "Industrial and strategic minerals",
-      },
-      {
-        label: "Metals",
-        href: "/products/metals",
-        description: "Metals for global industries",
-      },
-      {
-        label: "Product Catalogue",
-        href: "/products/catalogue",
-        description: "Specifications and product documents",
-      },
-    ],
-  },
-
-  {
-    label: "Live Commodity Desk",
-    href: "/commodity-desk",
-  },
-
-  {
-    label: "Global Operations",
-    children: [
-      {
-        label: "Global Operations",
-        href: "/global-operations",
-        description: "Our global trade network",
-      },
-      {
-        label: "Mines & Sourcing",
-        href: "/global-operations/mines",
-        description: "Our sourcing network",
-      },
-      {
-        label: "Suppliers",
-        href: "/global-operations/suppliers",
-        description: "Trusted global suppliers",
-      },
-      {
-        label: "Warehouses & Facilities",
-        href: "/global-operations/facilities",
-        description: "Our infrastructure",
-      },
-      {
-        label: "Ports & Logistics",
-        href: "/global-operations/logistics",
-        description: "Global logistics network",
-      },
-    ],
-  },
-
-  {
-    label: "Capabilities",
-    children: [
-      {
-        label: "Our Capabilities",
-        href: "/capabilities",
-        description: "What we can deliver",
-      },
-      {
-        label: "Procurement & Sourcing",
-        href: "/capabilities/procurement",
-        description: "Global procurement expertise",
-      },
-      {
-        label: "Processing",
-        href: "/capabilities/processing",
-        description: "Processing and value addition",
-      },
-      {
-        label: "Quality Assurance",
-        href: "/capabilities/quality",
-        description: "Quality control at every stage",
-      },
-      {
-        label: "Supply Chain",
-        href: "/capabilities/supply-chain",
-        description: "End-to-end supply chain",
-      },
-    ],
-  },
-
-  {
-    label: "Insights",
-    children: [
-      {
-        label: "Insights",
-        href: "/insights",
-        description: "Industry insights and analysis",
-      },
-      {
-        label: "Projects",
-        href: "/projects",
-        description: "Our projects and achievements",
-      },
-      {
-        label: "Trade Stories",
-        href: "/trade-stories",
-        description: "Stories from our global trade",
-      },
-      {
-        label: "Market Intelligence",
-        href: "/insights/market-intelligence",
-        description: "Market trends and intelligence",
-      },
-    ],
-  },
-];
+/**
+ * Site header. Height is fixed to --site-header-h (89px, border included) because the hero sections are sized as "screen height minus header".
+ * Dropdowns open on hover and on click/Enter, close on Escape, outside click, focus leaving and navigation.
+ */
+const linkBase = "text-[15px] font-medium transition-colors";
 
 export default function Header() {
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [open, setOpen] = useState<string | null>(null);
+  const [mobileSection, setMobileSection] = useState<string | null>(null);
+  const bar = useRef<HTMLElement>(null);
 
-  const handleMenuToggle = (label: string) => {
-    setOpenMenu(openMenu === label ? null : label);
+  // Close everything after a navigation.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpen(null);
+    setMobileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => { if (bar.current && !bar.current.contains(e.target as Node)) setOpen(null); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { setOpen(null); setMobileOpen(false); } };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
+  }, []);
+
+  const isActive = (item: NavItem) => {
+    const roots = [item.href, ...(item.children?.map((c) => c.href) ?? [])].filter(Boolean).map((h) => (h as string).split("#")[0]);
+    return roots.some((r) => r !== "/" && (pathname === r || pathname.startsWith(`${r}/`)));
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white border-b border-neutral-200">
+    <header ref={bar} className={`${fontVars} sticky top-0 z-50 w-full border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85`}>
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:shadow-lg">Skip to content</a>
       <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-10">
-        <div className="flex h-[calc(var(--site-header-h)-1px)] items-center justify-between">
-
-          {/* LOGO */}
-          <Link
-            href="/"
-            className="flex items-center shrink-0"
-            onClick={() => setMobileOpen(false)}
-          >
-            {/* <Image
-              src="/logo.png"
-              alt="Hamsavahin"
-              width={180}
-              height={60}
-              className="h-auto w-[155px] object-contain"
-              priority
-            /> */}
-            <h2>Hamsavahin</h2>
+        <div className="flex h-[calc(var(--site-header-h)-1px)] items-center justify-between gap-6">
+          <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="Hamsavahin Aarth Mines, home">
+            <span aria-hidden className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--brand-red)] to-rose-700 text-white shadow-md shadow-red-500/25"><LuGem className="size-6" /></span>
+            <span className="leading-none">
+              <span className="block font-[family-name:var(--font-hero-title)] text-[22px] tracking-wide text-neutral-900">Hamsavahin</span>
+              <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.28em] text-neutral-500">Aarth Mines</span>
+            </span>
           </Link>
 
-          {/* DESKTOP NAVIGATION */}
-          <nav className="hidden lg:flex items-center gap-7 xl:gap-9">
-            {menuItems.map((item) => (
-              <div
-                key={item.label}
-                className="relative"
-                onMouseEnter={() => {
-                  if (item.children) {
-                    setOpenMenu(item.label);
-                  }
-                }}
-                onMouseLeave={() => {
-                  if (item.children) {
-                    setOpenMenu(null);
-                  }
-                }}
-              >
-                {item.children ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => handleMenuToggle(item.label)}
-                      className="group flex items-center gap-1.5 text-[15px] font-medium text-neutral-800 transition-colors hover:text-red-600"
-                    >
-                      {item.label}
-
-                      <ChevronDown
-                        size={16}
-                        strokeWidth={1.8}
-                        className={`transition-transform duration-200 ${
-                          openMenu === item.label ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
-
-                    {/* DROPDOWN */}
-                    <div
-                      className={`absolute left-1/2 top-full w-[320px] -translate-x-1/2 pt-5 transition-all duration-200 ${
-                        openMenu === item.label
-                          ? "visible translate-y-0 opacity-100"
-                          : "invisible -translate-y-2 opacity-0"
-                      }`}
-                    >
-                      <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white p-2 shadow-[0_15px_50px_rgba(0,0,0,0.12)]">
-
-                        {item.children.map((child) => (
-                          <Link
-                            key={child.label}
-                            href={child.href}
-                            className="group flex items-start justify-between rounded-lg px-4 py-3 transition-colors hover:bg-neutral-50"
-                          >
-                            <div>
-                              <div className="text-sm font-semibold text-neutral-900 group-hover:text-red-600">
-                                {child.label}
-                              </div>
-
-                              {child.description && (
-                                <p className="mt-1 text-xs leading-5 text-neutral-500">
-                                  {child.description}
-                                </p>
-                              )}
-                            </div>
-
-                            <ArrowUpRight
-                              size={15}
-                              className="mt-1 text-neutral-300 transition-colors group-hover:text-red-600"
-                            />
-                          </Link>
-                        ))}
-
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <Link
-                    href={item.href || "#"}
-                    className="text-[15px] font-medium text-neutral-800 transition-colors hover:text-red-600"
-                  >
+          {/* desktop */}
+          <nav aria-label="Main" className="hidden items-center gap-1 lg:flex xl:gap-2">
+            {NAV.map((item) => {
+              const active = isActive(item);
+              if (!item.children) {
+                return (
+                  <Link key={item.label} href={item.href ?? "/"} aria-current={active ? "page" : undefined} className={`${linkBase} rounded-lg px-3.5 py-2 xl:px-4 ${active ? "text-[var(--brand-red)]" : "text-neutral-800 hover:text-[var(--brand-red)]"}`}>{item.label}</Link>
+                );
+              }
+              const expanded = open === item.label;
+              return (
+                <div key={item.label} className="relative" onMouseEnter={() => setOpen(item.label)} onMouseLeave={() => setOpen(null)} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(null); }}>
+                  <button type="button" aria-expanded={expanded} aria-haspopup="menu" onClick={() => setOpen(expanded ? null : item.label)} className={`${linkBase} flex items-center gap-1.5 rounded-lg px-3.5 py-2 xl:px-4 ${active || expanded ? "text-[var(--brand-red)]" : "text-neutral-800 hover:text-[var(--brand-red)]"}`}>
                     {item.label}
-                  </Link>
-                )}
-              </div>
-            ))}
+                    <LuChevronDown className={`size-4 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`} aria-hidden />
+                  </button>
+                  <div className={`absolute left-1/2 top-full -translate-x-1/2 pt-4 transition-all duration-200 ${item.wide ? "w-[min(720px,90vw)]" : "w-[320px]"} ${expanded ? "visible translate-y-0 opacity-100" : "invisible -translate-y-2 opacity-0"}`}>
+                    <div className={`rounded-2xl border border-neutral-200 bg-white p-2 shadow-[0_20px_60px_rgba(0,0,0,0.14)] ${item.wide ? "grid grid-cols-2 gap-1" : ""}`}>
+                      {item.children.map((child) => (
+                        <Link key={child.href + child.label} href={child.href} tabIndex={expanded ? 0 : -1} className="group flex items-start gap-3 rounded-xl px-3.5 py-3 transition-colors hover:bg-neutral-50 focus-visible:bg-neutral-50">
+                          {child.icon && <span aria-hidden className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-[var(--brand-red)] transition-colors group-hover:bg-[var(--brand-red)] group-hover:text-white"><child.icon className="size-[18px]" /></span>}
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-bold text-neutral-900 group-hover:text-[var(--brand-red)]">{child.label}</span>
+                            {child.description && <span className="mt-0.5 block text-xs leading-5 text-neutral-500">{child.description}</span>}
+                          </span>
+                          <LuArrowUpRight className="mt-1 size-4 shrink-0 text-neutral-300 transition-colors group-hover:text-[var(--brand-red)]" aria-hidden />
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </nav>
 
-          {/* CONTACT BUTTON */}
-          <div className="hidden lg:block">
-            <Link
-              href="/contact"
-              className="group flex items-center gap-2 rounded-md border border-red-600 px-6 py-3 text-sm font-medium text-red-600 transition-all duration-300 hover:bg-red-600 hover:text-white"
-            >
-              Contact Us
-
-              <ArrowUpRight
-                size={16}
-                className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-              />
+          <div className="hidden items-center gap-3 lg:flex">
+            <Link href="/request-a-quote" className="hidden text-[15px] font-medium text-neutral-800 transition-colors hover:text-[var(--brand-red)] xl:block">Request a quote</Link>
+            <Link href="/contact-us" className="group flex items-center gap-2 rounded-lg border border-[var(--brand-red)] px-6 py-3 text-sm font-medium text-[var(--brand-red)] transition-all duration-300 hover:bg-[var(--brand-red)] hover:text-white">
+              Contact us
+              <LuArrowUpRight className="size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden />
             </Link>
           </div>
 
-          {/* MOBILE BUTTON */}
-          <button
-            type="button"
-            aria-label="Open menu"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex h-11 w-11 items-center justify-center rounded-md border border-neutral-200 text-neutral-800 lg:hidden"
-          >
-            {mobileOpen ? <X size={23} /> : <Menu size={23} />}
+          <button type="button" aria-label={mobileOpen ? "Close menu" : "Open menu"} aria-expanded={mobileOpen} aria-controls="mobile-menu" onClick={() => setMobileOpen((v) => !v)} className="flex size-11 cursor-pointer items-center justify-center rounded-lg border border-neutral-200 text-neutral-800 lg:hidden">
+            {mobileOpen ? <LuX className="size-6" aria-hidden /> : <LuMenu className="size-6" aria-hidden />}
           </button>
         </div>
       </div>
 
-      {/* MOBILE NAVIGATION */}
-      <div
-        className={`border-t border-neutral-200 bg-white lg:hidden ${
-          mobileOpen ? "block" : "hidden"
-        }`}
-      >
-        <div className="max-h-[calc(100svh-var(--site-header-h))] overflow-y-auto px-5 py-5">
-
-          {menuItems.map((item) => (
-            <div
-              key={item.label}
-              className="border-b border-neutral-100 last:border-0"
-            >
+      {/* mobile */}
+      <div id="mobile-menu" className={`border-t border-neutral-200 bg-white lg:hidden ${mobileOpen ? "block" : "hidden"}`}>
+        <div className="max-h-[calc(100svh-var(--site-header-h))] overflow-y-auto px-5 py-4">
+          {NAV.map((item) => (
+            <div key={item.label} className="border-b border-neutral-100">
               {item.children ? (
                 <>
-                  <button
-                    type="button"
-                    onClick={() => handleMenuToggle(item.label)}
-                    className="flex w-full items-center justify-between py-4 text-left text-[15px] font-medium text-neutral-900"
-                  >
+                  <button type="button" aria-expanded={mobileSection === item.label} onClick={() => setMobileSection(mobileSection === item.label ? null : item.label)} className="flex w-full cursor-pointer items-center justify-between py-4 text-left text-[16px] font-medium text-neutral-900">
                     {item.label}
-
-                    <ChevronDown
-                      size={17}
-                      className={`transition-transform ${
-                        openMenu === item.label ? "rotate-180" : ""
-                      }`}
-                    />
+                    <LuChevronDown className={`size-5 transition-transform ${mobileSection === item.label ? "rotate-180" : ""}`} aria-hidden />
                   </button>
-
-                  {openMenu === item.label && (
-                    <div className="mb-3 rounded-lg bg-neutral-50 px-3 py-2">
+                  {mobileSection === item.label && (
+                    <ul className="pb-3 pl-2">
                       {item.children.map((child) => (
-                        <Link
-                          key={child.label}
-                          href={child.href}
-                          onClick={() => setMobileOpen(false)}
-                          className="block border-b border-neutral-200 py-3 last:border-0"
-                        >
-                          <div className="text-sm font-medium text-neutral-900">
-                            {child.label}
-                          </div>
-
-                          {child.description && (
-                            <p className="mt-1 text-xs text-neutral-500">
-                              {child.description}
-                            </p>
-                          )}
-                        </Link>
+                        <li key={child.href + child.label}><Link href={child.href} className="block rounded-lg px-3 py-2.5 text-[15px] text-neutral-700 hover:bg-neutral-50 hover:text-[var(--brand-red)]">{child.label}</Link></li>
                       ))}
-                    </div>
+                    </ul>
                   )}
                 </>
               ) : (
-                <Link
-                  href={item.href || "#"}
-                  onClick={() => setMobileOpen(false)}
-                  className="block py-4 text-[15px] font-medium text-neutral-900"
-                >
-                  {item.label}
-                </Link>
+                <Link href={item.href ?? "/"} className="block py-4 text-[16px] font-medium text-neutral-900">{item.label}</Link>
               )}
             </div>
           ))}
-
-          {/* MOBILE CONTACT */}
-          <Link
-            href="/contact"
-            onClick={() => setMobileOpen(false)}
-            className="mt-5 flex w-full items-center justify-center rounded-md bg-red-600 px-6 py-3.5 text-sm font-medium text-white"
-          >
-            Contact Us
-          </Link>
-
+          <div className="grid gap-3 py-5">
+            <Link href="/contact-us" className="rounded-lg bg-[var(--brand-red)] px-6 py-3.5 text-center text-[15px] font-bold text-white">Contact us</Link>
+            <Link href="/request-a-quote" className="rounded-lg border border-[var(--brand-red)] px-6 py-3.5 text-center text-[15px] font-bold text-[var(--brand-red)]">Request a quote</Link>
+          </div>
         </div>
       </div>
     </header>
