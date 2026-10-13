@@ -51,6 +51,14 @@ export function parseQuery<T>(request: Request, schema: ZodType<T>): T {
   return parsed.data;
 }
 
+/** Prisma reports an unreachable server as P1001, or as a driver-adapter "DatabaseNotReachable" inside a raw-query error (P2010). */
+function isDatabaseUnreachable(error: unknown): boolean {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return false;
+  if (error.code === "P1001" || error.code === "P1002" || error.code === "P1017") return true;
+  const adapter = (error.meta as { driverAdapterError?: { message?: string } } | undefined)?.driverAdapterError;
+  return adapter?.message === "DatabaseNotReachable";
+}
+
 function toResponse(error: unknown): NextResponse {
   if (error instanceof ApiError) {
     return NextResponse.json({ error: { code: error.code, message: error.message, fields: error.fields } }, { status: error.status, headers: { "Cache-Control": "no-store", ...(error.headers ?? {}) } });
@@ -60,6 +68,10 @@ function toResponse(error: unknown): NextResponse {
     if (error.code === "P2002") return NextResponse.json({ error: { code: "conflict", message: "A record with the same unique value already exists" } }, { status: 409 });
     if (error.code === "P2003") return NextResponse.json({ error: { code: "conflict", message: "This record is still referenced by other records" } }, { status: 409 });
     if (error.code === "P2025") return NextResponse.json({ error: { code: "not_found", message: "Record not found" } }, { status: 404 });
+  }
+  if (isDatabaseUnreachable(error)) {
+    console.error("[api] database unreachable (check DATABASE_URL, that the project is not paused, and that this network can reach it)");
+    return NextResponse.json({ error: { code: "database_unavailable", message: "The database cannot be reached right now. Please try again in a moment." } }, { status: 503, headers: { "Cache-Control": "no-store", "Retry-After": "10" } });
   }
   console.error("[api] unhandled error", error);
   return NextResponse.json({ error: { code: "internal", message: "Something went wrong" } }, { status: 500 });

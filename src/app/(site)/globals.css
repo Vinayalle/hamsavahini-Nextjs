@@ -24,3 +24,16 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Home-page hero entrance: the text rises into place when the page opens and whenever a slide becomes the active one;
+   the picture settles from a slight zoom. */
+@keyframes hero-rise {
+  from { opacity: 0; transform: translateY(32px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes hero-settle {
+  from { transform: scale(1.07); }
+  to { transform: scale(1); }
+}
+.hero-rise { animation: hero-rise 800ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.hero-settle { animation: hero-settle 1800ms ease-out both; }
