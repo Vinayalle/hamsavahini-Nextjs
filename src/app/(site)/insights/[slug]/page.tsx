@@ -32,19 +32,19 @@ export default async function PostPage({ params }: Params) {
       </PageHero>
 
       <article className="bg-white">
-        <div className={`${container} py-14 md:py-20`}>
+        <div className={`${container} py-9 md:py-12`}>
           <div className="mx-auto max-w-3xl">
-            <p className="mb-8 border-l-4 border-[var(--brand-red)] pl-5 text-xl leading-9 text-neutral-800 md:text-2xl md:leading-10">{post.excerpt}</p>
+            <p className="mb-8 border-l-4 border-gold-600 pl-5 text-xl leading-9 text-neutral-800 md:text-2xl md:leading-10">{post.excerpt}</p>
             <Prose html={post.html} />
             {post.tags.length > 0 && <ul className="mt-10 flex flex-wrap gap-2" aria-label="Tags">{post.tags.map((t) => <li key={t}><Tag>#{t}</Tag></li>)}</ul>}
-            <Link href="/insights" className="mt-10 inline-flex items-center gap-2 text-sm font-bold text-[var(--brand-red)] hover:underline"><LuArrowLeft className="size-4" aria-hidden />Back to all insights</Link>
+            <Link href="/insights" className="mt-10 inline-flex items-center gap-2 text-sm font-bold text-gold-700 hover:underline"><LuArrowLeft className="size-4" aria-hidden />Back to all insights</Link>
           </div>
         </div>
       </article>
 
       {related.length > 0 && (
         <section aria-labelledby="more" className="bg-neutral-50">
-          <div className={`${container} py-14 md:py-20`}>
+          <div className={`${container} py-9 md:py-12`}>
             <SectionHeading id="more" title="Keep reading" />
             <ul className="grid gap-5 md:grid-cols-3">{related.map((p, i) => <PostGridCard key={p.slug} post={p} icon={LuNewspaper} index={i} />)}</ul>
           </div>

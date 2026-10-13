@@ -37,7 +37,7 @@ export function MockUsersPage() {
   const columns: Column<AdminUser>[] = [
     { key: "name", header: "User", sortKey: "name", cell: (u) => (
       <div className="flex items-center gap-3">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-navy-800 text-xs font-semibold text-white">{initials(u.name)}</span>
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-bark-800 text-xs font-semibold text-white">{initials(u.name)}</span>
         <div className="min-w-0"><span className="block truncate font-medium text-ink">{u.name}{u.id === SELF_ID && <span className="ml-1.5 text-xs font-normal text-muted">(you)</span>}</span><span className="block truncate text-xs text-muted">{u.email}</span></div>
       </div>
     ) },

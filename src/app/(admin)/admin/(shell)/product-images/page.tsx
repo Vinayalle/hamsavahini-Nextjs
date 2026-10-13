@@ -143,7 +143,7 @@ export default function ProductImagesPage() {
               <li key={`${img.productId}-${img.id}`} className="overflow-hidden rounded-lg border border-line">
                 <div className="relative aspect-[4/3] bg-canvas">
                   <img src={img.url} alt={img.alt} className="size-full object-cover" />
-                  {img.isPrimary && <span className="absolute left-2 top-2 rounded bg-navy-900/85 px-1.5 py-0.5 text-[10px] font-medium text-white">Primary</span>}
+                  {img.isPrimary && <span className="absolute left-2 top-2 rounded bg-bark-900/85 px-1.5 py-0.5 text-[10px] font-medium text-white">Primary</span>}
                 </div>
                 <div className="space-y-2 p-3">
                   <Link href={`/admin/products/${img.productId}`} className="block truncate text-sm font-medium text-ink hover:text-brand-600">{img.productName}</Link>

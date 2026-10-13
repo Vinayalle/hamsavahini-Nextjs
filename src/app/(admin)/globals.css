@@ -1,27 +1,30 @@
 @import "tailwindcss";
+@import "../../styles/brand.css";
 
 @theme {
   --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
 
-  --color-navy-950: #070f1f;
-  --color-navy-900: #0b1b33;
-  --color-navy-800: #112544;
-  --color-navy-700: #1a3459;
-  --color-navy-600: #264670;
+  /* Sidebar and dark surfaces: a warm near-black brown (named "bark"). */
+  --color-bark-950: #100b05;
+  --color-bark-900: #1a130a;
+  --color-bark-800: #251c10;
+  --color-bark-700: #33261a;
+  --color-bark-600: #46371f;
 
-  --color-brand-50: #eff5ff;
-  --color-brand-100: #dbe8fe;
-  --color-brand-200: #bfd5fe;
-  --color-brand-500: #2f6df0;
-  --color-brand-600: #1f57d6;
-  --color-brand-700: #1a47b0;
+  /* The accent is the logo's gold. brand-600 is the button colour: white text on it passes (5.2:1). */
+  --color-brand-50: #fbf6e9;
+  --color-brand-100: #f5eacb;
+  --color-brand-200: #ebd59a;
+  --color-brand-500: #b98626;
+  --color-brand-600: #8f6418;
+  --color-brand-700: #765014;
 
   --color-surface: #ffffff;
-  --color-canvas: #f4f6fa;
-  --color-line: #e3e8ef;
-  --color-ink: #0f1c2e;
-  --color-muted: #5b6b80;
-  --color-faint: #8795a8;
+  --color-canvas: #f7f3ea;
+  --color-line: #e7e0d0;
+  --color-ink: #1c1710;
+  --color-muted: #665d4e;
+  --color-faint: #8f8573;
 
   --color-success-50: #ecfdf3;
   --color-success-600: #15803d;
@@ -34,8 +37,8 @@
   --radius-lg: 10px;
   --radius-xl: 12px;
 
-  --shadow-card: 0 1px 2px rgb(15 28 46 / 0.04), 0 1px 3px rgb(15 28 46 / 0.04);
-  --shadow-pop: 0 8px 24px rgb(15 28 46 / 0.14), 0 2px 6px rgb(15 28 46 / 0.06);
+  --shadow-card: 0 1px 2px rgb(28 23 16 / 0.05), 0 1px 3px rgb(28 23 16 / 0.05);
+  --shadow-pop: 0 8px 24px rgb(28 23 16 / 0.16), 0 2px 6px rgb(28 23 16 / 0.07);
 }
 
 html { color-scheme: light; }
@@ -57,7 +60,7 @@ body {
 .rte-content blockquote { border-left: 3px solid var(--color-line); padding-left: 0.8rem; color: var(--color-muted); }
 
 .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
-.scroll-thin::-webkit-scrollbar-thumb { background: #c5cdd9; border-radius: 6px; }
+.scroll-thin::-webkit-scrollbar-thumb { background: #cfc6b3; border-radius: 6px; }
 
 /* ─────────────── Cursors ───────────────
    Tailwind v4 resets buttons to the plain arrow, so the right cursor is set once here for the whole interface:
@@ -106,7 +109,7 @@ body {
   to { background-position: -200% 0; }
 }
 .skeleton {
-  background-color: #e1e7f0;
+  background-color: #e8e0cf;
   background-image: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.7) 50%, transparent 100%);
   background-size: 200% 100%;
   background-repeat: no-repeat;

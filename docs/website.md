@@ -52,3 +52,11 @@ Every public page is rendered on request (`force-dynamic`) and always sends its 
 - Product and article pictures are not shown yet: they are stored in private object storage and there is no public image route for them (banner pictures have one). Cards use an icon panel instead.
 - Submissions are stored and shown in the admin; the site does not yet email an acknowledgement to the visitor or a notification to staff.
 - The privacy policy and terms are general starting texts.
+
+## Brand: logo and colours
+
+- Source artwork: `assets/brand/logo-original.png` (not served). Replace it and run `npm run brand:build` to regenerate everything below.
+- Generated: `public/brand/logo-{mark,wordmark,full}.png`, `public/brand/og-default.png`, and the tab icons `src/app/icon.png`, `apple-icon.png`, `favicon.ico`.
+- `src/config/brand.ts` is the one place that names the logo files and brand colours; `src/components/brand/Logo.tsx` renders them (variants mark / lockup / full; one colour only, the logo's own gold).
+- `src/styles/brand.css` holds the gold ramp and warm neutral/slate tokens, shared by the website and the admin.
+- Contrast rules: gold-500 (#B98626) only for fills, icons and large graphics; gold-700 for text on light; gold-300 for text on dark; ink text on gold fills; white text only on gold-700 or darker (admin buttons use #8F6418). Error, success and warning colours stay red, green and amber.

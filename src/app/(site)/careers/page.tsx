@@ -13,7 +13,7 @@ export default async function CareersPage() {
       <PageHero eyebrow="Join us" title="Careers" description="Help us connect trusted mineral producers with the industries that depend on them." crumbs={[{ label: "Careers" }]} />
 
       <section aria-labelledby="open-title" className="bg-neutral-50">
-        <div className={`${container} py-16 md:py-24`}>
+        <div className={`${container} py-10 md:py-14`}>
           <SectionHeading id="open-title" eyebrow="Open positions" title={careers.length ? "Find your role" : "No open positions right now"} />
           {failed ? <Unavailable /> : careers.length === 0 ? (
             <EmptyNote title="We are not hiring at the moment" text="New positions are published here as soon as they open. You are welcome to introduce yourself and we will keep your details in mind." action={<ButtonLink href="/contact-us?subject=Career%20enquiry">Introduce yourself</ButtonLink>} />
@@ -24,7 +24,7 @@ export default async function CareersPage() {
       </section>
 
       <section aria-labelledby="why-title" className="bg-white">
-        <div className={`${container} py-16 md:py-24`}>
+        <div className={`${container} py-10 md:py-14`}>
           <SectionHeading id="why-title" eyebrow="Working with us" title="What you can expect" center />
           <ul className="grid gap-5 md:grid-cols-3">
             <PointCard icon={LuGlobe} title="Work that crosses borders" text="Every day connects producers, ports and buyers in different parts of the world." index={0} />

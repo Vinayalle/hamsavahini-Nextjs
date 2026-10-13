@@ -1,7 +1,8 @@
 "use client";
 
+import { FaArrowRight as ArrowRight } from "react-icons/fa";
 import Link from "next/link";
-import { LuActivity as Activity, LuArrowRight as ArrowRight, LuBoxes as Boxes, LuBriefcase as Briefcase, LuCircleCheck as CheckCircle2, LuClock as Clock, LuFilePen as FileEdit, LuFolderKanban as FolderKanban, LuEarth as Globe2, LuHandshake as Handshake, LuInbox as Inbox, LuLayoutDashboard as LayoutDashboard, LuMapPin as MapPin, LuMessageSquare as MessageSquare, LuNewspaper as Newspaper, LuPackage as Package, LuUserPlus as UserPlus, LuUsers as Users } from "react-icons/lu";
+import { LuActivity as Activity, LuBoxes as Boxes, LuBriefcase as Briefcase, LuCircleCheck as CheckCircle2, LuClock as Clock, LuFilePen as FileEdit, LuFolderKanban as FolderKanban, LuEarth as Globe2, LuHandshake as Handshake, LuInbox as Inbox, LuLayoutDashboard as LayoutDashboard, LuMapPin as MapPin, LuMessageSquare as MessageSquare, LuNewspaper as Newspaper, LuPackage as Package, LuUserPlus as UserPlus, LuUsers as Users } from "react-icons/lu";
 import type { IconType } from "react-icons";
 import { Card, CardHeader } from "@/components/ui/card";
 import { EmptyState, ErrorState, PageHeader, StatCard } from "@/components/admin/page-parts";

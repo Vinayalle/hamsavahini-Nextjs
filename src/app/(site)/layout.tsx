@@ -3,6 +3,7 @@ import Header from "@/components/web/Header";
 import Footer from "@/components/web/Footer";
 import { JsonLd } from "@/components/web/ui";
 import { COMPANY } from "@/content/site";
+import { BRAND } from "@/config/brand";
 import { getSiteSettings } from "@/server/services/public";
 import "./globals.css";
 
@@ -22,11 +23,11 @@ export const metadata: Metadata = {
   title: { default: `${COMPANY.name} | Global mineral sourcing and trading`, template: `%s | ${COMPANY.short}` },
   description: COMPANY.description,
   applicationName: COMPANY.name,
-  openGraph: { type: "website", siteName: COMPANY.name, title: COMPANY.name, description: COMPANY.description, locale: "en_IN" },
-  twitter: { card: "summary_large_image", title: COMPANY.name, description: COMPANY.description },
+  openGraph: { type: "website", siteName: COMPANY.name, title: COMPANY.name, description: COMPANY.description, locale: "en_IN", images: [{ url: BRAND.shareImage, width: 1200, height: 630, alt: COMPANY.name }] },
+  twitter: { card: "summary_large_image", title: COMPANY.name, description: COMPANY.description, images: [BRAND.shareImage] },
   alternates: { canonical: "./" },
 };
-export const viewport: Viewport = { themeColor: "#ee3a42", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: BRAND.colors.gold, width: "device-width", initialScale: 1 };
 
 export default async function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const settings = await getSiteSettings();

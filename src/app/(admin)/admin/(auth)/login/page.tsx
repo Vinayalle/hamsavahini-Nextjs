@@ -6,7 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { LuShieldAlert as ShieldAlert, LuWaves as Waves } from "react-icons/lu";
+import { Logo } from "@/components/brand/Logo";
+import { LuShieldAlert as ShieldAlert } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/fields";
 import { Field } from "@/components/forms/form-parts";
@@ -78,11 +79,8 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen">
-      <section className="relative hidden w-1/2 flex-col justify-between bg-navy-900 p-12 text-white lg:flex">
-        <div className="flex items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-brand-600"><Waves className="size-5" aria-hidden /></span>
-          <span className="text-lg font-semibold tracking-tight">Hamsavahin</span>
-        </div>
+      <section className="relative hidden w-1/2 flex-col justify-between bg-bark-900 p-12 text-white lg:flex">
+        <Logo variant="lockup" priority className="h-12" />
         <div>
           <h1 className="max-w-md text-3xl font-semibold leading-tight tracking-tight">
             Manage your global trade presence from one place.

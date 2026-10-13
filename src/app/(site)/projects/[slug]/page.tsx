@@ -31,16 +31,16 @@ export default async function ProjectPage({ params }: Params) {
         <Tag tone="red">{project.stage}</Tag>
       </PageHero>
       <section aria-label="Project" className="bg-white">
-        <div className={`${container} grid items-start gap-12 py-14 md:py-20 lg:grid-cols-[1.4fr_0.6fr]`}>
+        <div className={`${container} grid items-start gap-12 py-9 md:py-12 lg:grid-cols-[1.4fr_0.6fr]`}>
           <Reveal variant="left">
             <Prose html={project.html} />
-            <Link href="/projects" className="mt-10 inline-flex items-center gap-2 text-sm font-bold text-[var(--brand-red)] hover:underline"><LuArrowLeft className="size-4" aria-hidden />All projects</Link>
+            <Link href="/projects" className="mt-10 inline-flex items-center gap-2 text-sm font-bold text-gold-700 hover:underline"><LuArrowLeft className="size-4" aria-hidden />All projects</Link>
           </Reveal>
           <Reveal variant="right" delay={120}>
             <aside aria-label="Project facts" className={`${card} bg-neutral-50 p-7`}>
               <ul className="space-y-4">
                 {facts.map((f) => (
-                  <li key={f.label} className="flex items-start gap-3"><f.icon className="mt-1 size-5 shrink-0 text-[var(--brand-red)]" aria-hidden /><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">{f.label}</p><p className="font-bold text-neutral-900">{f.value}</p></div></li>
+                  <li key={f.label} className="flex items-start gap-3"><f.icon className="mt-1 size-5 shrink-0 text-gold-700" aria-hidden /><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">{f.label}</p><p className="font-bold text-neutral-900">{f.value}</p></div></li>
                 ))}
               </ul>
             </aside>

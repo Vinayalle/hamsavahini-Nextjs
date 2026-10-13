@@ -18,14 +18,14 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
     <div className={`${bodyFont} text-neutral-800`}>
       <PageHero eyebrow="Trade" title="Request a quote" description="Tell us the mineral, quantity and destination. We will come back with sourcing options and a quotation." crumbs={[{ label: "Request a quote" }]} />
       <section aria-label="Request a quotation" className="bg-neutral-50">
-        <div className={`${container} grid items-start gap-10 py-14 md:py-20 lg:grid-cols-[0.7fr_1.3fr] lg:gap-14`}>
+        <div className={`${container} grid items-start gap-10 py-9 md:py-12 lg:grid-cols-[0.7fr_1.3fr] lg:gap-14`}>
           <Reveal variant="left">
             <h2 className={`${headingFont} mb-6 text-2xl text-neutral-900 md:text-3xl`}>How it works</h2>
             <ol className="space-y-5">
               {STEPS.map((s, i) => (
                 <li key={s.title} className="flex gap-4">
                   <span aria-hidden className={`${badge} size-12 shrink-0`}><s.icon className="size-6" /></span>
-                  <div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--brand-red)]">Step {i + 1}</p><h3 className="font-bold text-neutral-900">{s.title}</h3><p className="mt-1 leading-7 text-neutral-600">{s.text}</p></div>
+                  <div><p className="text-xs font-bold uppercase tracking-[0.16em] text-gold-700">Step {i + 1}</p><h3 className="font-bold text-neutral-900">{s.title}</h3><p className="mt-1 leading-7 text-neutral-600">{s.text}</p></div>
                 </li>
               ))}
             </ol>

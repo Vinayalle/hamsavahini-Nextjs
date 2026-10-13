@@ -12,7 +12,7 @@ export default async function ProjectsPage() {
     <div className={`${bodyFont} text-neutral-800`}>
       <PageHero eyebrow="Our work" title="Projects & trade stories" description="A look at the consignments, partnerships and projects we have delivered for customers around the world." crumbs={[{ label: "Projects & trade stories" }]} />
       <section aria-label="Projects" className="bg-neutral-50">
-        <div className={`${container} py-14 md:py-20`}>
+        <div className={`${container} py-9 md:py-12`}>
           {failed ? <Unavailable /> : projects.length === 0 ? (
             <EmptyNote title="Stories are on their way" text="Projects and trade stories will appear here as they are published." />
           ) : (

@@ -38,7 +38,7 @@ export default async function ProductPage({ params }: Params) {
       </PageHero>
 
       <section aria-label="Product details" className="bg-white">
-        <div className={`${container} grid items-start gap-12 py-14 md:py-20 lg:grid-cols-[1.3fr_0.7fr]`}>
+        <div className={`${container} grid items-start gap-12 py-9 md:py-12 lg:grid-cols-[1.3fr_0.7fr]`}>
           <Reveal variant="left">
             <h2 className={`${headingFont} mb-4 text-[28px] text-neutral-900 md:text-[36px]`}>Description</h2>
             <p className="whitespace-pre-line text-lg leading-8 text-neutral-600">{product.description}</p>
@@ -57,7 +57,7 @@ export default async function ProductPage({ params }: Params) {
                 </div>
               </>
             )}
-            <Link href="/products" className="mt-10 inline-flex items-center gap-2 text-sm font-bold text-[var(--brand-red)] hover:underline"><LuArrowLeft className="size-4" aria-hidden />Back to the catalogue</Link>
+            <Link href="/products" className="mt-10 inline-flex items-center gap-2 text-sm font-bold text-gold-700 hover:underline"><LuArrowLeft className="size-4" aria-hidden />Back to the catalogue</Link>
           </Reveal>
           <Reveal variant="right" delay={120}>
             <aside aria-label="Key facts" className={`${card} bg-neutral-50 p-7 lg:sticky lg:top-[calc(var(--site-header-h)+24px)]`}>
@@ -73,7 +73,7 @@ export default async function ProductPage({ params }: Params) {
 
       {related.length > 0 && (
         <section aria-labelledby="related" className="bg-neutral-50">
-          <div className={`${container} py-14 md:py-20`}>
+          <div className={`${container} py-9 md:py-12`}>
             <SectionHeading id="related" title={`More in ${product.category}`} />
             <ul className="grid gap-5 md:grid-cols-3">{related.map((p, i) => <ProductGridCard key={p.slug} product={p} icon={LuPackage} index={i} />)}</ul>
           </div>

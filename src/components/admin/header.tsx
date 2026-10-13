@@ -112,7 +112,7 @@ export function AdminHeader() {
               className="flex items-center gap-2.5 rounded-lg p-1 pr-2 hover:bg-canvas"
               aria-label="Account menu"
             >
-              <span className="flex size-8 items-center justify-center rounded-full bg-navy-800 text-xs font-semibold text-white">
+              <span className="flex size-8 items-center justify-center rounded-full bg-bark-800 text-xs font-semibold text-white">
                 {initials(user.name)}
               </span>
               <span className="hidden text-left leading-tight sm:block">

@@ -1,17 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { LuWaves as Waves } from "react-icons/lu";
+import { Logo } from "@/components/brand/Logo";
 
 /** Centered card used by the public account pages (activation, forgot/reset password). */
 export function AuthShell({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-canvas px-4 py-12">
       <div className="w-full max-w-md rounded-xl border border-line bg-surface p-6 shadow-card sm:p-8">
-        <div className="mb-6 flex items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-brand-600 text-white"><Waves className="size-5" aria-hidden /></span>
-          <span className="text-lg font-semibold tracking-tight text-ink">Hamsavahin</span>
-        </div>
+        <div className="mb-6"><Logo variant="lockup" priority className="h-11" /></div>
         <h1 className="text-2xl font-semibold tracking-tight text-ink">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
         <div className="mt-6">{children}</div>

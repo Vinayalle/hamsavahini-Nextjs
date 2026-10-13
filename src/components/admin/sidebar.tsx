@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LuChevronDown as ChevronDown, LuLoaderCircle as Loader2, LuWaves as Waves } from "react-icons/lu";
+import { Logo } from "@/components/brand/Logo";
+import { LuChevronDown as ChevronDown, LuLoaderCircle as Loader2 } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 import type { NavGroup, NavItem } from "@/config/navigation";
 import { useAuth } from "@/lib/auth";
@@ -56,15 +57,12 @@ export function AdminSidebar({ collapsed, groups }: { collapsed: boolean; groups
   };
 
   return (
-    <nav aria-label="Main navigation" className="flex h-full flex-col bg-navy-900 text-slate-200">
+    <nav aria-label="Main navigation" className="flex h-full flex-col bg-bark-900 text-slate-200">
       <div className={cn("flex h-16 shrink-0 items-center gap-2.5 border-b border-white/10 px-5", collapsed && "justify-center px-0")}>
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-white">
-          <Waves className="size-[18px]" aria-hidden />
-        </span>
-        {!collapsed && (
+        {collapsed ? <Logo variant="mark" className="h-7" /> : (
           <div className="leading-tight">
-            <div className="text-[15px] font-semibold tracking-tight text-white">Hamsavahin</div>
-            <div className="text-[11px] text-slate-400">Super Admin</div>
+            <Logo variant="lockup" className="h-8" />
+            <div className="mt-1 text-[11px] text-slate-400">Super Admin</div>
           </div>
         )}
       </div>

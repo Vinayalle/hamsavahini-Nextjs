@@ -58,7 +58,7 @@ export function ScrollProgress() {
   }, []);
   return (
     <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[3px]">
-      <div ref={bar} className="h-full origin-left bg-gradient-to-r from-[var(--brand-red)] via-rose-400 to-amber-300" style={{ transform: "scaleX(0)" }} />
+      <div ref={bar} className="h-full origin-left bg-gradient-to-r from-gold-400 via-gold-400 to-gold-300" style={{ transform: "scaleX(0)" }} />
     </div>
   );
 }
@@ -90,7 +90,7 @@ export function TimelineRail({ children, className }: { children: ReactNode; cla
   return (
     <div ref={root} className={`relative ${className ?? ""}`}>
       <div aria-hidden className="absolute bottom-4 left-6 top-4 w-px bg-neutral-200 md:left-8">
-        <div ref={fill} className="h-full w-full origin-top bg-gradient-to-b from-[var(--brand-red)] via-rose-400 to-amber-300" style={{ transform: "scaleY(0)" }} />
+        <div ref={fill} className="h-full w-full origin-top bg-gradient-to-b from-gold-400 via-gold-400 to-gold-300" style={{ transform: "scaleY(0)" }} />
       </div>
       {children}
     </div>

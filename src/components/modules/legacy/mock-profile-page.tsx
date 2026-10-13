@@ -50,7 +50,7 @@ export function MockProfilePage() {
         <div className="space-y-6">
           <Card>
             <div className="flex flex-col items-center p-6 text-center">
-              <span className="flex size-16 items-center justify-center rounded-full bg-navy-800 text-xl font-semibold text-white">{initials(me.name)}</span>
+              <span className="flex size-16 items-center justify-center rounded-full bg-bark-800 text-xl font-semibold text-white">{initials(me.name)}</span>
               <p className="mt-3 font-semibold text-ink">{me.name}</p>
               <p className="inline-flex items-center gap-1 text-sm text-muted"><ShieldCheck className="size-4 text-brand-600" aria-hidden /> {roles.find((r) => r.id === me.roleId)?.name}</p>
             </div>

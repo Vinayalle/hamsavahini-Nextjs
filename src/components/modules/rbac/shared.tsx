@@ -24,7 +24,7 @@ export function useDebounced<T>(value: T, ms = 300): T {
 
 export function Avatar({ name, className }: { name: string; className?: string }) {
   return (
-    <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-full bg-navy-800 text-xs font-semibold text-white", className)} aria-hidden>
+    <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-full bg-bark-800 text-xs font-semibold text-white", className)} aria-hidden>
       {initials(name)}
     </span>
   );
@@ -39,7 +39,7 @@ export function RoleChips({ roles, max = 3 }: { roles: RoleRef[]; max?: number }
   return (
     <div className="flex flex-wrap gap-1">
       {roles.slice(0, max).map((r) => (
-        <span key={r.id} className={cn("rounded px-1.5 py-0.5 text-[11px] font-medium", r.status === "inactive" ? "bg-slate-100 text-slate-500 line-through" : r.code === "super_admin" ? "bg-navy-800 text-white" : "bg-brand-50 text-brand-700")}>
+        <span key={r.id} className={cn("rounded px-1.5 py-0.5 text-[11px] font-medium", r.status === "inactive" ? "bg-slate-100 text-slate-500 line-through" : r.code === "super_admin" ? "bg-bark-800 text-white" : "bg-brand-50 text-brand-700")}>
           {r.name}
         </span>
       ))}

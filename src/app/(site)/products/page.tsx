@@ -19,20 +19,20 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   ]);
   const pages = Math.max(1, Math.ceil(list.data.total / PAGE_SIZE));
   const href = (p: number) => `/products?${new URLSearchParams({ ...(category ? { category } : {}), ...(search ? { search } : {}), ...(p > 1 ? { page: String(p) } : {}) })}`.replace(/\?$/, "");
-  const chip = (active: boolean) => `inline-flex items-center rounded-full border px-5 py-2.5 text-sm font-bold transition ${active ? "border-[var(--brand-red)] bg-[var(--brand-red)] text-white" : "border-neutral-200 bg-white text-neutral-700 hover:border-red-200 hover:text-[var(--brand-red)]"}`;
+  const chip = (active: boolean) => `inline-flex items-center rounded-full border px-5 py-2.5 text-sm font-bold transition ${active ? "border-gold-600 bg-gold-500 text-ink" : "border-neutral-200 bg-white text-neutral-700 hover:border-gold-200 hover:text-gold-700"}`;
   return (
     <div className={`${bodyFont} text-neutral-800`}>
       <PageHero eyebrow="Catalogue" title="Product catalogue" description="The materials we supply, with grade, origin, packaging and current availability." crumbs={[{ label: "Product catalogue" }]} />
       <section aria-label="Products" className="bg-neutral-50">
-        <div className={`${container} py-14 md:py-20`}>
+        <div className={`${container} py-9 md:py-12`}>
           <form action="/products" method="get" role="search" className="mb-8 flex flex-col gap-3 sm:flex-row">
             <label htmlFor="product-search" className="sr-only">Search products</label>
             <div className="relative flex-1">
               <LuSearch className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-neutral-400" aria-hidden />
-              <input id="product-search" name="search" defaultValue={search} placeholder="Search by name, code or description" maxLength={80} className="h-12 w-full rounded-xl border border-neutral-300 bg-white pl-12 pr-4 text-base focus:border-[var(--brand-red)] focus:outline-none focus:ring-4 focus:ring-red-500/15" />
+              <input id="product-search" name="search" defaultValue={search} placeholder="Search by name, code or description" maxLength={80} className="h-12 w-full rounded-xl border border-neutral-300 bg-white pl-12 pr-4 text-base focus:border-gold-600 focus:outline-none focus:ring-4 focus:ring-gold-500/15" />
             </div>
             {category && <input type="hidden" name="category" value={category} />}
-            <button type="submit" className="h-12 cursor-pointer rounded-xl bg-[var(--brand-red)] px-8 font-bold text-white transition hover:bg-red-700">Search</button>
+            <button type="submit" className="h-12 cursor-pointer rounded-xl bg-gold-500 px-8 font-bold text-ink transition hover:bg-gold-400">Search</button>
           </form>
           {cats.data.length > 0 && (
             <nav aria-label="Filter by category" className="mb-10 flex flex-wrap gap-2.5">

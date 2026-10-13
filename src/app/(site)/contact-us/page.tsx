@@ -11,15 +11,15 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
   const [settings, sp] = await Promise.all([getSiteSettings(), searchParams]);
   const rows = [
     settings.address && { icon: LuMapPin, label: "Office", node: <span className="whitespace-pre-line">{settings.address}</span> },
-    settings.phone && { icon: LuPhone, label: "Phone", node: <a href={`tel:${settings.phone.replace(/[^+\d]/g, "")}`} className="font-bold text-neutral-900 hover:text-[var(--brand-red)]">{settings.phone}</a> },
-    settings.email && { icon: LuMail, label: "Email", node: <a href={`mailto:${settings.email}`} className="break-all font-bold text-neutral-900 hover:text-[var(--brand-red)]">{settings.email}</a> },
+    settings.phone && { icon: LuPhone, label: "Phone", node: <a href={`tel:${settings.phone.replace(/[^+\d]/g, "")}`} className="font-bold text-neutral-900 hover:text-gold-700">{settings.phone}</a> },
+    settings.email && { icon: LuMail, label: "Email", node: <a href={`mailto:${settings.email}`} className="break-all font-bold text-neutral-900 hover:text-gold-700">{settings.email}</a> },
   ].filter((r): r is Exclude<typeof r, ""> => !!r);
 
   return (
     <div className={`${bodyFont} text-neutral-800`}>
       <PageHero eyebrow="Get in touch" title="Contact us" description="Tell us what you are looking for. Every enquiry is read by a person on our team, and we reply by email." crumbs={[{ label: "Contact us" }]} />
       <section aria-label="Contact" className="bg-neutral-50">
-        <div className={`${container} grid items-start gap-10 py-14 md:py-20 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14`}>
+        <div className={`${container} grid items-start gap-10 py-9 md:py-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14`}>
           <Reveal variant="left" className="space-y-5">
             <div className={`${card} p-7 md:p-8`}>
               <h2 className={`${headingFont} mb-5 text-2xl text-neutral-900`}>How to reach us</h2>

@@ -14,7 +14,7 @@ export function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & { side?: "center" | "right" | "left" }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-navy-950/50" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-bark-950/50" />
       <DialogPrimitive.Content
         className={cn(
           "fixed z-50 flex flex-col bg-surface shadow-pop focus:outline-none",

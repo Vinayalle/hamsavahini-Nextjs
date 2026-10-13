@@ -16,7 +16,7 @@ export default async function CommodityDeskPage() {
       <PageHero eyebrow="Markets" title="Live commodity desk" description="Indicative prices and the trade opportunities we are working on right now." crumbs={[{ label: "Insights", href: "/insights" }, { label: "Commodity desk" }]} />
 
       <section aria-labelledby="prices-title" className="bg-white">
-        <div className={`${container} py-14 md:py-20`}>
+        <div className={`${container} py-9 md:py-12`}>
           <SectionHeading id="prices-title" eyebrow="Prices" title="Latest indicative prices" description="Prices are indicative and change with the market. Request a quote for a firm offer." />
           {prices.failed ? <Unavailable /> : prices.data.length === 0 ? (
             <EmptyNote title="No prices published yet" text="Our latest prices will appear here when they are released." action={<ButtonLink href="/request-a-quote">Request a quote</ButtonLink>} />
@@ -44,7 +44,7 @@ export default async function CommodityDeskPage() {
       </section>
 
       <section aria-labelledby="opps-title" className="bg-neutral-50">
-        <div className={`${container} py-14 md:py-20`}>
+        <div className={`${container} py-9 md:py-12`}>
           <SectionHeading id="opps-title" eyebrow="Trade" title="Current opportunities" description="What we can supply and what we are looking to buy. Interested? Get in touch before the offer expires." />
           {opps.failed ? <Unavailable /> : opps.data.length === 0 ? (
             <EmptyNote title="No open opportunities at the moment" text="New offers and requirements are published here as they arise. You can always tell us what you need." action={<ButtonLink href="/request-a-quote">Request a quote</ButtonLink>} />

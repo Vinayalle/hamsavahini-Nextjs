@@ -6,19 +6,19 @@ const BRAND = "Hamsavahin Aarth Mines LLP";
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 function layout(title: string, bodyHtml: string, footer = "If you did not expect this email, you can ignore it. No one at Hamsavahin will ever ask for your password or a code by phone or email."): string {
-  return `<!doctype html><html><body style="margin:0;background:#f4f1ea;font-family:Segoe UI,Arial,sans-serif;color:#1d2a24">
+  return `<!doctype html><html><body style="margin:0;background:#f4f1ea;font-family:Segoe UI,Arial,sans-serif;color:#1c1710">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px">
-<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:10px;overflow:hidden;border:1px solid #e3ded2">
-<tr><td style="background:#1f3d2f;color:#f5efe0;padding:18px 24px;font-size:18px;font-weight:600">${esc(BRAND)}</td></tr>
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:10px;overflow:hidden;border:1px solid #e7e0d0">
+<tr><td style="background:#1a130a;color:#debb66;padding:18px 24px;font-size:18px;font-weight:600">${esc(BRAND)}</td></tr>
 <tr><td style="padding:28px 24px"><h1 style="margin:0 0 14px;font-size:20px">${esc(title)}</h1>${bodyHtml}</td></tr>
-<tr><td style="padding:16px 24px;background:#faf8f3;color:#6b7a72;font-size:12px;line-height:1.5">${esc(footer)}</td></tr>
+<tr><td style="padding:16px 24px;background:#faf8f3;color:#665d4e;font-size:12px;line-height:1.5">${esc(footer)}</td></tr>
 </table></td></tr></table></body></html>`;
 }
 
 const p = (s: string) => `<p style="margin:0 0 14px;line-height:1.55;font-size:15px">${s}</p>`;
 const button = (url: string, label: string) =>
-  `<p style="margin:22px 0"><a href="${esc(url)}" style="background:#1f3d2f;color:#f5efe0;text-decoration:none;padding:12px 20px;border-radius:6px;font-weight:600;display:inline-block">${esc(label)}</a></p>
-<p style="margin:0 0 14px;font-size:12px;color:#6b7a72;word-break:break-all">Or paste this link into your browser: ${esc(url)}</p>`;
+  `<p style="margin:22px 0"><a href="${esc(url)}" style="background:#8f6418;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:6px;font-weight:600;display:inline-block">${esc(label)}</a></p>
+<p style="margin:0 0 14px;font-size:12px;color:#665d4e;word-break:break-all">Or paste this link into your browser: ${esc(url)}</p>`;
 
 export interface Rendered {
   subject: string;

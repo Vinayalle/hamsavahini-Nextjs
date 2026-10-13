@@ -11,14 +11,14 @@ import { LuCircleCheck, LuLoaderCircle, LuSend } from "react-icons/lu";
 type Errors = Record<string, string>;
 type Phase = { kind: "idle" } | { kind: "sending" } | { kind: "done"; reference?: string };
 
-const input = "w-full rounded-xl border border-neutral-300 bg-white px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition focus:border-[var(--brand-red)] focus:outline-none focus:ring-4 focus:ring-red-500/15 aria-[invalid=true]:border-red-600 disabled:bg-neutral-100";
+const input = "w-full rounded-xl border border-neutral-300 bg-white px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition focus:border-gold-600 focus:outline-none focus:ring-4 focus:ring-gold-500/20 aria-[invalid=true]:border-red-600 disabled:bg-neutral-100";
 
 function Field({ label, error, required, hint, children }: { label: string; name?: string; error?: string; required?: boolean; hint?: string; children: (p: { id: string; describedBy?: string; invalid: boolean }) => ReactNode }) {
   const id = useId();
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-bold text-neutral-800">{label}{required && <span className="text-[var(--brand-red)]" aria-hidden> *</span>}</label>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-bold text-neutral-800">{label}{required && <span className="text-gold-700" aria-hidden> *</span>}</label>
       {children({ id, describedBy, invalid: !!error })}
       {error ? <p id={`${id}-error`} role="alert" className="mt-1.5 text-sm text-red-700">{error}</p> : hint ? <p id={`${id}-hint`} className="mt-1.5 text-sm text-neutral-500">{hint}</p> : null}
     </div>
@@ -38,8 +38,8 @@ function Consent({ error }: { error?: string }) {
   return (
     <div>
       <label htmlFor={id} className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-neutral-700">
-        <input id={id} type="checkbox" name="consent" required aria-invalid={!!error} className="mt-1 size-5 shrink-0 cursor-pointer rounded border-neutral-300 accent-[var(--brand-red)]" />
-        <span>I agree that my details are used to reply to this request, as described in the <Link href="/privacy-policy" className="font-bold text-[var(--brand-red)] underline">privacy policy</Link>.</span>
+        <input id={id} type="checkbox" name="consent" required aria-invalid={!!error} className="mt-1 size-5 shrink-0 cursor-pointer rounded border-neutral-300 accent-gold-600" />
+        <span>I agree that my details are used to reply to this request, as described in the <Link href="/privacy-policy" className="font-bold text-gold-700 underline">privacy policy</Link>.</span>
       </label>
       {error && <p role="alert" className="mt-1.5 text-sm text-red-700">{error}</p>}
     </div>
@@ -48,7 +48,7 @@ function Consent({ error }: { error?: string }) {
 
 function SubmitButton({ sending, disabled, children }: { sending: boolean; disabled?: boolean; children: ReactNode }) {
   return (
-    <button type="submit" disabled={sending || disabled} aria-busy={sending || undefined} className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--brand-red)] px-8 py-4 text-base font-bold text-white shadow-lg shadow-red-500/25 transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70">
+    <button type="submit" disabled={sending || disabled} aria-busy={sending || undefined} className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-gold-500 px-8 py-4 text-base font-bold text-ink shadow-lg shadow-gold-500/25 transition hover:bg-gold-400 disabled:cursor-not-allowed disabled:opacity-70">
       {sending ? <LuLoaderCircle className="size-5 animate-spin" aria-hidden /> : <LuSend className="size-5" aria-hidden />}
       {sending ? "Sending…" : children}
     </button>
