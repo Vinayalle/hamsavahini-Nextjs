@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye } from "lucide-react";
+import { LuEye as Eye } from "react-icons/lu";
 import { PageHeader } from "@/components/admin/page-parts";
 import { ResourceList } from "@/components/admin/resource-list";
 import { StatusBadge } from "@/components/admin/status-badge";

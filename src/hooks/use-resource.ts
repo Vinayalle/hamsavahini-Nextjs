@@ -26,6 +26,23 @@ export function useResource<T extends BaseEntity>(
   return { ...result, all };
 }
 
+/**
+ * True once every given remote-backed service has finished its first load (mock services are always ready). Pages use it to show a
+ * skeleton while data is on its way instead of an "empty" message.
+ */
+export function useServiceReady(...services: CrudService<BaseEntity>[]): boolean {
+  const subscribe = (l: () => void) => {
+    const offs = services.map((s) => s.subscribe(l));
+    return () => offs.forEach((off) => off());
+  };
+  return useSyncExternalStore(subscribe, () => services.every((s) => s.ready?.() ?? true), () => true);
+}
+
+/** False until the website settings have been read from the server (api mode), so forms never show the built-in placeholder values. */
+export function useSettingsReady(): boolean {
+  return useSyncExternalStore(settingsService.subscribe, settingsService.ready, () => true);
+}
+
 export function useRecord<T extends BaseEntity>(service: CrudService<T>, id: string): T | undefined {
   const all = useAll(service);
   return all.find((i) => i.id === id);

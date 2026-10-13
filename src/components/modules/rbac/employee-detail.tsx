@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { KeyRound, LayoutDashboard, Mail, Pencil, UserCheck, UserX } from "lucide-react";
-import { toast } from "sonner";
+import { LuKeyRound as KeyRound, LuLayoutDashboard as LayoutDashboard, LuMail as Mail, LuPencil as Pencil, LuUserCheck as UserCheck, LuUserX as UserX } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/fields";
@@ -20,6 +20,7 @@ import { useAuth } from "@/lib/auth";
 import { cn, formatDate } from "@/lib/utils";
 import { Avatar, EmployeeStatus, InviteLinkDialog, RoleChips } from "./shared";
 import type { EmployeeDto, EmployeePermissions, HistoryItem, InviteResult, RoleDto } from "./types";
+import { CardSkeleton, DetailSkeleton, ListSkeleton } from "@/components/admin/skeletons";
 
 const TABS = [
   { key: "profile", label: "Profile" },
@@ -82,7 +83,7 @@ function RolesTab({ employee, canAssign, onSaved }: { employee: EmployeeDto; can
         {canAssign && (
           <div className="mt-4 flex justify-end gap-2">
             <Button variant="secondary" disabled={!dirty} onClick={() => setSelected(employee.roles.map((r) => r.id))}>Reset</Button>
-            <Button disabled={!dirty} loading={saving} onClick={() => void save()}>Save roles</Button>
+            <Button disabled={!dirty} loading={saving} onClick={() => save()}>Save roles</Button>
           </div>
         )}
       </div>
@@ -95,7 +96,7 @@ function PermissionsTab({ employee, canView, canManage }: { employee: EmployeeDt
   if (!canView) return <Card><div className="p-6 text-sm text-muted">You do not have permission to view permission assignments.</div></Card>;
   if (perms.error) return <Card><ErrorState title="Couldn't load permissions" description={perms.error.message} onRetry={() => void perms.reload()} /></Card>;
   const p = perms.data;
-  if (!p) return <Card><div className="p-6 text-sm text-muted">Loading…</div></Card>;
+  if (!p) return <CardSkeleton lines={8} />;
   const byModule = MODULES.map((m) => ({
     m,
     rows: RESOURCES.filter((r) => r.module === m.key).map((r) => ({
@@ -155,6 +156,7 @@ function DashboardTab({ employee, canView }: { employee: EmployeeDto; canView: b
   const d = useApi<{ widgets: { key: string; enabled: boolean }[]; quickActions: string[]; available: { key: string; label: string }[]; availableQuick: { key: string; label: string }[]; customised: boolean }>(canView ? `/api/users/${employee.id}/dashboard` : null);
   if (!canView) return <Card><div className="p-6 text-sm text-muted">You do not have permission to view dashboard configuration.</div></Card>;
   const label = (k: string) => d.data?.available.find((a) => a.key === k)?.label ?? k;
+  if (!d.data && !d.error) return <CardSkeleton lines={5} />;
   return (
     <Card>
       <CardHeader title="Dashboard" description={d.data?.customised ? "Custom layout." : "Using the default layout for this employee's permissions."} action={<LinkButton href={`/admin/users/${employee.id}/dashboard`} size="sm"><LayoutDashboard className="size-3.5" /> Configure dashboard</LinkButton>} />
@@ -173,8 +175,8 @@ function ActivityTab({ employee, canHistory, canActivity }: { employee: Employee
   const act: TimelineEntry[] = (activity.data?.items ?? []).map((a) => ({ id: a.id, title: `${a.action.replace("_", " ")} ${a.entityType.toLowerCase()}: ${a.entityLabel}`, meta: a.detail ?? undefined, at: a.createdAt }));
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <Card><CardHeader title="Access change history" description="Roles, permissions, status and dashboard changes for this employee." />{canHistory ? <ActivityTimeline entries={hist} empty="No access changes recorded." /> : <p className="p-5 text-sm text-muted">You do not have permission to view this.</p>}</Card>
-      <Card><CardHeader title="Recent activity" description="What this employee did in the admin." />{canActivity ? <ActivityTimeline entries={act} empty="No activity yet." /> : <p className="p-5 text-sm text-muted">You do not have permission to view this.</p>}</Card>
+      <Card><CardHeader title="Access change history" description="Roles, permissions, status and dashboard changes for this employee." />{canHistory ? (!history.data && !history.error ? <ListSkeleton /> : <ActivityTimeline entries={hist} empty="No access changes recorded." />) : <p className="p-5 text-sm text-muted">You do not have permission to view this.</p>}</Card>
+      <Card><CardHeader title="Recent activity" description="What this employee did in the admin." />{canActivity ? (!activity.data && !activity.error ? <ListSkeleton /> : <ActivityTimeline entries={act} empty="No activity yet." />) : <p className="p-5 text-sm text-muted">You do not have permission to view this.</p>}</Card>
     </div>
   );
 }
@@ -192,7 +194,7 @@ export function EmployeeDetail({ id }: { id: string }) {
 
   if (e.error?.status === 404) return <NotFoundRecord what="Employee" backHref="/admin/users" backLabel="Back to employees" />;
   if (e.error) return <ErrorState title="Couldn't load employee" description={e.error.message} onRetry={() => void e.reload()} />;
-  if (!e.data) return <PageHeader title="Employee" description="Loading…" />;
+  if (!e.data) return <><PageHeader title="Employee" /><DetailSkeleton /></>;
   const emp = e.data;
   const self = emp.id === user?.id;
 
@@ -214,10 +216,10 @@ export function EmployeeDetail({ id }: { id: string }) {
             {can("users", "edit") && <LinkButton href={`/admin/users/${emp.id}/edit`} variant="secondary"><Pencil className="size-4" /> Edit</LinkButton>}
             {can("user_permissions", "view") && <LinkButton href={`/admin/users/${emp.id}/permissions`} variant="secondary"><KeyRound className="size-4" /> Manage permissions</LinkButton>}
             {can("user_dashboards", "view") && <LinkButton href={`/admin/users/${emp.id}/dashboard`} variant="secondary"><LayoutDashboard className="size-4" /> Configure dashboard</LinkButton>}
-            {can("users", "edit") && !self && emp.status !== "suspended" && <Button variant="secondary" onClick={() => void sendLink()}><Mail className="size-4" /> {emp.status === "invited" ? "Send invitation" : "Send reset link"}</Button>}
+            {can("users", "edit") && !self && emp.status !== "suspended" && <Button variant="secondary" onClick={() => sendLink()}><Mail className="size-4" /> {emp.status === "invited" ? "Send invitation" : "Send reset link"}</Button>}
             {can("users", "change_status") && !self && (emp.status === "suspended"
-              ? <Button onClick={() => void setStatus("active")}><UserCheck className="size-4" /> Activate</Button>
-              : <Button variant="danger" onClick={() => void setStatus("suspended")}><UserX className="size-4" /> Deactivate</Button>)}
+              ? <Button onClick={() => setStatus("active")}><UserCheck className="size-4" /> Activate</Button>
+              : <Button variant="danger" onClick={() => setStatus("suspended")}><UserX className="size-4" /> Deactivate</Button>)}
           </>
         }
       />

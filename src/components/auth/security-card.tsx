@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { KeyRound, ShieldCheck, ShieldOff } from "lucide-react";
-import { toast } from "sonner";
+import { LuKeyRound as KeyRound, LuShieldCheck as ShieldCheck, LuShieldOff as ShieldOff } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -10,6 +10,7 @@ import { ApiClientError, apiFetch, isApiMode } from "@/lib/api/client";
 import { useApi } from "@/lib/api/use-api";
 import { useAuth } from "@/lib/auth";
 import { MfaEnrollment, RecoveryCodes } from "./mfa";
+import { CardSkeleton } from "@/components/admin/skeletons";
 
 interface MfaStatus {
   method?: "email" | "totp";
@@ -25,7 +26,8 @@ export function SecurityCard() {
   const [dialog, setDialog] = useState<"enroll" | "codes" | "disable" | null>(null);
   const [codes, setCodes] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
-  if (!isApiMode || !status.data) return null;
+  if (!isApiMode) return null;
+  if (!status.data) return status.error ? null : <CardSkeleton lines={3} />;
   const s = status.data;
   if (s.method === "email") {
     return (
@@ -78,7 +80,7 @@ export function SecurityCard() {
           </p>
           <div className="flex flex-wrap gap-2">
             {!s.enabled && <Button onClick={() => setDialog("enroll")}><KeyRound className="size-4" /> Turn on</Button>}
-            {s.enabled && <Button variant="secondary" loading={busy} onClick={() => void regenerate()}>New recovery codes</Button>}
+            {s.enabled && <Button variant="secondary" loading={busy} onClick={() => regenerate()}>New recovery codes</Button>}
             {s.enabled && !s.required && <Button variant="secondary" onClick={() => setDialog("disable")}>Turn off</Button>}
           </div>
           {s.enabled && s.required && <p className="text-xs text-muted">Your role requires two-factor authentication, so you cannot turn it off. If you lose your device, a Super Admin can reset it.</p>}
@@ -107,7 +109,7 @@ export function SecurityCard() {
           <DialogDescription id="mfa-off-desc">Your account will be protected by your password alone. You can turn it on again at any time.</DialogDescription>
           <div className="mt-5 flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setDialog(null)}>Cancel</Button>
-            <Button variant="danger" loading={busy} onClick={() => void disable()}>Turn off</Button>
+            <Button variant="danger" loading={busy} onClick={() => disable()}>Turn off</Button>
           </div>
         </DialogContent>
       </Dialog>

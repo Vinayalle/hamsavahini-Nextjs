@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { LuLoaderCircle as Loader2 } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Label, Select } from "@/components/ui/fields";
 import { DetailList, NotesPanel } from "@/components/admin/detail-parts";
@@ -64,6 +65,7 @@ export function CaseWorkflow<T extends CaseRecord>({
   const canAssign = assignable && allowed("assign");
   const canNote = allowed("edit");
   const assignees = useAssignees(canAssign);
+  const [assigning, setAssigning] = useState(false);
 
   const move = async (to: string) => {
     if (finalStatuses.includes(to)) {
@@ -108,7 +110,7 @@ export function CaseWorkflow<T extends CaseRecord>({
           <Label>Move to</Label>
           <div className="flex flex-wrap gap-2">
             {next.map((s) => (
-              <Button key={s} size="sm" variant="secondary" onClick={() => void move(s)}>{statusLabel(s)}</Button>
+              <Button key={s} size="sm" variant="secondary" onClick={() => move(s)}>{statusLabel(s)}</Button>
             ))}
           </div>
         </div>
@@ -116,8 +118,8 @@ export function CaseWorkflow<T extends CaseRecord>({
 
       {canAssign ? (
         <div>
-          <Label htmlFor="assignee">Assigned to</Label>
-          <Select id="assignee" value={assignedValue} onChange={(e) => void assign(e.target.value)}>
+          <Label htmlFor="assignee" className="flex items-center gap-1.5">Assigned to {assigning && <Loader2 className="size-3.5 animate-spin text-muted" aria-label="Saving" />}</Label>
+          <Select id="assignee" value={assignedValue} disabled={assigning} onChange={async (e) => { setAssigning(true); try { await assign(e.target.value); } finally { setAssigning(false); } }}>
             <option value="">Unassigned</option>
             {assignees.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
           </Select>

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Lock, Plus, ShieldCheck, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { LuLock as Lock, LuPlus as Plus, LuShieldCheck as ShieldCheck, LuTrash2 as Trash2 } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/fields";
@@ -61,7 +61,7 @@ function RoleMatrix({ role }: { role: Role }) {
         title={role.name}
         description={role.description}
         action={locked ? <span className="inline-flex items-center gap-1 text-xs text-muted"><Lock className="size-3.5" /> System role — read only</span> : (
-          <Button variant="ghost" size="sm" onClick={() => void remove()}><Trash2 className="size-3.5 text-danger-600" /> Delete</Button>
+          <Button variant="ghost" size="sm" onClick={() => remove()}><Trash2 className="size-3.5 text-danger-600" /> Delete</Button>
         )}
       />
       <div className="scroll-thin overflow-x-auto">
@@ -96,7 +96,7 @@ function RoleMatrix({ role }: { role: Role }) {
           <p className="text-xs text-muted">Permissions here describe intent. Real enforcement happens on the backend API.</p>
           <div className="flex gap-2">
             <Button variant="secondary" disabled={!dirty} onClick={() => setDraft(role.permissions)}>Reset</Button>
-            <Button disabled={!dirty} onClick={() => void save()}>Save permissions</Button>
+            <Button disabled={!dirty} onClick={() => save()}>Save permissions</Button>
           </div>
         </div>
       )}

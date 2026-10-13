@@ -14,7 +14,18 @@ function create(): PrismaClient {
   // The driver adapter writes timestamps as UTC wall-clock text. If the database session runs in another time zone, PostgreSQL
   // would store the wrong instant (observed locally: 5.5 h off under Asia/Kolkata). Pinning the SESSION time zone to UTC makes
   // storage correct whatever the server default is, so expiry/rate-limit logic and any raw SQL reporting agree.
-  return new PrismaClient({ adapter: new PrismaPg({ connectionString, options: "-c timezone=UTC" }) });
+  return new PrismaClient({ adapter: new PrismaPg({ connectionString, options: "-c timezone=UTC", max: poolMax(), idleTimeoutMillis: 10_000, connectionTimeoutMillis: 15_000 }) });
+}
+
+/**
+ * Connections this process may hold open. Hosted poolers allow few clients in total (Supabase's session pooler: 15 on small plans), and
+ * `next dev` runs several server processes (pages, API routes, proxy), each with its own pool, so development uses a small pool.
+ * Override with DATABASE_POOL_MAX.
+ */
+function poolMax(): number {
+  const configured = Number(process.env.DATABASE_POOL_MAX);
+  if (Number.isInteger(configured) && configured >= 1 && configured <= 50) return configured;
+  return process.env.NODE_ENV === "development" ? 4 : 10;
 }
 
 export function getDb(): PrismaClient {

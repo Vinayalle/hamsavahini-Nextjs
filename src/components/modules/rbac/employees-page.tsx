@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, History, KeyRound, LayoutDashboard, Mail, Pencil, ShieldCheck, UserCheck, UserPlus, UserX, Users } from "lucide-react";
-import { toast } from "sonner";
+import { LuEye as Eye, LuHistory as History, LuKeyRound as KeyRound, LuLayoutDashboard as LayoutDashboard, LuMail as Mail, LuPencil as Pencil, LuShieldCheck as ShieldCheck, LuUserCheck as UserCheck, LuUserPlus as UserPlus, LuUserX as UserX, LuUsers as Users } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox, Label, Textarea } from "@/components/ui/fields";
@@ -17,6 +17,7 @@ import { useAuth } from "@/lib/auth";
 import { formatDate } from "@/lib/utils";
 import { Avatar, EmployeeStatus, InviteLinkDialog, RoleChips, useDebounced } from "./shared";
 import type { EmployeeDto, EmployeeList, InviteResult, RoleDto } from "./types";
+import { Skeleton } from "@/components/admin/skeletons";
 
 const errMsg = (e: unknown) => (e instanceof ApiClientError ? e.message : "Something went wrong");
 
@@ -49,7 +50,7 @@ function AssignRolesDialog({ employee, onClose, onSaved }: { employee: EmployeeD
         <DialogTitle>Assign roles</DialogTitle>
         <DialogDescription>{employee?.name}. Permissions from all selected roles are combined.</DialogDescription>
         <ul className="mt-4 max-h-80 space-y-1 overflow-y-auto" aria-label="Roles">
-          {roles.loading && <li className="text-sm text-muted">Loading roles…</li>}
+          {roles.loading && !roles.data && Array.from({ length: 4 }, (_, i) => <li key={i} className="px-2 py-1.5"><Skeleton className="h-12 w-full" /></li>)}
           {roles.data?.items.map((r) => (
             <li key={r.id}>
               <label className="flex cursor-pointer items-start gap-2.5 rounded-md px-2 py-1.5 hover:bg-canvas">
@@ -61,7 +62,7 @@ function AssignRolesDialog({ employee, onClose, onSaved }: { employee: EmployeeD
         </ul>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button loading={saving} onClick={() => void save()}>Save roles</Button>
+          <Button loading={saving} onClick={() => save()}>Save roles</Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -97,7 +98,7 @@ function DeactivateDialog({ employee, onClose, onDone }: { employee: EmployeeDto
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button variant="danger" loading={saving} onClick={() => void run()}>Deactivate</Button>
+          <Button variant="danger" loading={saving} onClick={() => run()}>Deactivate</Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -181,8 +182,8 @@ export function EmployeesPage() {
           <div className="flex flex-wrap items-center gap-2 border-b border-line bg-brand-50 px-4 py-2.5 text-sm" role="region" aria-label="Bulk actions">
             <span className="font-medium text-brand-700">{selected.size} selected</span>
             {can("users", "change_status") && <>
-              <Button size="sm" variant="secondary" onClick={() => void bulk("active")}><UserCheck className="size-3.5" /> Activate</Button>
-              <Button size="sm" variant="danger" onClick={() => void bulk("suspended")}><UserX className="size-3.5" /> Deactivate</Button>
+              <Button size="sm" variant="secondary" onClick={() => bulk("active")}><UserCheck className="size-3.5" /> Activate</Button>
+              <Button size="sm" variant="danger" onClick={() => bulk("suspended")}><UserX className="size-3.5" /> Deactivate</Button>
             </>}
             <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Clear</Button>
           </div>
@@ -202,9 +203,9 @@ export function EmployeesPage() {
                   { label: "Assign roles", icon: ShieldCheck, onSelect: () => setAssigning(e), hidden: !can("users", "assign") || self },
                   { label: "Manage page access", icon: KeyRound, href: `/admin/users/${e.id}/permissions`, hidden: !can("user_permissions", "view") },
                   { label: "Configure dashboard", icon: LayoutDashboard, href: `/admin/users/${e.id}/dashboard`, hidden: !can("user_dashboards", "view") },
-                  { label: e.status === "invited" ? "Send invitation" : "Send password reset", icon: Mail, onSelect: () => void sendLink(e), hidden: !can("users", "edit") || self || e.status === "suspended" },
+                  { label: e.status === "invited" ? "Send invitation" : "Send password reset", icon: Mail, onSelect: () => sendLink(e), hidden: !can("users", "edit") || self || e.status === "suspended" },
                   { label: "View activity", icon: History, href: `/admin/users/${e.id}?tab=activity`, hidden: !can("activity_logs", "view") },
-                  { label: "Activate", icon: UserCheck, onSelect: () => void activate(e), hidden: !can("users", "change_status") || self || e.status !== "suspended", separatorBefore: true },
+                  { label: "Activate", icon: UserCheck, onSelect: () => activate(e), hidden: !can("users", "change_status") || self || e.status !== "suspended", separatorBefore: true },
                   { label: "Deactivate", icon: UserX, destructive: true, onSelect: () => setDeactivating(e), hidden: !can("users", "change_status") || self || e.status === "suspended", separatorBefore: true },
                 ]} />
               );

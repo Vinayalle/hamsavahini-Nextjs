@@ -3,7 +3,7 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, Home } from "lucide-react";
+import { LuChevronRight as ChevronRight, LuHouse as Home } from "react-icons/lu";
 import { SEGMENT_LABELS, findNavLabel } from "@/config/navigation";
 import { useShell } from "./shell";
 

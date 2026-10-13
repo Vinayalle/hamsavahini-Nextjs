@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bold, Heading2, Italic, Link2, List, ListOrdered, Quote, X } from "lucide-react";
+import { LuBold as Bold, LuHeading2 as Heading2, LuItalic as Italic, LuLink2 as Link2, LuList as List, LuListOrdered as ListOrdered, LuQuote as Quote, LuX as X } from "react-icons/lu";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/fields";
 import { Button } from "@/components/ui/button";

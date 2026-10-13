@@ -2,14 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Aldrich, Play, Roboto } from "next/font/google";
+import { fontVars } from "./fonts";
 import type { HeroSlide } from "@/server/services/site";
-
-// Fonts taken from the reference site (self-hosted at build time by next/font, so no external font request): headline Aldrich,
-// paragraph Play, button Roboto.
-const aldrich = Aldrich({ subsets: ["latin"], weight: "400", display: "swap", variable: "--font-hero-title" });
-const play = Play({ subsets: ["latin"], weight: ["400", "700"], display: "swap", variable: "--font-hero-text" });
-const roboto = Roboto({ subsets: ["latin"], weight: ["400", "500"], display: "swap", variable: "--font-hero-button" });
 
 const AUTOPLAY_MS = 3000;
 const TRANSITION_MS = 700;
@@ -119,7 +113,7 @@ export default function Hero({ slides }: { slides: HeroSlide[] }) {
       ref={section}
       aria-roledescription="carousel"
       aria-label="Featured"
-      className={`${aldrich.variable} ${play.variable} ${roboto.variable} relative w-full touch-pan-y select-none overflow-hidden bg-neutral-200 text-white ${many ? (dragX !== null ? "cursor-grabbing" : "cursor-grab") : ""}`}
+      className={`${fontVars} relative w-full touch-pan-y select-none overflow-hidden bg-neutral-200 text-white ${many ? (dragX !== null ? "cursor-grabbing" : "cursor-grab") : ""}`}
       style={{ height: "calc(100svh - var(--site-header-h))", minHeight: 440 }}
       onPointerDown={onPointerDown}
       onClickCapture={(e) => { if (suppressClick.current) { e.preventDefault(); e.stopPropagation(); } }}

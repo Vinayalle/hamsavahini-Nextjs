@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2 } from "lucide-react";
+import { LuCircleCheck as CheckCircle2 } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/fields";
 import { Field } from "@/components/forms/form-parts";

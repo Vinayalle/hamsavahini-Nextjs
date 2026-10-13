@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { EntityForm, defaultsFor, type SectionDef, type Values } from "@/components/forms/entity-form";
 import { NotFoundRecord, PageHeader } from "@/components/admin/page-parts";
 import { useBreadcrumbLabel } from "@/components/admin/use-breadcrumb-label";

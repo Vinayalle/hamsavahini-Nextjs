@@ -26,7 +26,7 @@ export function DropdownItem({
   return (
     <Dd.Item
       className={cn(
-        "flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 text-sm outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
         destructive ? "text-danger-600 data-[highlighted]:bg-danger-50" : "text-ink data-[highlighted]:bg-canvas",
         className,
       )}

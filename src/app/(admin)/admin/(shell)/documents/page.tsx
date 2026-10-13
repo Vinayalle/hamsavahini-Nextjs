@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Download, FileText, Pencil, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { LuDownload as Download, LuFileText as FileText, LuPencil as Pencil, LuPlus as Plus } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/admin/page-parts";
 import { ResourceList } from "@/components/admin/resource-list";
@@ -88,7 +88,7 @@ export default function DocumentLibraryPage() {
         defaultSort={{ by: "updatedAt", dir: "desc" }} searchPlaceholder="Search title or file name…"
         statuses={[{ value: "published" }, { value: "draft" }]} currentStatus={(d) => d.status} emptyAction={add}
         extraRowActions={(d) => [
-          ...(isApiMode ? [{ label: "Download", icon: Download, hidden: !can("documents", "download") || storage !== true, onSelect: () => void download(d) }] : []),
+          ...(isApiMode ? [{ label: "Download", icon: Download, hidden: !can("documents", "download") || storage !== true, onSelect: () => download(d) }] : []),
           { label: "Edit", icon: Pencil, hidden: isApiMode && !can("documents", "edit"), onSelect: () => setEditing(d) },
         ]}
         filters={[

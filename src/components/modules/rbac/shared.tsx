@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Copy, DatabaseZap } from "lucide-react";
-import { toast } from "sonner";
+import { LuCopy as Copy, LuDatabaseZap as DatabaseZap } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";

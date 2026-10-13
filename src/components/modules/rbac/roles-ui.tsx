@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Copy, Eye, Lock, Pencil, Plus, Power, ShieldCheck, Trash2, Users } from "lucide-react";
-import { toast } from "sonner";
+import { LuCopy as Copy, LuEye as Eye, LuLock as Lock, LuPencil as Pencil, LuPlus as Plus, LuPower as Power, LuShieldCheck as ShieldCheck, LuTrash2 as Trash2, LuUsers as Users } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Checkbox, Input, Textarea } from "@/components/ui/fields";
@@ -23,6 +23,7 @@ import { formatDate } from "@/lib/utils";
 import { PermissionTree, diffKeys, type Granted } from "./permission-tree";
 import { EmployeeStatus } from "./shared";
 import type { EmployeeList, RoleDetail, RoleDto } from "./types";
+import { DetailSkeleton, FormSkeleton } from "@/components/admin/skeletons";
 
 const errMsg = (e: unknown) => (e instanceof ApiClientError ? e.message : "Something went wrong");
 
@@ -50,7 +51,7 @@ function DuplicateDialog({ role, onClose, onDone }: { role: RoleDto | null; onCl
         <DialogTitle>Duplicate role</DialogTitle>
         <DialogDescription>Copies all permissions of “{role?.name}” into a new, editable role.</DialogDescription>
         <div className="mt-4"><Field label="New role name" htmlFor="dup-name" required error={error}><Input id="dup-name" value={name} onChange={(e) => { setName(e.target.value); setError(""); }} /></Field></div>
-        <div className="mt-5 flex justify-end gap-2"><Button variant="secondary" onClick={onClose}>Cancel</Button><Button loading={saving} onClick={() => void run()}>Duplicate</Button></div>
+        <div className="mt-5 flex justify-end gap-2"><Button variant="secondary" onClick={onClose}>Cancel</Button><Button loading={saving} onClick={() => run()}>Duplicate</Button></div>
       </DialogContent>
     </Dialog>
   );
@@ -95,7 +96,7 @@ function AssignEmployeesDialog({ role, onClose, onDone }: { role: RoleDto | null
             </li>
           ))}
         </ul>
-        <div className="mt-5 flex justify-end gap-2"><Button variant="secondary" onClick={onClose}>Cancel</Button><Button disabled={add.length + remove.length === 0} loading={saving} onClick={() => void run()}>Save assignments</Button></div>
+        <div className="mt-5 flex justify-end gap-2"><Button variant="secondary" onClick={onClose}>Cancel</Button><Button disabled={add.length + remove.length === 0} loading={saving} onClick={() => run()}>Save assignments</Button></div>
       </DialogContent>
     </Dialog>
   );
@@ -152,8 +153,8 @@ export function RolesListPage() {
                 { label: "Edit role", icon: Pencil, href: `/admin/roles/${r.id}/edit`, hidden: !can("roles", "edit") || r.readOnly },
                 { label: "Duplicate role", icon: Copy, onSelect: () => setDup(r), hidden: !can("roles", "create") },
                 { label: "Assign employees", icon: Users, onSelect: () => setAssign(r), hidden: !can("roles", "assign") },
-                { label: r.status === "active" ? "Deactivate role" : "Activate role", icon: Power, onSelect: () => void setStatus(r, r.status === "active" ? "inactive" : "active"), hidden: !can("roles", "change_status") || r.readOnly, separatorBefore: true },
-                { label: "Delete role", icon: Trash2, destructive: true, onSelect: () => void remove(r), hidden: !can("roles", "delete") || r.isSystem, separatorBefore: true },
+                { label: r.status === "active" ? "Deactivate role" : "Activate role", icon: Power, onSelect: () => setStatus(r, r.status === "active" ? "inactive" : "active"), hidden: !can("roles", "change_status") || r.readOnly, separatorBefore: true },
+                { label: "Delete role", icon: Trash2, destructive: true, onSelect: () => remove(r), hidden: !can("roles", "delete") || r.isSystem, separatorBefore: true },
               ]} />
             )}
           />
@@ -173,7 +174,7 @@ export function RoleDetailPage({ id }: { id: string }) {
   useBreadcrumbLabel(role.data?.name);
   if (role.error?.status === 404) return <NotFoundRecord what="Role" backHref="/admin/roles" backLabel="Back to roles" />;
   if (role.error) return <ErrorState title="Couldn't load role" description={role.error.message} onRetry={() => void role.reload()} />;
-  if (!role.data) return <PageHeader title="Role" description="Loading…" />;
+  if (!role.data) return <><PageHeader title="Role" /><DetailSkeleton /></>;
   const r = role.data;
   const granted: Granted = Object.fromEntries(r.grants.map((g) => [`${g.resource}:${g.action}`, g.scope]));
   return (
@@ -213,8 +214,8 @@ export function RoleFormPage({ id }: { id?: string }) {
   useBreadcrumbLabel(role.data?.name);
   if (id && role.error?.status === 404) return <NotFoundRecord what="Role" backHref="/admin/roles" backLabel="Back to roles" />;
   if (id && role.error) return <ErrorState title="Couldn't load role" description={role.error.message} onRetry={() => void role.reload()} />;
-  if (id && !role.data) return <PageHeader title="Edit role" description="Loading…" />;
-  if (!id && !me.data) return <PageHeader title="New role" description="Loading…" />;
+  if (id && !role.data) return <><PageHeader title="Edit role" /><FormSkeleton /></>;
+  if (!id && !me.data) return <><PageHeader title="New role" /><FormSkeleton /></>;
   const delegable: Record<string, Scope> = id ? role.data!.delegable : Object.fromEntries(me.data!.permissions.map((k) => [k, "all" as Scope]));
   return <RoleForm role={role.data} delegable={delegable} />;
 }
@@ -295,7 +296,7 @@ function RoleForm({ role, delegable }: { role?: RoleDetail; delegable: Record<st
         <DialogContent className="max-w-md p-6">
           <DialogTitle>Apply permission changes?</DialogTitle>
           <DialogDescription>{role?.userCount} employee{role?.userCount === 1 ? "" : "s"} with this role will be affected immediately: {diff.added.length} permission(s) added, {diff.removed.length} removed{diff.scoped.length ? `, ${diff.scoped.length} scope change(s)` : ""}.</DialogDescription>
-          <div className="mt-5 flex justify-end gap-2"><Button variant="secondary" onClick={() => setReviewing(false)}>Keep editing</Button><Button variant={diff.removed.length ? "danger" : "primary"} loading={saving} onClick={() => void save()}>Apply changes</Button></div>
+          <div className="mt-5 flex justify-end gap-2"><Button variant="secondary" onClick={() => setReviewing(false)}>Keep editing</Button><Button variant={diff.removed.length ? "danger" : "primary"} loading={saving} onClick={() => save()}>Apply changes</Button></div>
         </DialogContent>
       </Dialog>
     </>

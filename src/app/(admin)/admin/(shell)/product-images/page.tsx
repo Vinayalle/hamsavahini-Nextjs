@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Star, Trash2, UploadCloud } from "lucide-react";
-import { toast } from "sonner";
+import { LuStar as Star, LuTrash2 as Trash2, LuCloudUpload as UploadCloud } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -12,12 +12,13 @@ import { EmptyState, PageHeader, Pagination, SearchInput } from "@/components/ad
 import { useConfirm } from "@/components/admin/dialogs";
 import { Field } from "@/components/forms/form-parts";
 import { ImageUploader } from "@/components/forms/uploaders";
-import { useAll } from "@/hooks/use-resource";
+import { useAll, useServiceReady } from "@/hooks/use-resource";
 import { useLocalList } from "@/hooks/use-local-list";
 import { productService } from "@/lib/services";
 import type { ProductImage } from "@/types/entities";
 import { StorageNotice } from "@/components/admin/storage-notice";
 import { isApiMode } from "@/lib/api/client";
+import { ImageGridSkeleton } from "@/components/admin/skeletons";
 
 const MAX_IMAGES = 8;
 
@@ -63,7 +64,7 @@ function UploadDialog({ open, onOpenChange, onUploaded }: { open: boolean; onOpe
         </div>
         <div className="mt-6 flex justify-end gap-2">
           <Button variant="secondary" onClick={close}>Cancel</Button>
-          <Button onClick={() => void save()} disabled={!!product && room <= 0}>Add to product</Button>
+          <Button onClick={() => save()} disabled={!!product && room <= 0}>Add to product</Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -72,6 +73,7 @@ function UploadDialog({ open, onOpenChange, onUploaded }: { open: boolean; onOpe
 
 export default function ProductImagesPage() {
   const products = useAll(productService);
+  const ready = useServiceReady(productService);
   const confirm = useConfirm();
   const [productFilter, setProductFilter] = useState("all");
   const [uploading, setUploading] = useState(false);
@@ -131,7 +133,9 @@ export default function ProductImagesPage() {
             {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
-        {list.rows.length === 0 ? (
+        {!ready ? (
+          <ImageGridSkeleton count={8} />
+        ) : list.rows.length === 0 ? (
           <EmptyState title="No images found" description="Try a different search or upload new images." action={upload} />
         ) : (
           <ul className="grid grid-cols-1 gap-4 p-4 min-[480px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
@@ -149,8 +153,8 @@ export default function ProductImagesPage() {
                     onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
                   />
                   <div className="flex gap-1.5">
-                    <Button size="sm" variant="secondary" className="flex-1" disabled={img.isPrimary} onClick={() => void setPrimary(img.productId, img.id)}><Star className="size-3.5" /> Primary</Button>
-                    <Button size="sm" variant="secondary" aria-label={`Remove ${img.alt}`} onClick={() => void remove(img.productId, img.id, img.alt)}><Trash2 className="size-3.5 text-danger-600" /></Button>
+                    <Button size="sm" variant="secondary" className="flex-1" disabled={img.isPrimary} onClick={() => setPrimary(img.productId, img.id)}><Star className="size-3.5" /> Primary</Button>
+                    <Button size="sm" variant="secondary" aria-label={`Remove ${img.alt}`} onClick={() => remove(img.productId, img.id, img.alt)}><Trash2 className="size-3.5 text-danger-600" /></Button>
                   </div>
                 </div>
               </li>

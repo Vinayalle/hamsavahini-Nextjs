@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Archive, CheckCircle2, FileEdit, Package, Plus, Star } from "lucide-react";
+import { LuArchive as Archive, LuCircleCheck as CheckCircle2, LuFilePen as FileEdit, LuPackage as Package, LuPlus as Plus, LuStar as Star } from "react-icons/lu";
 import { LinkButton } from "@/components/ui/button";
 import { PageHeader, StatCard } from "@/components/admin/page-parts";
 import { ResourceList } from "@/components/admin/resource-list";

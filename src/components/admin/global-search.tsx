@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, Search } from "lucide-react";
+import { LuFileText as FileText, LuSearch as Search } from "react-icons/lu";
 import { ALL_NAV_ITEMS } from "@/config/navigation";
 import { useAll } from "@/hooks/use-resource";
 import { apiFetch, isApiMode } from "@/lib/api/client";

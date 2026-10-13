@@ -1,7 +1,7 @@
 "use client";
 
-import { ShieldCheck } from "lucide-react";
-import { toast } from "sonner";
+import { LuShieldCheck as ShieldCheck } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Card, CardHeader } from "@/components/ui/card";
 import { PageHeader } from "@/components/admin/page-parts";
 import { ActivityTimeline, DetailList } from "@/components/admin/detail-parts";

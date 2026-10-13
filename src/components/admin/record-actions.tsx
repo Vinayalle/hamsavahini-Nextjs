@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Archive, Pencil, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { LuArchive as Archive, LuPencil as Pencil, LuTrash2 as Trash2 } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button, LinkButton } from "@/components/ui/button";
 import type { CrudService } from "@/lib/mock/collection";
 import type { BaseEntity } from "@/types/common";
@@ -42,10 +42,10 @@ export function RecordActions<T extends BaseEntity>({
   return (
     <>
       {transitions.filter((t) => t.value !== status).map((t) => (
-        <Button key={t.value} variant="secondary" onClick={() => void change(t.value, t.label)}>{t.label}</Button>
+        <Button key={t.value} variant="secondary" onClick={() => change(t.value, t.label)}>{t.label}</Button>
       ))}
-      {archivable && status !== "archived" && <Button variant="secondary" onClick={() => void archive()}><Archive className="size-4" /> Archive</Button>}
-      <Button variant="secondary" onClick={() => void remove()}><Trash2 className="size-4 text-danger-600" /> Delete</Button>
+      {archivable && status !== "archived" && <Button variant="secondary" onClick={() => archive()}><Archive className="size-4" /> Archive</Button>}
+      <Button variant="secondary" onClick={() => remove()}><Trash2 className="size-4 text-danger-600" /> Delete</Button>
       <LinkButton href={editHref}><Pencil className="size-4" /> Edit</LinkButton>
     </>
   );

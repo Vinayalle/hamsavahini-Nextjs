@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Input, Select } from "@/components/ui/fields";
 import { Field, FormActions, FormSection } from "@/components/forms/form-parts";
@@ -17,6 +17,7 @@ import { useApi } from "@/lib/api/use-api";
 import { useAuth } from "@/lib/auth";
 import { InviteLinkDialog } from "./shared";
 import type { EmployeeDto, EmployeeList, InviteResult, RoleDto } from "./types";
+import { FormSkeleton } from "@/components/admin/skeletons";
 
 const schema = z.object({
   name: z.string().trim().min(2, "Full name is required").max(120),
@@ -39,7 +40,7 @@ export function EmployeeForm({ id }: { id?: string }) {
   useBreadcrumbLabel(existing.data?.name);
 
   if (id && existing.error?.status === 404) return <NotFoundRecord what="Employee" backHref="/admin/users" backLabel="Back to employees" />;
-  if (id && !existing.data) return <PageHeader title="Edit employee" description="Loading…" />;
+  if (id && !existing.data) return <><PageHeader title="Edit employee" /><FormSkeleton /></>;
   return <FormBody employee={existing.data} roles={roles.data?.items ?? []} people={(people.data?.items ?? []).filter((p) => p.id !== id)} canAssign={can("users", "assign")} router={router} />;
 }
 

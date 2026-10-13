@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { FileText, ImagePlus, Star, Trash2, UploadCloud } from "lucide-react";
-import { toast } from "sonner";
+import { LuFileText as FileText, LuImagePlus as ImagePlus, LuStar as Star, LuTrash2 as Trash2, LuCloudUpload as UploadCloud } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/fields";
 import { DOCUMENT_RULES, IMAGE_RULES, fileStorage, validateFile } from "@/lib/storage";

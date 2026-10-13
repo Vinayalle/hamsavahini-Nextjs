@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { LuPencil as Pencil, LuPlus as Plus, LuTrash2 as Trash2 } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DataTable, RowActions, type Column } from "@/components/admin/data-table";
@@ -11,7 +11,7 @@ import { EmptyState, PageHeader, Pagination, SearchInput } from "@/components/ad
 import { StatusBadge } from "@/components/admin/status-badge";
 import { useConfirm } from "@/components/admin/dialogs";
 import { EntityFormDialog, type SectionDef, type Values } from "@/components/forms/entity-form";
-import { useAll } from "@/hooks/use-resource";
+import { useAll, useServiceReady } from "@/hooks/use-resource";
 import { useLocalList } from "@/hooks/use-local-list";
 import { productService } from "@/lib/services";
 import { uid } from "@/lib/utils";
@@ -32,6 +32,7 @@ const str = (v: unknown) => (typeof v === "string" ? v : "");
 
 export default function SpecificationsPage() {
   const products = useAll(productService);
+  const ready = useServiceReady(productService);
   const confirm = useConfirm();
   const [productFilter, setProductFilter] = useState("all");
   const [attrFilter, setAttrFilter] = useState("all");
@@ -124,11 +125,11 @@ export default function SpecificationsPage() {
           )}
         </div>
         <DataTable
-          caption="Specifications" columns={columns} rows={list.rows} rowKey={(r) => r.key}
+          caption="Specifications" columns={columns} rows={list.rows} rowKey={(r) => r.key} loading={!ready}
           rowActions={(r) => (
             <RowActions label={`Actions for ${r.productName} ${r.label}`} items={[
               { label: "Edit", icon: Pencil, onSelect: () => setEditing(r) },
-              { label: "Delete", icon: Trash2, destructive: true, separatorBefore: true, onSelect: () => void remove(r) },
+              { label: "Delete", icon: Trash2, destructive: true, separatorBefore: true, onSelect: () => remove(r) },
             ]} />
           )}
           empty={<EmptyState title="No specifications found" description={list.search || productFilter !== "all" || attrFilter !== "all" ? "Try different filters." : "Add the first specification."} action={add} />}

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, Pencil, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { LuEye as Eye, LuPencil as Pencil, LuPlus as Plus } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/admin/page-parts";

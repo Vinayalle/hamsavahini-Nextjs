@@ -1,12 +1,12 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { LuPlus as Plus } from "react-icons/lu";
 import { LinkButton } from "@/components/ui/button";
 import { PageHeader } from "@/components/admin/page-parts";
 import { ResourceList } from "@/components/admin/resource-list";
 import type { Column } from "@/components/admin/data-table";
 import { formatDate } from "@/lib/utils";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Switch } from "@/components/ui/fields";
 import { locationService } from "@/lib/services";
 import type { Location } from "@/types/entities";

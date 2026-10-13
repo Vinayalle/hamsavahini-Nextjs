@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
-import { Archive, Eye, Pencil, Trash2, type LucideIcon } from "lucide-react";
-import { toast } from "sonner";
+import { LuArchive as Archive, LuEye as Eye, LuPencil as Pencil, LuTrash2 as Trash2 } from "react-icons/lu";
+import type { IconType } from "react-icons";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { CrudService } from "@/lib/mock/collection";
@@ -167,11 +168,11 @@ export function ResourceList<T extends BaseEntity>({
         .filter((s) => s.value !== cur)
         .map<RowActionItem>((s) => ({
           label: `Mark as ${s.label ?? statusLabel(s.value)}`,
-          onSelect: () => void changeStatus(row, s.value),
+          onSelect: () => changeStatus(row, s.value),
           separatorBefore: false,
         })),
-      { label: "Archive", icon: Archive as LucideIcon, onSelect: () => void archive(row), hidden: !archivable || cur === "archived", separatorBefore: true },
-      { label: "Delete", icon: Trash2, destructive: true, onSelect: () => void remove(row), hidden: !deletable, separatorBefore: true },
+      { label: "Archive", icon: Archive as IconType, onSelect: () => archive(row), hidden: !archivable || cur === "archived", separatorBefore: true },
+      { label: "Delete", icon: Trash2, destructive: true, onSelect: () => remove(row), hidden: !deletable, separatorBefore: true },
     ];
     return <RowActions items={items} label={`Actions for ${nameOf(row)}`} />;
   };
@@ -197,12 +198,12 @@ export function ResourceList<T extends BaseEntity>({
           <span className="font-medium text-brand-700">{selected.size} selected</span>
           <span className="mx-1 h-4 w-px bg-brand-200" aria-hidden />
           {(statuses ?? []).map((s) => (
-            <Button key={s.value} size="sm" variant="secondary" onClick={() => void bulkStatus(s.value)}>
+            <Button key={s.value} size="sm" variant="secondary" onClick={() => bulkStatus(s.value)}>
               Mark {s.label ?? statusLabel(s.value)}
             </Button>
           ))}
           {deletable && (
-            <Button size="sm" variant="danger" onClick={() => void bulkDelete()}><Trash2 className="size-3.5" /> Delete</Button>
+            <Button size="sm" variant="danger" onClick={() => bulkDelete()}><Trash2 className="size-3.5" /> Delete</Button>
           )}
           <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Clear</Button>
         </div>

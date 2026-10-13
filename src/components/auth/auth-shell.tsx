@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Waves } from "lucide-react";
+import { LuWaves as Waves } from "react-icons/lu";
 
 /** Centered card used by the public account pages (activation, forgot/reset password). */
 export function AuthShell({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {

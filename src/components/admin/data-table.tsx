@@ -1,6 +1,8 @@
 "use client";
 
-import { ArrowDown, ArrowUp, ChevronsUpDown, MoreHorizontal, type LucideIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { LuArrowDown as ArrowDown, LuArrowUp as ArrowUp, LuChevronsUpDown as ChevronsUpDown, LuEllipsis as MoreHorizontal } from "react-icons/lu";
+import type { IconType } from "react-icons";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/fields";
@@ -8,7 +10,7 @@ import {
   DropdownContent, DropdownItem, DropdownMenu, DropdownSeparator, DropdownTrigger,
 } from "@/components/ui/dropdown";
 import { cn } from "@/lib/utils";
-import { LoadingSkeleton } from "./page-parts";
+import { TableSkeleton } from "./skeletons";
 
 export interface Column<T> {
   key: string;
@@ -46,7 +48,7 @@ interface DataTableProps<T> {
 export function DataTable<T>({
   columns, rows, rowKey, sort, onSort, selectable, selected, onSelectedChange, rowActions, loading, empty, caption,
 }: DataTableProps<T>) {
-  if (loading) return <LoadingSkeleton />;
+  if (loading) return <TableSkeleton columns={columns.length + (selectable ? 1 : 0) + (rowActions ? 1 : 0)} />;
   if (rows.length === 0) return <>{empty}</>;
 
   const pageIds = rows.map(rowKey);
@@ -136,9 +138,10 @@ export function DataTable<T>({
 /* ───────────────────────── RowActions ───────────────────────── */
 export interface RowActionItem {
   label: string;
-  icon?: LucideIcon;
+  icon?: IconType;
   href?: string;
-  onSelect?: () => void;
+  /** May return a promise (an async action): the row's "⋯" button then shows a spinner until it settles. */
+  onSelect?: () => unknown;
   destructive?: boolean;
   hidden?: boolean;
   separatorBefore?: boolean;
@@ -146,10 +149,24 @@ export interface RowActionItem {
 
 export function RowActions({ items, label = "Row actions" }: { items: RowActionItem[]; label?: string }) {
   const visible = items.filter((i) => !i.hidden);
+  const [busy, setBusy] = useState(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+  const select = (fn?: () => unknown) => () => {
+    const result = fn?.();
+    if (result && typeof (result as PromiseLike<unknown>).then === "function") {
+      setBusy(true);
+      const done = () => { if (mounted.current) setBusy(false); };
+      Promise.resolve(result).then(done, (error) => { done(); throw error; });
+    }
+  };
   return (
     <DropdownMenu>
       <DropdownTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-8" aria-label={label}>
+        <Button variant="ghost" size="icon" className="size-8" aria-label={label} loading={busy}>
           <MoreHorizontal className="size-4" />
         </Button>
       </DropdownTrigger>
@@ -162,7 +179,7 @@ export function RowActions({ items, label = "Row actions" }: { items: RowActionI
                 <Link href={it.href}>{it.icon && <it.icon className="size-4" />} {it.label}</Link>
               </DropdownItem>
             ) : (
-              <DropdownItem destructive={it.destructive} onSelect={it.onSelect}>
+              <DropdownItem destructive={it.destructive} onSelect={select(it.onSelect)}>
                 {it.icon && <it.icon className="size-4" />} {it.label}
               </DropdownItem>
             )}

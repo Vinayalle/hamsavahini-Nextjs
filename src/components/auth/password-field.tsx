@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, Circle, Eye, EyeOff } from "lucide-react";
+import { LuCheck as Check, LuCircle as Circle, LuEye as Eye, LuEyeOff as EyeOff } from "react-icons/lu";
 import { Input } from "@/components/ui/fields";
 import { Field } from "@/components/forms/form-parts";
 import { checkPassword, passwordStrength, type PasswordContext } from "@/lib/authz/password-policy";

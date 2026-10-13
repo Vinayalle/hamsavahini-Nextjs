@@ -1,4 +1,7 @@
+"use client";
+
 import * as React from "react";
+import { LuLoaderCircle as Loader2 } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 
 const base =
@@ -43,25 +46,43 @@ export const Checkbox = React.forwardRef<HTMLInputElement, React.InputHTMLAttrib
   },
 );
 
+/** If `onChange` returns a promise (a switch that saves on the server straight away), the switch shows a spinner and ignores clicks until it settles. */
 export function Switch({
   checked, onChange, label, disabled,
-}: { checked: boolean; onChange: (v: boolean) => void; label: string; disabled?: boolean }) {
+}: { checked: boolean; onChange: (v: boolean) => unknown; label: string; disabled?: boolean }) {
+  const [pending, setPending] = React.useState(false);
+  const mounted = React.useRef(true);
+  React.useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+  const toggle = () => {
+    const result = onChange(!checked);
+    if (result && typeof (result as PromiseLike<unknown>).then === "function") {
+      setPending(true);
+      const done = () => { if (mounted.current) setPending(false); };
+      Promise.resolve(result).then(done, (error) => { done(); throw error; });
+    }
+  };
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
       aria-label={label}
-      disabled={disabled}
-      onClick={() => onChange(!checked)}
+      aria-busy={pending || undefined}
+      disabled={disabled || pending}
+      onClick={toggle}
       className={cn(
         "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors disabled:opacity-50",
         checked ? "bg-brand-600" : "bg-slate-300",
       )}
     >
       <span
-        className={cn("inline-block size-4 rounded-full bg-white shadow transition-transform", checked ? "translate-x-[18px]" : "translate-x-0.5")}
-      />
+        className={cn("inline-flex size-4 items-center justify-center rounded-full bg-white shadow transition-transform", checked ? "translate-x-[18px]" : "translate-x-0.5")}
+      >
+        {pending && <Loader2 className="size-3 animate-spin text-slate-500" aria-hidden />}
+      </span>
     </button>
   );
 }
