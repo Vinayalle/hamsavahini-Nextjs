@@ -11,7 +11,7 @@ export default function MineralsPage() {
     <div className={`${bodyFont} text-neutral-800`}>
       <PageHero eyebrow="What we supply" title="Minerals we source and supply" description="Every mineral is sourced from verified producers, tested against your specification and delivered with full documentation." crumbs={[{ label: "Minerals" }]} />
       <section aria-labelledby="all-minerals" className="bg-white">
-        <div className={`${container} py-16 md:py-24`}>
+        <div className={`${container} py-10 md:py-14`}>
           <SectionHeading id="all-minerals" title="Choose a mineral to see how we supply it" description="Not sure which grade you need? Tell us your end use and we will match it to the right source." />
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {MINERALS.map((m, i) => <MineralCard key={m.slug} mineral={m} index={i} />)}

@@ -22,7 +22,7 @@ export default async function GlobalOperationsPage() {
       <PageHero eyebrow="Where we work" title="Global operations" description="From the mine to the port of delivery, we manage the entire supply chain so material arrives smoothly and on time." crumbs={[{ label: "Global operations" }]} />
 
       <section aria-label="Overview" className="bg-white">
-        <div className={`${container} py-16 md:py-24`}>
+        <div className={`${container} py-10 md:py-14`}>
           <SplitFeature eyebrow="Reach" title="Resource-rich regions, connected to the industries that need them" icon={LuEarth} action={<ButtonLink href="/contact-us">Talk to our team</ButtonLink>}>
             <p>We bridge producers and buyers across regions. Local knowledge at the source and in the destination market means fewer delays, clearer documents and a supplier who answers the phone in your time zone.</p>
           </SplitFeature>
@@ -30,17 +30,17 @@ export default async function GlobalOperationsPage() {
       </section>
 
       <section aria-labelledby="flow-title" className="bg-neutral-50">
-        <div className={`${container} py-16 md:py-24`}>
+        <div className={`${container} py-10 md:py-14`}>
           <SectionHeading id="flow-title" eyebrow="End to end" title="How a consignment moves" />
           <Steps steps={FLOW} />
         </div>
       </section>
 
       <section aria-labelledby="locations-title" className="bg-white">
-        <div className={`${container} py-16 md:py-24`}>
+        <div className={`${container} py-10 md:py-14`}>
           <SectionHeading id="locations-title" eyebrow="Locations" title="Where we operate" description="Offices, sourcing locations, facilities and ports we work with." />
           {failed ? <Unavailable /> : locations.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 px-6 py-10 text-center text-neutral-600">Our locations will be listed here soon. To discuss a specific region, <a href="/contact-us" className="font-bold text-[var(--brand-red)] underline">contact us</a>.</p>
+            <p className="rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 px-6 py-10 text-center text-neutral-600">Our locations will be listed here soon. To discuss a specific region, <a href="/contact-us" className="font-bold text-gold-700 underline">contact us</a>.</p>
           ) : (
             <div className="space-y-12">
               {types.map((t) => (

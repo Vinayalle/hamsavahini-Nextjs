@@ -20,7 +20,7 @@ export default function QualityPage() {
       <PageHero eyebrow="Responsibility" title="Quality & compliance" description="Each shipment is tested and certified to international standards, with full traceability and transparent documentation." crumbs={[{ label: "Quality & compliance" }]} />
 
       <section aria-label="Our approach" className="bg-white">
-        <div className={`${container} py-16 md:py-24`}>
+        <div className={`${container} py-10 md:py-14`}>
           <SplitFeature eyebrow="Our approach" title="Quality is agreed before it is shipped" icon={LuBadgeCheck} action={<ButtonLink href="/request-a-quote">Share your specification</ButtonLink>}>
             <p>Quality is not something we check at the end. We write the specification down with you first, source against it, test against it and document the result, so there are no surprises when the material arrives.</p>
             <p>Where your destination or customer requires an independent inspection, we arrange it.</p>
@@ -29,14 +29,14 @@ export default function QualityPage() {
       </section>
 
       <section aria-labelledby="process-title" className="bg-neutral-50">
-        <div className={`${container} py-16 md:py-24`}>
+        <div className={`${container} py-10 md:py-14`}>
           <SectionHeading id="process-title" eyebrow="How it works" title="From specification to shipment" />
           <Steps steps={QUALITY_STEPS} />
         </div>
       </section>
 
       <section aria-labelledby="docs-title" className="bg-white">
-        <div className={`${container} py-16 md:py-24`}>
+        <div className={`${container} py-10 md:py-14`}>
           <SectionHeading id="docs-title" eyebrow="Documentation" title="Papers that travel with your consignment" description="Certificates and compliance documents are shared on request, and always before payment is due." />
           <ul className="grid gap-5 sm:grid-cols-2">
             {DOCUMENTS.map((d, i) => <PointCard key={d.title} icon={d.icon} title={d.title} text={d.text} index={i} />)}
@@ -45,7 +45,7 @@ export default function QualityPage() {
       </section>
 
       <section aria-labelledby="values-title" className="bg-neutral-50">
-        <div className={`${container} py-16 md:py-24`}>
+        <div className={`${container} py-10 md:py-14`}>
           <SectionHeading id="values-title" eyebrow="What we stand for" title="The principles behind every consignment" center />
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {PILLARS.map((p, i) => <PointCard key={p.title} icon={p.icon} title={p.title} text={p.text} index={i} />)}

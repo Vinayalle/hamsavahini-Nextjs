@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LuArrowUpRight, LuChevronDown, LuGem, LuMenu, LuX } from "react-icons/lu";
+import { LuArrowUpRight, LuChevronDown, LuMenu, LuX } from "react-icons/lu";
 import { NAV, type NavItem } from "@/content/site";
 import { fontVars } from "./fonts";
+import { Logo } from "@/components/brand/Logo";
 
 /**
  * Site header. Height is fixed to --site-header-h (89px, border included) because the hero sections are sized as "screen height minus header".
@@ -46,11 +47,7 @@ export default function Header() {
       <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-10">
         <div className="flex h-[calc(var(--site-header-h)-1px)] items-center justify-between gap-6">
           <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="Hamsavahin Aarth Mines, home">
-            <span aria-hidden className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--brand-red)] to-rose-700 text-white shadow-md shadow-red-500/25"><LuGem className="size-6" /></span>
-            <span className="leading-none">
-              <span className="block font-[family-name:var(--font-hero-title)] text-[22px] tracking-wide text-neutral-900">Hamsavahin</span>
-              <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.28em] text-neutral-500">Aarth Mines</span>
-            </span>
+            <Logo variant="lockup" priority className="h-10 sm:h-12" />
           </Link>
 
           {/* desktop */}
@@ -59,13 +56,13 @@ export default function Header() {
               const active = isActive(item);
               if (!item.children) {
                 return (
-                  <Link key={item.label} href={item.href ?? "/"} aria-current={active ? "page" : undefined} className={`${linkBase} rounded-lg px-3.5 py-2 xl:px-4 ${active ? "text-[var(--brand-red)]" : "text-neutral-800 hover:text-[var(--brand-red)]"}`}>{item.label}</Link>
+                  <Link key={item.label} href={item.href ?? "/"} aria-current={active ? "page" : undefined} className={`${linkBase} rounded-lg px-3.5 py-2 xl:px-4 ${active ? "text-gold-700" : "text-neutral-800 hover:text-gold-700"}`}>{item.label}</Link>
                 );
               }
               const expanded = open === item.label;
               return (
                 <div key={item.label} className="relative" onMouseEnter={() => setOpen(item.label)} onMouseLeave={() => setOpen(null)} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(null); }}>
-                  <button type="button" aria-expanded={expanded} aria-haspopup="menu" onClick={() => setOpen(expanded ? null : item.label)} className={`${linkBase} flex items-center gap-1.5 rounded-lg px-3.5 py-2 xl:px-4 ${active || expanded ? "text-[var(--brand-red)]" : "text-neutral-800 hover:text-[var(--brand-red)]"}`}>
+                  <button type="button" aria-expanded={expanded} aria-haspopup="menu" onClick={() => setOpen(expanded ? null : item.label)} className={`${linkBase} flex items-center gap-1.5 rounded-lg px-3.5 py-2 xl:px-4 ${active || expanded ? "text-gold-700" : "text-neutral-800 hover:text-gold-700"}`}>
                     {item.label}
                     <LuChevronDown className={`size-4 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`} aria-hidden />
                   </button>
@@ -73,12 +70,12 @@ export default function Header() {
                     <div className={`rounded-2xl border border-neutral-200 bg-white p-2 shadow-[0_20px_60px_rgba(0,0,0,0.14)] ${item.wide ? "grid grid-cols-2 gap-1" : ""}`}>
                       {item.children.map((child) => (
                         <Link key={child.href + child.label} href={child.href} tabIndex={expanded ? 0 : -1} className="group flex items-start gap-3 rounded-xl px-3.5 py-3 transition-colors hover:bg-neutral-50 focus-visible:bg-neutral-50">
-                          {child.icon && <span aria-hidden className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-[var(--brand-red)] transition-colors group-hover:bg-[var(--brand-red)] group-hover:text-white"><child.icon className="size-[18px]" /></span>}
+                          {child.icon && <span aria-hidden className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-gold-50 text-gold-700 transition-colors group-hover:bg-gold-500 group-hover:text-white"><child.icon className="size-[18px]" /></span>}
                           <span className="min-w-0 flex-1">
-                            <span className="block text-sm font-bold text-neutral-900 group-hover:text-[var(--brand-red)]">{child.label}</span>
+                            <span className="block text-sm font-bold text-neutral-900 group-hover:text-gold-700">{child.label}</span>
                             {child.description && <span className="mt-0.5 block text-xs leading-5 text-neutral-500">{child.description}</span>}
                           </span>
-                          <LuArrowUpRight className="mt-1 size-4 shrink-0 text-neutral-300 transition-colors group-hover:text-[var(--brand-red)]" aria-hidden />
+                          <LuArrowUpRight className="mt-1 size-4 shrink-0 text-neutral-300 transition-colors group-hover:text-gold-700" aria-hidden />
                         </Link>
                       ))}
                     </div>
@@ -89,8 +86,8 @@ export default function Header() {
           </nav>
 
           <div className="hidden items-center gap-3 lg:flex">
-            <Link href="/request-a-quote" className="hidden text-[15px] font-medium text-neutral-800 transition-colors hover:text-[var(--brand-red)] xl:block">Request a quote</Link>
-            <Link href="/contact-us" className="group flex items-center gap-2 rounded-lg border border-[var(--brand-red)] px-6 py-3 text-sm font-medium text-[var(--brand-red)] transition-all duration-300 hover:bg-[var(--brand-red)] hover:text-white">
+            <Link href="/request-a-quote" className="hidden text-[15px] font-medium text-neutral-800 transition-colors hover:text-gold-700 xl:block">Request a quote</Link>
+            <Link href="/contact-us" className="group flex items-center gap-2 rounded-lg border border-gold-600 px-6 py-3 text-sm font-medium text-gold-700 transition-all duration-300 hover:bg-gold-500 hover:text-white">
               Contact us
               <LuArrowUpRight className="size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden />
             </Link>
@@ -116,7 +113,7 @@ export default function Header() {
                   {mobileSection === item.label && (
                     <ul className="pb-3 pl-2">
                       {item.children.map((child) => (
-                        <li key={child.href + child.label}><Link href={child.href} className="block rounded-lg px-3 py-2.5 text-[15px] text-neutral-700 hover:bg-neutral-50 hover:text-[var(--brand-red)]">{child.label}</Link></li>
+                        <li key={child.href + child.label}><Link href={child.href} className="block rounded-lg px-3 py-2.5 text-[15px] text-neutral-700 hover:bg-neutral-50 hover:text-gold-700">{child.label}</Link></li>
                       ))}
                     </ul>
                   )}
@@ -127,8 +124,8 @@ export default function Header() {
             </div>
           ))}
           <div className="grid gap-3 py-5">
-            <Link href="/contact-us" className="rounded-lg bg-[var(--brand-red)] px-6 py-3.5 text-center text-[15px] font-bold text-white">Contact us</Link>
-            <Link href="/request-a-quote" className="rounded-lg border border-[var(--brand-red)] px-6 py-3.5 text-center text-[15px] font-bold text-[var(--brand-red)]">Request a quote</Link>
+            <Link href="/contact-us" className="rounded-lg bg-gold-500 px-6 py-3.5 text-center text-[15px] font-bold text-ink">Contact us</Link>
+            <Link href="/request-a-quote" className="rounded-lg border border-gold-600 px-6 py-3.5 text-center text-[15px] font-bold text-gold-700">Request a quote</Link>
           </div>
         </div>
       </div>

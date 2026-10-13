@@ -167,14 +167,14 @@ function Slide({ slide, number, total, current, hidden, firstHeading }: { slide:
       )}
 
       {/* Text panel: bottom sheet on phones, right half on desktop. The red layer is glassy: the photo shows through it. */}
-      <div className="absolute inset-x-0 bottom-0 flex max-h-[75%] flex-col items-center justify-center px-6 pb-14 pt-8 text-center md:inset-y-0 md:left-1/2 md:right-0 md:max-h-none md:items-start md:px-[clamp(2rem,5vw,6rem)] md:pb-16 md:pt-0 md:text-left">
+      <div className="absolute inset-x-0 bottom-0 flex max-h-[75%] flex-col items-center justify-center px-6 pb-9 pt-8 text-center md:inset-y-0 md:left-1/2 md:right-0 md:max-h-none md:items-start md:px-[clamp(2rem,5vw,6rem)] md:pb-10 md:pt-0 md:text-left">
         {showImage ? (
           <>
-            <div aria-hidden className="absolute inset-0 bg-[var(--brand-red)]/70" />
-            <div aria-hidden className="absolute inset-0 bg-[var(--brand-red)]/40 mix-blend-multiply" />
+            <div aria-hidden className="absolute inset-0 bg-[var(--brand-deep)]/75" />
+            <div aria-hidden className="absolute inset-0 bg-[var(--brand-deep)]/40 mix-blend-multiply" />
           </>
         ) : (
-          <div aria-hidden className="absolute inset-0 bg-[var(--brand-red)]" />
+          <div aria-hidden className="absolute inset-0 bg-[var(--brand-deep)]" />
         )}
         {/* Sizes on a phone follow the reference exactly: 24px headline, 16px text, 15px button with 16px padding, a 280px text column. */}
         <div className={`relative flex w-full max-w-[280px] flex-col items-center gap-3 transition-opacity duration-500 md:max-w-2xl md:items-start md:gap-6 ${current ? "opacity-100" : "opacity-0"}`}>

@@ -112,7 +112,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </aside>
 
         <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
-          <DialogContent side="left" className="bg-navy-900 p-0" aria-describedby={undefined}>
+          <DialogContent side="left" className="bg-bark-900 p-0" aria-describedby={undefined}>
             <DialogTitle className="sr-only">Navigation</DialogTitle>
             <AdminSidebar collapsed={false} groups={groups} />
           </DialogContent>

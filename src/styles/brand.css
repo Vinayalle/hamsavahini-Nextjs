@@ -1,0 +1,61 @@
+/*
+ * BRAND COLOURS, shared by the public website and the admin.
+ * Everything is derived from the logo (assets/brand/logo-original.png): its antique gold is #B98626 (gold-500).
+ *
+ *   gold-500  the logo's own gold: fills, icons, large graphics. Too light for small text on white (3.2:1).
+ *   gold-700  gold for TEXT on light backgrounds (6.4:1 on white).
+ *   gold-300  gold for text and icons on DARK backgrounds.
+ *   neutral/slate  warm greys (the default cool greys are replaced everywhere, so every existing class turns warm).
+ *   ink / bark  the near-black of text and dark sections, warm brown instead of blue-black.
+ *
+ * Buttons on gold use ink text (5.5:1); white text is only used on gold-700 or darker.
+ * Error, success and warning colours stay red, green and amber on purpose: they carry meaning.
+ */
+@theme {
+  --color-gold-50: #fbf6e9;
+  --color-gold-100: #f5eacb;
+  --color-gold-200: #ebd59a;
+  --color-gold-300: #debb66;
+  --color-gold-400: #cda044;
+  --color-gold-500: #b98626;
+  --color-gold-600: #9d6f1d;
+  --color-gold-700: #7e5818;
+  --color-gold-800: #634517;
+  --color-gold-900: #4a3413;
+  --color-gold-950: #2a1d09;
+
+  --color-ink: #1c1710;
+
+  --color-neutral-50: #faf8f3;
+  --color-neutral-100: #f3efe6;
+  --color-neutral-200: #e6dfd0;
+  --color-neutral-300: #d3cab7;
+  --color-neutral-400: #a89e8a;
+  --color-neutral-500: #7c7362;
+  --color-neutral-600: #5c5546;
+  --color-neutral-700: #463f33;
+  --color-neutral-800: #2f2a21;
+  --color-neutral-900: #1f1b14;
+  --color-neutral-950: #14100a;
+
+  --color-slate-50: #faf8f3;
+  --color-slate-100: #f3efe6;
+  --color-slate-200: #e6dfd0;
+  --color-slate-300: #d3cab7;
+  --color-slate-400: #a89e8a;
+  --color-slate-500: #7c7362;
+  --color-slate-600: #5c5546;
+  --color-slate-700: #463f33;
+  --color-slate-800: #2f2a21;
+  --color-slate-900: #1f1b14;
+  --color-slate-950: #14100a;
+}
+
+:root {
+  /** Brand colours as plain CSS variables, for inline styles, gradients and canvas drawing. */
+  --brand: #b98626;
+  --brand-text: #7e5818;
+  --brand-deep: #6b4810;
+  --brand-soft: #fbf6e9;
+  --brand-rgb: 185, 134, 38;
+}

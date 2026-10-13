@@ -231,7 +231,7 @@ export function AppShellSkeleton({ variant = "list" }: { variant?: SkeletonVaria
   return (
     <div className="flex min-h-screen" role="status" aria-busy="true" aria-live="polite">
       <span className="sr-only">Checking your session…</span>
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 bg-navy-900 lg:block" aria-hidden>
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 bg-bark-900 lg:block" aria-hidden>
         <div className="flex h-16 items-center gap-2.5 border-b border-white/10 px-5">
           <Skeleton dark className="size-8 rounded-lg" />
           <div className="space-y-1.5">

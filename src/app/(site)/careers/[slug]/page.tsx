@@ -37,7 +37,7 @@ export default async function CareerPage({ params }: Params) {
       </PageHero>
 
       <section aria-label="Position" className="bg-white">
-        <div className={`${container} grid items-start gap-12 py-14 md:py-20 lg:grid-cols-[1.4fr_0.6fr]`}>
+        <div className={`${container} grid items-start gap-12 py-9 md:py-12 lg:grid-cols-[1.4fr_0.6fr]`}>
           <Reveal variant="left">
             <h2 className={`${headingFont} mb-3 text-[28px] text-neutral-900`}>About the role</h2>
             <Prose html={career.descriptionHtml} />
@@ -48,17 +48,17 @@ export default async function CareerPage({ params }: Params) {
             <aside aria-label="Position facts" className={`${card} bg-neutral-50 p-7 lg:sticky lg:top-[calc(var(--site-header-h)+24px)]`}>
               <ul className="space-y-4">
                 {facts.map((f) => (
-                  <li key={f.label} className="flex items-start gap-3"><f.icon className="mt-1 size-5 shrink-0 text-[var(--brand-red)]" aria-hidden /><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">{f.label}</p><p className="font-bold text-neutral-900">{f.value}</p></div></li>
+                  <li key={f.label} className="flex items-start gap-3"><f.icon className="mt-1 size-5 shrink-0 text-gold-700" aria-hidden /><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">{f.label}</p><p className="font-bold text-neutral-900">{f.value}</p></div></li>
                 ))}
               </ul>
-              <a href="#apply" className="mt-6 block rounded-xl bg-[var(--brand-red)] px-6 py-3.5 text-center font-bold text-white transition hover:bg-red-700">Apply now</a>
+              <a href="#apply" className="mt-6 block rounded-xl bg-gold-500 px-6 py-3.5 text-center font-bold text-ink transition hover:bg-gold-400">Apply now</a>
             </aside>
           </Reveal>
         </div>
       </section>
 
       <section id="apply" aria-labelledby="apply-title" className="scroll-mt-[calc(var(--site-header-h)+8px)] bg-neutral-50">
-        <div className={`${container} py-14 md:py-20`}>
+        <div className={`${container} py-9 md:py-12`}>
           <div className={`${card} mx-auto max-w-3xl p-7 shadow-xl shadow-neutral-900/5 md:p-10`}>
             <h2 id="apply-title" className={`${headingFont} mb-2 text-[28px] text-neutral-900`}>Apply for this position</h2>
             <p className="mb-7 text-neutral-600">Tell us a little about yourself. Attaching a resume is optional.</p>

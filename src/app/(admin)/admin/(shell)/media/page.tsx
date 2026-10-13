@@ -119,7 +119,7 @@ export default function MediaLibraryPage() {
                 <button type="button" onClick={() => setOpenId(m.id)} className="group block w-full overflow-hidden rounded-lg border border-line text-left transition-colors hover:border-brand-200">
                   <div className="relative aspect-square bg-canvas">
                     <img src={m.url} alt={m.altText} className="size-full object-cover" />
-                    {m.kind === "video" && <span className="absolute inset-0 flex items-center justify-center bg-navy-950/30 text-white"><FileVideo className="size-8" aria-hidden /></span>}
+                    {m.kind === "video" && <span className="absolute inset-0 flex items-center justify-center bg-bark-950/30 text-white"><FileVideo className="size-8" aria-hidden /></span>}
                   </div>
                   <div className="p-2">
                     <p className="truncate text-xs font-medium text-ink">{m.name}</p>

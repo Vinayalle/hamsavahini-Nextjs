@@ -16,7 +16,8 @@
     "db:generate": "prisma generate",
     "auth:secrets": "node scripts/gen-secrets.mjs",
     "mutation:check": "node scripts/mutation-check.mjs",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "brand:build": "node scripts/build-brand.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1149.0",
@@ -61,6 +62,7 @@
     "mailparser": "^3.9.38",
     "prisma": "^7.10.0",
     "s3rver": "^3.7.1",
+    "sharp": "^0.35.5",
     "smtp-server": "^3.19.21",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
