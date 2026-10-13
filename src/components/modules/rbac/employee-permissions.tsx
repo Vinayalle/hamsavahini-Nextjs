@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Info } from "lucide-react";
-import { toast } from "sonner";
+import { LuInfo as Info } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -17,6 +17,7 @@ import { useAuth } from "@/lib/auth";
 import { PermissionTree, diffKeys, effectiveKeys, type Overrides } from "./permission-tree";
 import { RoleChips } from "./shared";
 import type { EmployeePermissions } from "./types";
+import { CardSkeleton } from "@/components/admin/skeletons";
 
 const label = (key: string) => {
   const i = key.lastIndexOf(":");
@@ -30,7 +31,7 @@ export function EmployeePermissionsPage({ id }: { id: string }) {
   useBreadcrumbLabel(perms.data?.user.name);
   if (perms.error?.status === 404) return <NotFoundRecord what="Employee" backHref="/admin/users" backLabel="Back to employees" />;
   if (perms.error) return <ErrorState title="Couldn't load permissions" description={perms.error.message} onRetry={() => void perms.reload()} />;
-  if (!perms.data) return <PageHeader title="Page access" description="Loading…" />;
+  if (!perms.data) return <><PageHeader title="Page access" /><CardSkeleton lines={10} /></>;
   return <Editor key={perms.data.overrides.map((o) => `${o.resource}:${o.action}:${o.effect}`).join("|")} data={perms.data} id={id} onSaved={() => void perms.reload()} />;
 }
 
@@ -117,7 +118,7 @@ function Editor({ data, id, onSaved }: { data: EmployeePermissions; id: string; 
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setReviewing(false)}>Keep editing</Button>
-            <Button variant={criticalRemoved.length ? "danger" : "primary"} loading={saving} onClick={() => void save()}>Confirm and save</Button>
+            <Button variant={criticalRemoved.length ? "danger" : "primary"} loading={saving} onClick={() => save()}>Confirm and save</Button>
           </div>
         </DialogContent>
       </Dialog>

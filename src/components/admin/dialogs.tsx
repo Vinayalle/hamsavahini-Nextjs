@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle } from "lucide-react";
+import { LuTriangleAlert as AlertTriangle } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -38,7 +38,7 @@ export function ConfirmDialog({
         </div>
         <div className="mt-6 flex justify-end gap-2">
           <Button variant="secondary" onClick={() => onOpenChange(false)}>{cancelLabel}</Button>
-          <Button variant={destructive ? "danger" : "primary"} loading={loading} onClick={() => void onConfirm()}>
+          <Button variant={destructive ? "danger" : "primary"} loading={loading} onClick={() => onConfirm()}>
             {confirmLabel}
           </Button>
         </div>

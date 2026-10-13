@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { LuPlus as Plus } from "react-icons/lu";
 import { LinkButton } from "@/components/ui/button";
 import { PageHeader } from "@/components/admin/page-parts";
 import { ResourceList } from "@/components/admin/resource-list";

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Archive, FileText, Pencil, Star, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { LuArchive as Archive, LuFileText as FileText, LuPencil as Pencil, LuStar as Star, LuTrash2 as Trash2 } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { NotFoundRecord, PageHeader } from "@/components/admin/page-parts";
@@ -57,10 +57,10 @@ export default function ProductDetailPage() {
         description={`${product.code} · ${category ?? "Uncategorised"}`}
         actions={
           <>
-            {product.status !== "published" && <Button variant="secondary" onClick={() => void changeStatus("published")}>Publish</Button>}
-            {product.status === "published" && <Button variant="secondary" onClick={() => void changeStatus("draft")}>Unpublish</Button>}
-            {product.status !== "archived" && <Button variant="secondary" onClick={() => void archive()}><Archive className="size-4" /> Archive</Button>}
-            <Button variant="secondary" onClick={() => void remove()}><Trash2 className="size-4 text-danger-600" /> Delete</Button>
+            {product.status !== "published" && <Button variant="secondary" onClick={() => changeStatus("published")}>Publish</Button>}
+            {product.status === "published" && <Button variant="secondary" onClick={() => changeStatus("draft")}>Unpublish</Button>}
+            {product.status !== "archived" && <Button variant="secondary" onClick={() => archive()}><Archive className="size-4" /> Archive</Button>}
+            <Button variant="secondary" onClick={() => remove()}><Trash2 className="size-4 text-danger-600" /> Delete</Button>
             <LinkButton href={`/admin/products/${product.id}/edit`}><Pencil className="size-4" /> Edit</LinkButton>
           </>
         }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { HardDrive } from "lucide-react";
+import { LuHardDrive as HardDrive } from "react-icons/lu";
 import { apiFetch, isApiMode } from "@/lib/api/client";
 
 /** null = still checking. Mock mode is always "configured" (it is a preview that stores nothing). */

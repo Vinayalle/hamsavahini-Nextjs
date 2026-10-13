@@ -41,6 +41,16 @@ Every sign-in is: email + password, then a 6-digit code emailed to the employee 
 The first Super Admin is created by `npm run db:seed` with `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` (12+ characters).
 Set `SMTP_*` and `MAIL_FROM` (see `.env.example`) for activation/reset emails; without them emails are reported as *not delivered*.
 
+## UI conventions
+- **Icons:** only [react-icons](https://react-icons.github.io/react-icons/) (the Lucide set, `react-icons/lu`). No other icon package.
+- **Notifications:** only [react-hot-toast](https://react-hot-toast.com/), through the small wrapper in `src/lib/toast.tsx`:
+  `toast.success("Saved", { description: "..." })`, `toast.error(...)`, `toast.warning(...)`, `toast.info(...)`. `<AppToaster />` is mounted once in the admin root layout.
+- **Loading states:** never a blank screen and never a premature "empty" message. Shapes live in `src/components/admin/skeletons.tsx`
+  (`PageSkeleton`, `TableSkeleton`, `DashboardBodySkeleton`, `DetailSkeleton`, `FormSkeleton`, `ImageGridSkeleton`, `AppShellSkeleton` ...). Route-level
+  `loading.tsx` files exist for the admin only; client data uses `useServiceReady()` / `useApi().data` to decide when to swap the skeleton for the real content.
+  The public website deliberately has **no** `loading.tsx`: a streamed fallback would leave visitors without JavaScript (and crawlers that do not run it) staring at a skeleton, so website pages always send their complete HTML.
+- **Buttons:** a click handler that returns a promise (`onClick={() => save()}`) makes `Button` show its own spinner and ignore double clicks.
+
 ## Structure
 
 ```

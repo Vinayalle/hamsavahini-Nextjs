@@ -1,10 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ArrowRight, Boxes, Briefcase, CheckCircle2, FileEdit, FolderKanban, Globe2, Inbox, MapPin, MessageSquare,
-  Newspaper, Package, Users, Clock,
-} from "lucide-react";
+import { LuArrowRight as ArrowRight, LuBoxes as Boxes, LuBriefcase as Briefcase, LuCircleCheck as CheckCircle2, LuFilePen as FileEdit, LuFolderKanban as FolderKanban, LuEarth as Globe2, LuInbox as Inbox, LuMapPin as MapPin, LuMessageSquare as MessageSquare, LuNewspaper as Newspaper, LuPackage as Package, LuUsers as Users, LuClock as Clock } from "react-icons/lu";
 import { Card, CardHeader } from "@/components/ui/card";
 import { PageHeader, StatCard } from "@/components/admin/page-parts";
 import { StatusBadge } from "@/components/admin/status-badge";

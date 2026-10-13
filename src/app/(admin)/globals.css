@@ -58,3 +58,86 @@ body {
 
 .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
 .scroll-thin::-webkit-scrollbar-thumb { background: #c5cdd9; border-radius: 6px; }
+
+/* ─────────────── Cursors ───────────────
+   Tailwind v4 resets buttons to the plain arrow, so the right cursor is set once here for the whole interface:
+   pointing hand on anything that can be clicked, "not allowed" on anything disabled, text cursor stays on text fields.
+   (Single components can still override with a cursor-* utility, e.g. the home hero's grab hand.) */
+@layer base {
+  a[href]:not([aria-disabled="true"]),
+  button:not(:disabled):not([aria-disabled="true"]),
+  summary,
+  select:not(:disabled),
+  label[for],
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  input[type="file"]:not(:disabled),
+  input[type="range"]:not(:disabled),
+  input[type="date"]:not(:disabled)::-webkit-calendar-picker-indicator,
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"]:not([aria-disabled="true"]),
+  [role="switch"]:not([aria-disabled="true"]),
+  [role="checkbox"]:not([aria-disabled="true"]),
+  [role="radio"]:not([aria-disabled="true"]),
+  [role="menuitem"]:not([data-disabled]):not([aria-disabled="true"]),
+  [role="menuitemcheckbox"]:not([data-disabled]):not([aria-disabled="true"]),
+  [role="menuitemradio"]:not([data-disabled]):not([aria-disabled="true"]),
+  [role="option"]:not([data-disabled]):not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled,
+  textarea:disabled,
+  input:disabled,
+  fieldset:disabled,
+  fieldset:disabled *,
+  label:has(input:disabled),
+  label:has(select:disabled),
+  [aria-disabled="true"],
+  [data-disabled] {
+    cursor: not-allowed;
+  }
+}
+
+/* ─────────────── Loading skeletons ─────────────── */
+@keyframes skeleton-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+.skeleton {
+  background-color: #e1e7f0;
+  background-image: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.7) 50%, transparent 100%);
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+.skeleton-dark {
+  background-color: rgba(255, 255, 255, 0.08);
+  background-image: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.14) 50%, transparent 100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+}
+
+/* ─────────────── Toast notifications (react-hot-toast) ─────────────── */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(24px) scale(0.98); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes toast-out {
+  from { opacity: 1; transform: translateX(0) scale(1); }
+  to { opacity: 0; transform: translateX(24px) scale(0.98); }
+}
+.toast-in { animation: toast-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.toast-out { animation: toast-out 0.2s ease-in both; }
+@media (prefers-reduced-motion: reduce) {
+  .toast-in, .toast-out { animation-duration: 0.01ms; }
+}
+
+/* ─────────────── Icons (react-icons) ───────────────
+   react-icons draw at the surrounding font size (1em); the old icon set defaulted to 24px. Keep 24px as the default for any icon that has no
+   explicit size, in the base layer so any size-* / w-* / h-* utility on an icon still wins. */
+@layer base {
+  svg[height="1em"][width="1em"] { width: 1.5rem; height: 1.5rem; }
+}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, ChevronDown, KeyRound, LogOut, Menu, PanelLeftClose, PanelLeftOpen, UserCircle } from "lucide-react";
+import { LuBell as Bell, LuChevronDown as ChevronDown, LuKeyRound as KeyRound, LuLoaderCircle as Loader2, LuLogOut as LogOut, LuMenu as Menu, LuPanelLeftClose as PanelLeftClose, LuPanelLeftOpen as PanelLeftOpen, LuCircleUser as UserCircle } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import {
   DropdownContent, DropdownItem, DropdownLabel, DropdownMenu, DropdownSeparator, DropdownTrigger,
@@ -80,6 +80,7 @@ function NotificationsMenu() {
 
 export function AdminHeader() {
   const { user, signOut } = useAuth();
+  const [signingOut, setSigningOut] = useState(false);
   const router = useRouter();
   const { collapsed, toggleCollapsed, setMobileOpen } = useShell();
   if (!user) return null;
@@ -128,11 +129,15 @@ export function AdminHeader() {
             <DropdownSeparator />
             <DropdownItem
               destructive
-              onSelect={() => {
-                void signOut().then(() => router.replace("/admin/login"));
+              disabled={signingOut}
+              onSelect={(e) => {
+                e.preventDefault(); // keep the menu open so "Signing out…" is visible until the page changes
+                if (signingOut) return;
+                setSigningOut(true);
+                signOut().then(() => router.replace("/admin/login")).catch(() => setSigningOut(false));
               }}
             >
-              <LogOut className="size-4" /> Log out
+              {signingOut ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <LogOut className="size-4" />} {signingOut ? "Signing out…" : "Log out"}
             </DropdownItem>
           </DropdownContent>
         </DropdownMenu>

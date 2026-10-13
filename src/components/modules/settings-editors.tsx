@@ -1,18 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { LuArrowDown as ArrowDown, LuArrowUp as ArrowUp, LuPlus as Plus, LuTrash2 as Trash2 } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Input, Switch, Textarea } from "@/components/ui/fields";
 import { Field, FormActions } from "@/components/forms/form-parts";
 import { PageHeader } from "@/components/admin/page-parts";
 import { useConfirm, useUnsavedChangesGuard } from "@/components/admin/dialogs";
-import { useSettings } from "@/hooks/use-resource";
+import { useSettings, useSettingsReady } from "@/hooks/use-resource";
 import { settingsService } from "@/lib/services/settings";
 import { uid } from "@/lib/utils";
 import type { NavMenuItem, WebsiteSettings } from "@/types/entities";
+import { PageSkeleton } from "@/components/admin/skeletons";
 
 const validHref = (h: string) => /^(\/|https?:\/\/)\S*$/.test(h.trim());
 const move = <T,>(arr: T[], i: number, dir: -1 | 1): T[] => {
@@ -76,7 +77,7 @@ function NavigationEditor({ initial }: { initial: NavMenuItem[] }) {
                 <Switch checked={item.visible} onChange={(v) => patch(item.id, { visible: v })} label={`Show ${item.label} in menu`} />
                 <Button variant="ghost" size="icon" aria-label={`Move ${item.label} up`} disabled={idx === 0} onClick={() => setItems(move(items, idx, -1))}><ArrowUp className="size-4" /></Button>
                 <Button variant="ghost" size="icon" aria-label={`Move ${item.label} down`} disabled={idx === items.length - 1} onClick={() => setItems(move(items, idx, 1))}><ArrowDown className="size-4" /></Button>
-                <Button variant="ghost" size="icon" aria-label={`Remove ${item.label}`} onClick={() => void remove(item)}><Trash2 className="size-4 text-danger-600" /></Button>
+                <Button variant="ghost" size="icon" aria-label={`Remove ${item.label}`} onClick={() => remove(item)}><Trash2 className="size-4 text-danger-600" /></Button>
               </div>
             </div>
             {(
@@ -103,7 +104,7 @@ function NavigationEditor({ initial }: { initial: NavMenuItem[] }) {
       </div>
       <FormActions>
         <Button variant="secondary" disabled={!dirty} onClick={() => { setItems(initial); setErrors({}); }}>Discard changes</Button>
-        <Button disabled={!dirty} loading={saving} onClick={() => void save()}>Save navigation</Button>
+        <Button disabled={!dirty} loading={saving} onClick={() => save()}>Save navigation</Button>
       </FormActions>
       {dialog}
     </>
@@ -112,6 +113,8 @@ function NavigationEditor({ initial }: { initial: NavMenuItem[] }) {
 
 export function NavigationSettingsPage() {
   const { navigation } = useSettings();
+  const ready = useSettingsReady();
+  if (!ready) return <PageSkeleton variant="form" />;
   return (
     <>
       <PageHeader title="Navigation Menu" description="Order and visibility of the main website menu." />
@@ -189,7 +192,7 @@ function FooterEditor({ initial }: { initial: Footer }) {
       </div>
       <FormActions>
         <Button variant="secondary" disabled={!dirty} onClick={() => { setF(initial); setErrors({}); }}>Discard changes</Button>
-        <Button disabled={!dirty} loading={saving} onClick={() => void save()}>Save footer</Button>
+        <Button disabled={!dirty} loading={saving} onClick={() => save()}>Save footer</Button>
       </FormActions>
       {dialog}
     </>
@@ -198,6 +201,8 @@ function FooterEditor({ initial }: { initial: Footer }) {
 
 export function FooterSettingsPage() {
   const { footer } = useSettings();
+  const ready = useSettingsReady();
+  if (!ready) return <PageSkeleton variant="form" />;
   return (
     <>
       <PageHeader title="Footer Settings" description="Footer text, link columns and newsletter signup." />

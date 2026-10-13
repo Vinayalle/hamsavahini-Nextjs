@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Copy, Download } from "lucide-react";
-import { toast } from "sonner";
+import { LuCopy as Copy, LuDownload as Download, LuLoaderCircle as Loader2 } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/fields";
 import { Field } from "@/components/forms/form-parts";
@@ -81,8 +81,10 @@ export function EmailCodeChallenge({ maskedEmail, onSubmit, onExpired }: { maske
     }
   };
 
+  const [sending, setSending] = useState(false);
   const resend = async () => {
     setError(""); setNotice("");
+    setSending(true);
     try {
       const r = await apiFetch<{ sent: boolean; retryAfterSeconds: number | null }>("/api/auth/mfa/resend", { method: "POST", body: {} });
       cooldown.start(r.retryAfterSeconds ?? 60);
@@ -90,6 +92,8 @@ export function EmailCodeChallenge({ maskedEmail, onSubmit, onExpired }: { maske
     } catch (err) {
       if (err instanceof ApiClientError && err.code === "mfa_session_expired") return onExpired();
       setError(message(err, "Could not send a new code."));
+    } finally {
+      setSending(false);
     }
   };
 
@@ -102,8 +106,8 @@ export function EmailCodeChallenge({ maskedEmail, onSubmit, onExpired }: { maske
       {notice && <p className="rounded-md bg-success-50 px-3 py-2 text-sm text-success-600" role="status">{notice}</p>}
       {error && <ErrorNote>{error}</ErrorNote>}
       <Button type="submit" className="w-full justify-center" loading={busy}>Verify and sign in</Button>
-      <button type="button" className="block w-full text-center text-sm font-medium text-brand-600 hover:underline disabled:cursor-not-allowed disabled:text-faint disabled:no-underline" disabled={cooldown.left > 0} onClick={() => void resend()}>
-        {cooldown.left > 0 ? `Resend code in ${cooldown.left}s` : "Didn't get it? Send a new code"}
+      <button type="button" className="block w-full text-center text-sm font-medium text-brand-600 hover:underline disabled:cursor-not-allowed disabled:text-faint disabled:no-underline" disabled={cooldown.left > 0 || sending} onClick={() => resend()}>
+        {sending ? <span className="inline-flex items-center justify-center gap-1.5"><Loader2 className="size-3.5 animate-spin" aria-hidden /> Sending…</span> : cooldown.left > 0 ? `Resend code in ${cooldown.left}s` : "Didn't get it? Send a new code"}
       </button>
     </form>
   );

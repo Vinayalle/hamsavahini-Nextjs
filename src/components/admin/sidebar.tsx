@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, Waves } from "lucide-react";
+import { LuChevronDown as ChevronDown, LuLoaderCircle as Loader2, LuWaves as Waves } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 import type { NavGroup, NavItem } from "@/config/navigation";
 import { useAuth } from "@/lib/auth";
@@ -17,10 +17,13 @@ export function AdminSidebar({ collapsed, groups }: { collapsed: boolean; groups
   const router = useRouter();
   const { signOut } = useAuth();
   const [closed, setClosed] = useState<Record<string, boolean>>({});
+  const [signingOut, setSigningOut] = useState(false);
 
   const handleLogout = () => {
+    if (signingOut) return;
+    setSigningOut(true);
     // Wait for the server to revoke the session before leaving, so the login page cannot silently restore it.
-    void signOut().then(() => router.replace("/admin/login"));
+    signOut().then(() => router.replace("/admin/login")).catch(() => setSigningOut(false));
   };
 
   const renderItem = (item: NavItem) => {
@@ -33,14 +36,14 @@ export function AdminSidebar({ collapsed, groups }: { collapsed: boolean; groups
     const inner = (
       <>
         {active && <span className="absolute inset-y-1.5 left-0 w-[3px] rounded-r bg-brand-500" aria-hidden />}
-        <item.icon className="size-[18px] shrink-0" aria-hidden />
-        <span className={cn("truncate", collapsed && "sr-only")}>{item.label}</span>
+        {item.action === "logout" && signingOut ? <Loader2 className="size-[18px] shrink-0 animate-spin" aria-hidden /> : <item.icon className="size-[18px] shrink-0" aria-hidden />}
+        <span className={cn("truncate", collapsed && "sr-only")}>{item.action === "logout" && signingOut ? "Signing out…" : item.label}</span>
       </>
     );
     return (
       <li key={item.label}>
         {item.action === "logout" ? (
-          <button type="button" onClick={handleLogout} className={cn(cls, "w-full text-left")} title={collapsed ? item.label : undefined}>
+          <button type="button" onClick={handleLogout} disabled={signingOut} aria-busy={signingOut || undefined} className={cn(cls, "w-full text-left")} title={collapsed ? item.label : undefined}>
             {inner}
           </button>
         ) : (

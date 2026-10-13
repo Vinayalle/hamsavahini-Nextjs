@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ShieldCheck } from "lucide-react";
-import { toast } from "sonner";
+import { LuShieldCheck as ShieldCheck } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/fields";
@@ -18,6 +18,7 @@ import { NewPasswordFields, PasswordInput } from "@/components/auth/password-fie
 import { SecurityCard } from "@/components/auth/security-card";
 import { useAuth } from "@/lib/auth";
 import type { EmployeeDto } from "./types";
+import { DetailSkeleton } from "@/components/admin/skeletons";
 
 export function ProfilePage() {
   const me = useApi<EmployeeDto>("/api/auth/profile");
@@ -26,7 +27,7 @@ export function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   if (me.error) return <ErrorState title="Couldn't load your profile" description={me.error.message} onRetry={() => void me.reload()} />;
-  if (!me.data) return <PageHeader title="My Profile" description="Loading…" />;
+  if (!me.data) return <><PageHeader title="My Profile" /><DetailSkeleton /></>;
   const e = me.data;
   const n = name ?? e.name;
   const p = phone ?? e.phone ?? "";
@@ -62,7 +63,7 @@ export function ProfilePage() {
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="secondary" disabled={!dirty} onClick={() => { setName(null); setPhone(null); setErrors({}); }}>Reset</Button>
-              <Button disabled={!dirty} loading={saving} onClick={() => void save()}>Save profile</Button>
+              <Button disabled={!dirty} loading={saving} onClick={() => save()}>Save profile</Button>
             </div>
           </div>
         </Card>

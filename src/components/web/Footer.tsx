@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUp, MapPin, Phone, Mail } from "lucide-react";
+import { LuArrowUp as ArrowUp, LuMapPin as MapPin, LuPhone as Phone, LuMail as Mail } from "react-icons/lu";
 
 const footerSections = [
   {

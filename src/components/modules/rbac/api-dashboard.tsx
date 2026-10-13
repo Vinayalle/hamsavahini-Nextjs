@@ -1,15 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Activity, ArrowRight, Boxes, Briefcase, CheckCircle2, Clock, FileEdit, FolderKanban, Globe2, Handshake, Inbox, LayoutDashboard,
-  MapPin, MessageSquare, Newspaper, Package, UserPlus, Users, type LucideIcon,
-} from "lucide-react";
+import { LuActivity as Activity, LuArrowRight as ArrowRight, LuBoxes as Boxes, LuBriefcase as Briefcase, LuCircleCheck as CheckCircle2, LuClock as Clock, LuFilePen as FileEdit, LuFolderKanban as FolderKanban, LuEarth as Globe2, LuHandshake as Handshake, LuInbox as Inbox, LuLayoutDashboard as LayoutDashboard, LuMapPin as MapPin, LuMessageSquare as MessageSquare, LuNewspaper as Newspaper, LuPackage as Package, LuUserPlus as UserPlus, LuUsers as Users } from "react-icons/lu";
+import type { IconType } from "react-icons";
 import { Card, CardHeader } from "@/components/ui/card";
 import { EmptyState, ErrorState, PageHeader, StatCard } from "@/components/admin/page-parts";
 import { useApi } from "@/lib/api/use-api";
 import { useAuth } from "@/lib/auth";
 import { formatDate } from "@/lib/utils";
+import { DashboardBodySkeleton } from "@/components/admin/skeletons";
 
 type Widget =
   | { key: string; label: string; kind: "metric"; href: string; value: number }
@@ -20,12 +19,12 @@ interface DashboardData {
   quickActions: { key: string; label: string; href: string }[];
 }
 
-const ICONS: Record<string, LucideIcon> = {
+const ICONS: Record<string, IconType> = {
   total_products: Package, published_products: CheckCircle2, draft_products: FileEdit, pending_reviews: Clock, active_commodities: Boxes,
   active_opportunities: Handshake, new_rfqs: Inbox, assigned_rfqs: Inbox, new_enquiries: MessageSquare, assigned_enquiries: MessageSquare,
   open_applications: Users, published_insights: Newspaper, global_locations: Globe2,
 };
-const QUICK_ICONS: Record<string, LucideIcon> = { add_product: Package, create_post: Newspaper, add_project: FolderKanban, add_location: MapPin, add_commodity: Boxes, review_enquiries: Inbox, review_rfqs: Briefcase, add_employee: UserPlus };
+const QUICK_ICONS: Record<string, IconType> = { add_product: Package, create_post: Newspaper, add_project: FolderKanban, add_location: MapPin, add_commodity: Boxes, review_enquiries: Inbox, review_rfqs: Briefcase, add_employee: UserPlus };
 
 /**
  * Database-mode dashboard. The server decides which widgets this employee sees and computes numbers ONLY for
@@ -41,7 +40,7 @@ export function ApiDashboard() {
   return (
     <>
       <PageHeader title="Dashboard" description={user ? `Welcome back, ${user.name.split(" ")[0]}. Showing what your role gives you access to.` : undefined} />
-      {d.loading && !d.data && <div className="h-24 animate-pulse rounded-xl bg-slate-100" role="status" aria-label="Loading" />}
+      {!d.data && <DashboardBodySkeleton />}
       {d.data && d.data.widgets.length === 0 && d.data.quickActions.length === 0 && (
         <Card><EmptyState icon={LayoutDashboard} title="Nothing to show yet" description="No dashboard widgets are available for your account. Your administrator can grant access to pages and widgets." /></Card>
       )}

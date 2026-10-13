@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, UserPlus } from "lucide-react";
-import { toast } from "sonner";
+import { LuPencil as Pencil, LuUserPlus as UserPlus } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/admin/page-parts";
 import { ResourceList } from "@/components/admin/resource-list";

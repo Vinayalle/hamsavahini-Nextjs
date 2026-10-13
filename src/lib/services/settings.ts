@@ -8,6 +8,7 @@ const SECTIONS: Section[] = ["general", "navigation", "seo", "contact", "footer"
 
 let state: WebsiteSettings = settingsSeed;
 let loaded = false;
+let ready = !isApiMode; // api mode: false until the first read from the server has finished (successfully or not)
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 
@@ -25,16 +26,18 @@ async function loadFromServer() {
     if (r.status === "fulfilled" && r.value.value !== null) next[SECTIONS[i]] = r.value.value;
   });
   state = next as unknown as WebsiteSettings;
+  ready = true;
   emit();
 }
 
 export const settingsService = {
   snapshot: () => state,
+  ready: () => ready,
   subscribe(l: () => void) {
     listeners.add(l);
     if (isApiMode && !loaded) {
       loaded = true;
-      void loadFromServer().catch(() => { loaded = false; });
+      void loadFromServer().catch(() => { loaded = false; ready = true; emit(); });
     }
     return () => listeners.delete(l);
   },
@@ -55,6 +58,7 @@ export const settingsService = {
   reset() {
     state = settingsSeed;
     loaded = false;
+    ready = !isApiMode;
     emit();
   },
 };

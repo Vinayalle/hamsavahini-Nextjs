@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2 } from "lucide-react";
+import { LuCircleCheck as CheckCircle2, LuLoaderCircle as Loader2 } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/fields";
 import { Field } from "@/components/forms/form-parts";
@@ -141,8 +141,8 @@ export function ActivatePage() {
           {error && <ErrorNote>{error}</ErrorNote>}
           <Button type="submit" className="w-full justify-center" loading={busy}>Verify email</Button>
           <div className="flex items-center justify-between text-sm">
-            <button type="button" className="font-medium text-brand-600 hover:underline disabled:cursor-not-allowed disabled:text-faint disabled:no-underline" disabled={cooldown.left > 0 || busy} onClick={() => void requestCode(true)}>
-              {cooldown.left > 0 ? `Resend code in ${cooldown.left}s` : "Resend code"}
+            <button type="button" className="font-medium text-brand-600 hover:underline disabled:cursor-not-allowed disabled:text-faint disabled:no-underline" disabled={cooldown.left > 0 || busy} onClick={() => requestCode(true)}>
+              {busy ? <span className="inline-flex items-center gap-1.5"><Loader2 className="size-3.5 animate-spin" aria-hidden /> Sending…</span> : cooldown.left > 0 ? `Resend code in ${cooldown.left}s` : "Resend code"}
             </button>
             <button type="button" className="text-muted hover:text-ink" onClick={() => { setStep("email"); setCode(""); setError(""); setNotice(""); }}>Use a different email</button>
           </div>

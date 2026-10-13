@@ -5,12 +5,12 @@ import { useSyncExternalStore } from "react";
 import { isApiMode } from "@/lib/api/client";
 import type { CrudService } from "@/lib/mock/collection";
 import type { BaseEntity } from "@/types/common";
-import { AlertTriangle, Inbox, Search as SearchIcon, X, type LucideIcon } from "lucide-react";
+import { LuTriangleAlert as AlertTriangle, LuInbox as Inbox, LuSearch as SearchIcon, LuX as X, LuChevronLeft as ChevronLeft, LuChevronRight as ChevronRight } from "react-icons/lu";
+import type { IconType } from "react-icons";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-
+import { FormSkeleton, Skeleton } from "@/components/admin/skeletons";
 /* ───────────────────────── PageHeader ───────────────────────── */
 export function PageHeader({
   title, description, actions, className,
@@ -29,7 +29,7 @@ export function PageHeader({
 /* ───────────────────────── StatCard ───────────────────────── */
 export function StatCard({
   label, value, icon: Icon, href, hint, tone = "info",
-}: { label: string; value: number | string; icon: LucideIcon; href?: string; hint?: string; tone?: "info" | "success" | "warn" | "danger" | "neutral" }) {
+}: { label: string; value: number | string; icon: IconType; href?: string; hint?: string; tone?: "info" | "success" | "warn" | "danger" | "neutral" }) {
   const toneCls = {
     info: "bg-brand-50 text-brand-600",
     success: "bg-success-50 text-success-600",
@@ -162,7 +162,7 @@ export function Pagination({
 /* ───────────────────────── Empty / Loading / Error ───────────────────────── */
 export function EmptyState({
   title, description, action, icon: Icon = Inbox,
-}: { title: string; description?: string; action?: React.ReactNode; icon?: LucideIcon }) {
+}: { title: string; description?: string; action?: React.ReactNode; icon?: IconType }) {
   return (
     <div className="flex flex-col items-center px-6 py-14 text-center">
       <span className="flex size-12 items-center justify-center rounded-full bg-canvas text-faint"><Icon className="size-6" aria-hidden /></span>
@@ -177,7 +177,7 @@ export function LoadingSkeleton({ rows = 6, className }: { rows?: number; classN
   return (
     <div className={cn("space-y-3 p-4", className)} role="status" aria-label="Loading">
       {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className="h-10 animate-pulse rounded-md bg-slate-100" />
+        <Skeleton key={i} className="h-10 w-full" />
       ))}
     </div>
   );
@@ -204,7 +204,7 @@ export function NotFoundRecord<T extends BaseEntity>({ what, backHref, backLabel
   const subscribe = service?.subscribe ?? (() => () => undefined);
   const ready = useSyncExternalStore(subscribe, () => service?.ready?.() ?? true, () => true);
   const loadError = useSyncExternalStore(subscribe, () => service?.loadError?.() ?? null, () => null);
-  if (!ready) return <Card><LoadingSkeleton rows={4} /></Card>;
+  if (!ready) return <FormSkeleton />;
   if (loadError) return <Card><ErrorState title={`Couldn't load ${what.toLowerCase()}`} description={loadError} onRetry={() => void service?.reload?.()} /></Card>;
   return (
     <Card>

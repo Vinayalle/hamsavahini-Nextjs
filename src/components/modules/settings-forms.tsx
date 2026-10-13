@@ -1,16 +1,19 @@
 "use client";
 
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { PageHeader } from "@/components/admin/page-parts";
 import { EntityForm, type SectionDef, type Values } from "@/components/forms/entity-form";
-import { useSettings } from "@/hooks/use-resource";
+import { useSettings, useSettingsReady } from "@/hooks/use-resource";
 import { settingsService } from "@/lib/services/settings";
+import { PageSkeleton } from "@/components/admin/skeletons";
 
 const str = (v: unknown) => (typeof v === "string" ? v : "");
 const saved = () => toast.success("Settings saved", { description: "Stored in mock data for this session only." });
 
 export function GeneralSettingsPage() {
   const { general } = useSettings();
+  const ready = useSettingsReady();
+  if (!ready) return <PageSkeleton variant="form" />;
   const sections: SectionDef[] = [
     { title: "Site Identity", description: "Basic information used across the public website.", fields: [
       { name: "siteName", label: "Site name", type: "text", required: true, maxLength: 60 },
@@ -38,6 +41,8 @@ export function GeneralSettingsPage() {
 
 export function SeoSettingsPage() {
   const { seo } = useSettings();
+  const ready = useSettingsReady();
+  if (!ready) return <PageSkeleton variant="form" />;
   const sections: SectionDef[] = [
     { title: "Search Defaults", description: "Fallbacks used when a page has no SEO of its own.", fields: [
       { name: "titleTemplate", label: "Title template", type: "text", required: true, hint: "Use %s where the page title goes, e.g. “%s | Hamsavahin”." },
@@ -66,6 +71,8 @@ export function SeoSettingsPage() {
 
 export function ContactSettingsPage() {
   const { contact } = useSettings();
+  const ready = useSettingsReady();
+  if (!ready) return <PageSkeleton variant="form" />;
   const sections: SectionDef[] = [
     { title: "Contact Details", description: "Shown in the website header, footer and contact page.", fields: [
       { name: "primaryEmail", label: "Primary email", type: "email", required: true },

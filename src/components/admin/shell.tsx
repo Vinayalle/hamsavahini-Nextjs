@@ -2,7 +2,6 @@
 
 import { Suspense, createContext, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { isApiMode } from "@/lib/api/client";
 import { requirementForPath } from "@/lib/authz/catalog";
@@ -13,6 +12,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { NAV_GROUPS } from "@/config/navigation";
 import { ConfirmProvider } from "./dialogs";
 import { ReauthDialog } from "@/components/auth/reauth-dialog";
+import { AppShellSkeleton, PageSkeleton } from "./skeletons";
 
 interface ShellState {
   collapsed: boolean;
@@ -96,13 +96,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const required = requirementForPath(pathname);
   const blocked = isApiMode && required.kind === "permission" && !can(required.resource, required.action);
 
-  if (!ready || !user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-canvas text-muted" role="status">
-        <Loader2 className="mr-2 size-5 animate-spin" aria-hidden /> Checking session…
-      </div>
-    );
-  }
+  // While the session is being checked (and while an expired session redirects to the login page) show the whole app as a skeleton,
+  // never a blank screen. It is rendered on the server too, so it is in the very first HTML of a page refresh.
+  if (!ready || !user) return <AppShellSkeleton variant={pathname.startsWith("/admin/dashboard") ? "dashboard" : "list"} />;
 
   return (
     <ShellContext.Provider value={value}>
@@ -125,7 +121,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <div className="flex min-w-0 flex-1 flex-col">
           <AdminHeader />
           <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 sm:px-6 lg:px-8" id="main">
-            <Suspense fallback={null}>{blocked ? <AccessDenied from={pathname} /> : children}</Suspense>
+            <Suspense fallback={<PageSkeleton />}>{blocked ? <AccessDenied from={pathname} /> : children}</Suspense>
           </main>
         </div>
       </div>

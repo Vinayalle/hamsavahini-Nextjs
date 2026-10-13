@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Lock, Search, X } from "lucide-react";
+import { LuChevronDown as ChevronDown, LuChevronRight as ChevronRight, LuLock as Lock, LuSearch as Search, LuX as X } from "react-icons/lu";
 import { ACTION_LABEL, MODULES, RESOURCES, getResource, permKey, type Action, type ResourceDef } from "@/lib/authz/catalog";
 import { scopeCovers, type Scope } from "@/lib/authz/resolve";
 import { Button } from "@/components/ui/button";

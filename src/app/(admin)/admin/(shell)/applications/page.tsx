@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, FileText, Lock } from "lucide-react";
-import { toast } from "sonner";
+import { LuEye as Eye, LuFileText as FileText, LuLock as Lock } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/admin/page-parts";
@@ -77,7 +77,7 @@ export default function ApplicationsPage() {
         defaultSort={{ by: "createdAt", dir: "desc" }} searchPlaceholder="Search applicant or email…"
         extraRowActions={(a) => [
           { label: "View & manage", icon: Eye, onSelect: () => setOpenId(a.id) },
-          { label: "View resume", icon: FileText, hidden: !canDownload, onSelect: () => void openResume(a) },
+          { label: "View resume", icon: FileText, hidden: !canDownload, onSelect: () => openResume(a) },
         ]}
         statuses={[{ value: "screening" }, { value: "interview" }, { value: "rejected" }]} currentStatus={(a) => a.status}
         filters={[
@@ -108,7 +108,7 @@ export default function ApplicationsPage() {
                 <p className="truncate text-sm font-medium text-ink">{app.resumeFileName}</p>
                 <p className="text-xs text-muted">{formatBytes(app.resumeSizeBytes)} · protected</p>
               </div>
-              {canDownload && <Button size="sm" variant="secondary" onClick={() => void openResume(app)}><Lock className="size-3.5" /> View resume</Button>}
+              {canDownload && <Button size="sm" variant="secondary" onClick={() => openResume(app)}><Lock className="size-3.5" /> View resume</Button>}
             </div>
           </CaseWorkflow>
         )}

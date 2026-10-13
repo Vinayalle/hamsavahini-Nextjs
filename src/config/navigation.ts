@@ -1,14 +1,10 @@
-import {
-  Activity, BadgeDollarSign, BarChart3, Boxes, Briefcase, FileText, FolderKanban, Globe2,
-  Image as ImageIcon, ImagePlus, KeyRound, LayoutDashboard, Library, ListTree, LogOut, Mail,
-  Megaphone, Menu as MenuIcon, MessageSquare, Newspaper, Package, Phone, Search as SearchIcon, Settings,
-  ShieldCheck, Handshake, ClipboardList, UserCircle, Users, PanelBottom, Bell, type LucideIcon,
-} from "lucide-react";
+import { LuActivity as Activity, LuBadgeDollarSign as BadgeDollarSign, LuChartColumn as BarChart3, LuBoxes as Boxes, LuBriefcase as Briefcase, LuFileText as FileText, LuFolderKanban as FolderKanban, LuEarth as Globe2, LuImage as ImageIcon, LuImagePlus as ImagePlus, LuKeyRound as KeyRound, LuLayoutDashboard as LayoutDashboard, LuLibrary as Library, LuListTree as ListTree, LuLogOut as LogOut, LuMail as Mail, LuMegaphone as Megaphone, LuMenu as MenuIcon, LuMessageSquare as MessageSquare, LuNewspaper as Newspaper, LuPackage as Package, LuPhone as Phone, LuSearch as SearchIcon, LuSettings as Settings, LuShieldCheck as ShieldCheck, LuHandshake as Handshake, LuClipboardList as ClipboardList, LuCircleUser as UserCircle, LuUsers as Users, LuPanelBottom as PanelBottom, LuBell as Bell } from "react-icons/lu";
+import type { IconType } from "react-icons";
 
 export interface NavItem {
   label: string;
   href: string;
-  icon: LucideIcon;
+  icon: IconType;
   /** Marks the Logout entry: it signs out, then lands on /admin/login. */
   action?: "logout";
   keywords?: string[];

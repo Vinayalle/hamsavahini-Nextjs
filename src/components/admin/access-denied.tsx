@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ShieldOff } from "lucide-react";
+import { LuShieldOff as ShieldOff } from "react-icons/lu";
 import { LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 

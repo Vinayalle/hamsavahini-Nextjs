@@ -1,7 +1,7 @@
 "use client";
 
-import { RotateCw } from "lucide-react";
-import { toast } from "sonner";
+import { LuRotateCw as RotateCw } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { PageHeader } from "@/components/admin/page-parts";
 import { ResourceList } from "@/components/admin/resource-list";
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -44,7 +44,7 @@ export default function NotificationHistoryPage() {
           path="/api/notifications" entityLabel="notification" columns={columns} pageSize={25} defaultSort={{ by: "createdAt", dir: "desc" }}
           searchPlaceholder="Search recipient or email…"
           filters={[{ key: "status", label: "Status", options: [{ value: "sent", label: "Sent" }, { value: "queued", label: "Queued" }, { value: "failed", label: "Failed" }] }]}
-          rowActions={(n, reload) => (n.status === "failed" && can("notification_history", "change_status") ? <Button size="sm" variant="secondary" onClick={() => void retry(n, reload)}><RotateCw className="size-3.5" /> Retry</Button> : null)}
+          rowActions={(n, reload) => (n.status === "failed" && can("notification_history", "change_status") ? <Button size="sm" variant="secondary" onClick={() => retry(n, reload)}><RotateCw className="size-3.5" /> Retry</Button> : null)}
         />
       </>
     );

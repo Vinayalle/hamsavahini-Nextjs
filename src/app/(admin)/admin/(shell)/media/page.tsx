@@ -1,21 +1,22 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Copy, FileVideo, Trash2, UploadCloud } from "lucide-react";
-import { toast } from "sonner";
+import { LuCopy as Copy, LuFileVideo as FileVideo, LuTrash2 as Trash2, LuCloudUpload as UploadCloud } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/fields";
 import { EmptyState, FilterBar, PageHeader, Pagination } from "@/components/admin/page-parts";
 import { DetailDrawer, DetailList } from "@/components/admin/detail-parts";
 import { useConfirm } from "@/components/admin/dialogs";
-import { useAll, useRecord, useResource } from "@/hooks/use-resource";
+import { useAll, useRecord, useResource, useServiceReady } from "@/hooks/use-resource";
 import { StorageNotice, useStorageConfigured } from "@/components/admin/storage-notice";
 import { ApiClientError, apiFetch, isApiMode } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { mediaService } from "@/lib/services";
 import { IMAGE_RULES, fileStorage, validateFile } from "@/lib/storage";
 import { formatBytes, formatDate } from "@/lib/utils";
+import { ImageGridSkeleton } from "@/components/admin/skeletons";
 
 const FOLDERS = ["Banners", "Locations", "Posts", "Products", "Projects", "Brand", "Uploads"];
 
@@ -27,6 +28,7 @@ export default function MediaLibraryPage() {
   const [page, setPage] = useState(1);
   const [openId, setOpenId] = useState<string | null>(null);
   const all = useAll(mediaService);
+  const ready = useServiceReady(mediaService);
   const data = useResource(mediaService, { search, page, pageSize: 12, filters, sortBy: "createdAt", sortDir: "desc" });
   const asset = useRecord(mediaService, openId ?? "");
   const [alt, setAlt] = useState<{ id: string; text: string } | null>(null);
@@ -106,7 +108,9 @@ export default function MediaLibraryPage() {
           values={filters} onChange={(k, v) => { setFilters((f) => ({ ...f, [k]: v })); setPage(1); }}
           onReset={() => { setSearch(""); setFilters({}); setPage(1); }}
         />
-        {data.items.length === 0 ? (
+        {!ready ? (
+          <ImageGridSkeleton />
+        ) : data.items.length === 0 ? (
           <EmptyState title="No media found" description={all.length ? "Try a different search or filter." : "Upload your first file."} />
         ) : (
           <ul className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
@@ -131,7 +135,7 @@ export default function MediaLibraryPage() {
 
       <DetailDrawer
         open={!!asset} onOpenChange={(o) => !o && setOpenId(null)} title={asset?.name ?? ""} description={asset ? `${asset.folder} · ${formatBytes(asset.sizeBytes)}` : undefined}
-        footer={asset && allow("delete") && <Button variant="secondary" onClick={() => void remove()}><Trash2 className="size-4 text-danger-600" /> Delete</Button>}
+        footer={asset && allow("delete") && <Button variant="secondary" onClick={() => remove()}><Trash2 className="size-4 text-danger-600" /> Delete</Button>}
       >
         {asset && (
           <div className="space-y-6">
@@ -142,7 +146,7 @@ export default function MediaLibraryPage() {
               <Label htmlFor="alt">Alt text</Label>
               <div className="flex gap-2">
                 <Input id="alt" value={alt?.id === asset.id ? alt.text : asset.altText} disabled={!allow("edit")} onChange={(e) => setAlt({ id: asset.id, text: e.target.value })} />
-                <Button disabled={!allow("edit") || alt?.id !== asset.id || alt.text === asset.altText} onClick={() => void saveAlt()}>Save</Button>
+                <Button disabled={!allow("edit") || alt?.id !== asset.id || alt.text === asset.altText} onClick={() => saveAlt()}>Save</Button>
               </div>
               <p className="mt-1 text-xs text-muted">Describe the image for screen readers and SEO.</p>
             </div>

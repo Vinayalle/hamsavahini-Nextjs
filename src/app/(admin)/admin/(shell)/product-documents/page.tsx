@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { FileText, Plus, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { LuFileText as FileText, LuPlus as Plus, LuTrash2 as Trash2 } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -13,7 +13,7 @@ import { EmptyState, PageHeader, Pagination, SearchInput } from "@/components/ad
 import { useConfirm } from "@/components/admin/dialogs";
 import { Field } from "@/components/forms/form-parts";
 import { DocumentUploader } from "@/components/forms/uploaders";
-import { useAll } from "@/hooks/use-resource";
+import { useAll, useServiceReady } from "@/hooks/use-resource";
 import { useLocalList } from "@/hooks/use-local-list";
 import { productService } from "@/lib/services";
 import { formatBytes } from "@/lib/utils";
@@ -64,7 +64,7 @@ function AddDialog({ open, onOpenChange, onAdded }: { open: boolean; onOpenChang
         </div>
         <div className="mt-6 flex justify-end gap-2">
           <Button variant="secondary" onClick={close}>Cancel</Button>
-          <Button onClick={() => void save()}>Attach to product</Button>
+          <Button onClick={() => save()}>Attach to product</Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -73,6 +73,7 @@ function AddDialog({ open, onOpenChange, onAdded }: { open: boolean; onOpenChang
 
 export default function ProductDocumentsPage() {
   const products = useAll(productService);
+  const ready = useServiceReady(productService);
   const confirm = useConfirm();
   const [type, setType] = useState("all");
   const [productFilter, setProductFilter] = useState("all");
@@ -86,6 +87,7 @@ export default function ProductDocumentsPage() {
     [products, type, productFilter],
   );
   const list = useLocalList(rows, (r) => `${r.productName} ${r.name}`, 10);
+  const [typeBusy, setTypeBusy] = useState<string | null>(null);
 
   const changeType = async (r: Row, next: ProductDocument["type"]) => {
     const p = products.find((x) => x.id === r.productId);
@@ -105,14 +107,14 @@ export default function ProductDocumentsPage() {
   const columns: Column<Row>[] = [
     { key: "name", header: "Document", cell: (r) => (<div className="flex items-center gap-2.5"><FileText className="size-5 shrink-0 text-faint" aria-hidden /><span className="truncate font-medium text-ink">{r.name}</span></div>) },
     { key: "type", header: "Type", cell: (r) => (
-      <Select aria-label={`Type of ${r.name}`} value={r.type} className="h-8 w-44 text-xs" onChange={(e) => void changeType(r, e.target.value as ProductDocument["type"])}>
+      <Select aria-label={`Type of ${r.name}`} value={r.type} disabled={typeBusy === r.docId} className="h-8 w-44 text-xs" onChange={async (e) => { setTypeBusy(r.docId); try { await changeType(r, e.target.value as ProductDocument["type"]); } finally { setTypeBusy(null); } }}>
         {Object.entries(TYPE_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
       </Select>
     ) },
     { key: "product", header: "Product", hideBelow: "sm", cell: (r) => <Link href={`/admin/products/${r.productId}`} className="text-brand-600 hover:underline">{r.productName}</Link> },
     { key: "size", header: "Size", hideBelow: "md", cell: (r) => <span className="text-muted">{formatBytes(r.sizeBytes)}</span> },
     { key: "actions", header: "", className: "text-right", cell: (r) => (
-      <Button variant="ghost" size="sm" aria-label={`Remove ${r.name}`} onClick={() => void remove(r)}><Trash2 className="size-3.5 text-danger-600" /></Button>
+      <Button variant="ghost" size="sm" aria-label={`Remove ${r.name}`} onClick={() => remove(r)}><Trash2 className="size-3.5 text-danger-600" /></Button>
     ) },
   ];
 
@@ -135,7 +137,7 @@ export default function ProductDocumentsPage() {
             {Object.entries(TYPE_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </div>
-        <DataTable caption="Product documents" columns={columns} rows={list.rows} rowKey={(r) => r.key}
+        <DataTable caption="Product documents" columns={columns} rows={list.rows} rowKey={(r) => r.key} loading={!ready}
           empty={<EmptyState title="No documents found" description="Try different filters or attach a document." action={add} />} />
         {list.total > 0 && <Pagination page={list.page} pageCount={list.pageCount} total={list.total} pageSize={list.pageSize} onPage={list.setPage} />}
       </Card>

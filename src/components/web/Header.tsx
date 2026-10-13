@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, X, ArrowUpRight } from "lucide-react";
+import { LuChevronDown as ChevronDown, LuMenu as Menu, LuX as X, LuArrowUpRight as ArrowUpRight } from "react-icons/lu";
 
 type MenuItem = {
   label: string;

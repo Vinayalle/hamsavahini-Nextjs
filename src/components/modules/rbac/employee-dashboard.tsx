@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, ArrowUp, RotateCcw } from "lucide-react";
-import { toast } from "sonner";
+import { LuArrowDown as ArrowDown, LuArrowUp as ArrowUp, LuRotateCcw as RotateCcw } from "react-icons/lu";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/fields";
@@ -12,6 +12,7 @@ import { ApiClientError, apiFetch } from "@/lib/api/client";
 import { useApi } from "@/lib/api/use-api";
 import { useAuth } from "@/lib/auth";
 import type { EmployeeDto } from "./types";
+import { CardSkeleton, DetailSkeleton } from "@/components/admin/skeletons";
 
 interface DashboardConfig {
   widgets: { key: string; enabled: boolean; order: number }[];
@@ -28,7 +29,7 @@ interface DefaultConfig {
 
 const errMsg = (e: unknown) => (e instanceof ApiClientError ? e.message : "Something went wrong");
 
-function WidgetEditor({ data, onSave, onReset, saving }: { data: DashboardConfig; onSave: (w: DashboardConfig["widgets"], q: string[]) => void; onReset?: () => void; saving: boolean }) {
+function WidgetEditor({ data, onSave, onReset, saving }: { data: DashboardConfig; onSave: (w: DashboardConfig["widgets"], q: string[]) => void; onReset?: () => void | Promise<void>; saving: boolean }) {
   const [widgets, setWidgets] = useState([...data.widgets].sort((a, b) => a.order - b.order));
   const [quick, setQuick] = useState(data.quickActions);
   const label = (k: string) => data.available.find((a) => a.key === k)?.label ?? k;
@@ -75,7 +76,7 @@ function WidgetEditor({ data, onSave, onReset, saving }: { data: DashboardConfig
 function DefaultDashboardCard() {
   const d = useApi<DefaultConfig>("/api/dashboard/default");
   const [saving, setSaving] = useState(false);
-  if (!d.data) return null;
+  if (!d.data) return <CardSkeleton lines={6} />;
   const cfg: DashboardConfig = {
     widgets: d.data.widgets.map((key, order) => ({ key, enabled: true, order })).concat(d.data.catalogue.widgets.filter((w) => !d.data!.widgets.includes(w.key)).map((w, i) => ({ key: w.key, enabled: false, order: 100 + i }))),
     quickActions: d.data.quickActions, available: d.data.catalogue.widgets, availableQuick: d.data.catalogue.quickActions, customised: true,
@@ -100,7 +101,7 @@ export function EmployeeDashboardPage({ id }: { id: string }) {
   useBreadcrumbLabel(emp.data?.name);
   if (cfg.error?.status === 404) return <NotFoundRecord what="Employee" backHref="/admin/users" backLabel="Back to employees" />;
   if (cfg.error) return <ErrorState title="Couldn't load dashboard configuration" description={cfg.error.message} onRetry={() => void cfg.reload()} />;
-  if (!cfg.data) return <PageHeader title="Dashboard configuration" description="Loading…" />;
+  if (!cfg.data) return <><PageHeader title="Dashboard configuration" /><DetailSkeleton /></>;
   const editable = can("user_dashboards", "edit");
   return (
     <>
