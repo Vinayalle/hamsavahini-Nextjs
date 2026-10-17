@@ -40,6 +40,22 @@ export default async function ProductPage({ params }: Params) {
       <section aria-label="Product details" className="bg-white">
         <div className={`${container} grid items-start gap-12 py-9 md:py-12 lg:grid-cols-[1.3fr_0.7fr]`}>
           <Reveal variant="left">
+            {product.gallery.length > 0 && (
+              <div className="mb-10" aria-label={`Pictures of ${product.name}`}>
+                <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100">
+                  <img src={product.gallery[0].url} alt={product.gallery[0].alt} width={1200} height={800} decoding="async" className="aspect-[3/2] w-full object-cover" />
+                </div>
+                {product.gallery.length > 1 && (
+                  <ul className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4">
+                    {product.gallery.slice(1).map((g) => (
+                      <li key={g.url} className="overflow-hidden rounded-xl border border-neutral-200 bg-neutral-100">
+                        <img src={g.url} alt={g.alt} width={400} height={300} loading="lazy" decoding="async" className="aspect-[4/3] w-full object-cover" />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
             <h2 className={`${headingFont} mb-4 text-[28px] text-neutral-900 md:text-[36px]`}>Description</h2>
             <p className="whitespace-pre-line text-lg leading-8 text-neutral-600">{product.description}</p>
             {product.applications.length > 0 && (<><h3 className="mb-4 mt-9 text-xl font-bold text-neutral-900">Applications</h3><CheckList items={product.applications} /></>)}

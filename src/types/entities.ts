@@ -16,6 +16,9 @@ export interface ProductSpec {
 
 export interface ProductDocument {
   id: ID;
+  /** Database mode: id of the saved file (what a save sends back) and the admin download link. */
+  fileId?: ID;
+  url?: string;
   name: string;
   type: "datasheet" | "coa" | "msds" | "brochure" | "other";
   sizeBytes: number;
@@ -23,6 +26,8 @@ export interface ProductDocument {
 
 export interface ProductImage {
   id: ID;
+  /** Database mode: id of the saved file (what a save sends back). */
+  fileId?: ID;
   url: string;
   alt: string;
   isPrimary: boolean;

@@ -1,4 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { setStorageForTests } from "@/server/storage";
 import { getDb } from "@/server/db";
 import { RESOURCES } from "@/server/resources";
 import { getResource as getResourceDef } from "@/lib/authz/catalog";
@@ -209,12 +210,14 @@ describe("private resume download", () => {
     expect((await dl(ck.hrnd)).status).toBe(403); // can view applications, cannot download resumes
     expect((await dl(ck.view)).status).toBe(403);
   });
-  it("answers honestly when no storage is configured, and never serves a path or the file", async () => {
-    const r = await dl(ck.hr);
+  it("answers honestly when file storage is switched off, and never serves a path or the file", async () => {
+    const before = await db().activityLog.count({ where: { action: "viewed_sensitive" } });
+    setStorageForTests(null);
+    const r = await dl(ck.hr).finally(() => setStorageForTests(undefined));
     expect(r.status).toBe(503);
     expect(r.data.error.code).toBe("storage_not_configured");
     expect(JSON.stringify(r.data)).not.toMatch(/resumes\/|\.pdf|storageKey/);
-    expect(await db().activityLog.count({ where: { action: "viewed_sensitive" } })).toBe(0); // nothing was downloaded
+    expect(await db().activityLog.count({ where: { action: "viewed_sensitive" } })).toBe(before); // nothing was downloaded
   });
   it("404s for malformed and unknown ids", async () => {
     expect((await dl(ck.hr, "nope")).status).toBe(404);

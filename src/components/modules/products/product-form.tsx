@@ -24,7 +24,7 @@ const schema = z.object({
   categoryId: z.string().min(1, "Choose a category"),
   shortDescription: z.string().trim().min(10, "Add a short summary (min 10 characters)").max(200, "Keep it under 200 characters"),
   description: z.string().trim().min(20, "Add a full description (min 20 characters)"),
-  images: z.array(z.object({ id: z.string(), url: z.string(), alt: z.string(), isPrimary: z.boolean() })),
+  images: z.array(z.object({ id: z.string(), fileId: z.string().optional(), url: z.string(), alt: z.string(), isPrimary: z.boolean() })),
   specifications: z.array(z.object({
     id: z.string(),
     label: z.string().trim().min(1, "Required"),
@@ -32,7 +32,7 @@ const schema = z.object({
     unit: z.string().optional(),
   })),
   documents: z.array(z.object({
-    id: z.string(), name: z.string(), sizeBytes: z.number(),
+    id: z.string(), fileId: z.string().optional(), url: z.string().optional(), name: z.string(), sizeBytes: z.number(),
     type: z.enum(["datasheet", "coa", "msds", "brochure", "other"]),
   })),
   seo: z.object({
@@ -93,9 +93,6 @@ export function ProductForm({ product }: { product?: Product }) {
       toast.success(product ? "Product updated" : "Product created", {
         description: isApiMode ? "Saved to the database." : "Saved to mock data — not persisted to a server.",
       });
-      if (isApiMode && (v.images.length > 0 || v.documents.length > 0)) {
-        toast.warning("Images and documents were not saved", { description: "File storage is not configured yet, so only the product details were stored." });
-      }
       form.reset(v);
       router.push(`/admin/products/${saved.id}`);
     } catch (e) {

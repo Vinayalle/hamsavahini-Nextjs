@@ -16,7 +16,6 @@ import { useAll, useServiceReady } from "@/hooks/use-resource";
 import { useLocalList } from "@/hooks/use-local-list";
 import { productService } from "@/lib/services";
 import type { ProductImage } from "@/types/entities";
-import { StorageNotice } from "@/components/admin/storage-notice";
 import { isApiMode } from "@/lib/api/client";
 import { ImageGridSkeleton } from "@/components/admin/skeletons";
 
@@ -38,7 +37,7 @@ function UploadDialog({ open, onOpenChange, onUploaded }: { open: boolean; onOpe
     const hasPrimary = product.images.some((i) => i.isPrimary);
     const added = pending.map((i, idx) => ({ ...i, isPrimary: !hasPrimary && idx === 0 }));
     await productService.update(product.id, { images: [...product.images, ...added] });
-    toast.success(`${added.length} image${added.length > 1 ? "s" : ""} added to ${product.name}`, { description: "Local previews only — not uploaded to storage." });
+    toast.success(`${added.length} image${added.length > 1 ? "s" : ""} added to ${product.name}`, isApiMode ? { description: "Saved inside the project." } : { description: "Local previews only — not uploaded to storage." });
     onUploaded(product.id);
     close();
   };
@@ -118,7 +117,6 @@ export default function ProductImagesPage() {
   return (
     <>
       <PageHeader title="Product Images" description="Manage every product image: upload, set the primary image, edit alt text or remove." actions={upload} />
-      {isApiMode && <StorageNotice message="Product images are not connected to file storage yet, so adding or changing them is unavailable in database mode. Nothing is saved from this page." />}
       {noImages.length > 0 && (
         <div className="mb-4 rounded-lg border border-amber-200 bg-warn-50 p-3 text-[13px] text-warn-600" role="status">
           {noImages.length} active product{noImages.length > 1 ? "s have" : " has"} no images: {noImages.map((p) => p.name).join(", ")}.

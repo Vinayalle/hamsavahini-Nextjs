@@ -10,7 +10,6 @@ import { EmptyState, FilterBar, PageHeader, Pagination } from "@/components/admi
 import { DetailDrawer, DetailList } from "@/components/admin/detail-parts";
 import { useConfirm } from "@/components/admin/dialogs";
 import { useAll, useRecord, useResource, useServiceReady } from "@/hooks/use-resource";
-import { StorageNotice, useStorageConfigured } from "@/components/admin/storage-notice";
 import { ApiClientError, apiFetch, isApiMode } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { mediaService } from "@/lib/services";
@@ -34,9 +33,8 @@ export default function MediaLibraryPage() {
   const [alt, setAlt] = useState<{ id: string; text: string } | null>(null);
 
   const { can } = useAuth();
-  const storage = useStorageConfigured();
   const allow = (action: string) => !isApiMode || can("media", action);
-  const canUpload = !isApiMode || (storage === true && can("media", "upload"));
+  const canUpload = !isApiMode || can("media", "upload");
 
   const upload = async (files: FileList) => {
     for (const file of Array.from(files)) {
@@ -44,7 +42,7 @@ export default function MediaLibraryPage() {
       const err = isVideo ? (file.size > 50 * 1024 * 1024 ? `“${file.name}” exceeds the 50 MB limit.` : null) : validateFile(file, IMAGE_RULES);
       if (err) { toast.error(err); continue; }
       if (isApiMode) {
-        // Real upload: the server checks the file content, stores it in private storage and only then reports success.
+        // Real upload: the server checks the file content, saves it inside the project and only then reports success.
         const fd = new FormData();
         fd.set("file", file);
         try {
@@ -95,7 +93,6 @@ export default function MediaLibraryPage() {
         description="Images and video used across the website."
         actions={canUpload ? <Button onClick={() => inputRef.current?.click()}><UploadCloud className="size-4" /> Upload media</Button> : undefined}
       />
-      {isApiMode && storage === false && <StorageNotice what="Media" />}
       <input ref={inputRef} type="file" multiple hidden accept={[...IMAGE_RULES.accept, "video/mp4"].join(",")} aria-label="Upload media" onChange={(e) => { if (e.target.files) void upload(e.target.files); e.target.value = ""; }} />
 
       <Card className="overflow-hidden">

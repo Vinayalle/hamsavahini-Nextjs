@@ -12,7 +12,7 @@ import { DetailDrawer } from "@/components/admin/detail-parts";
 import type { Column } from "@/components/admin/data-table";
 import { CaseWorkflow } from "@/components/modules/case-drawer";
 import { useAll, useRecord } from "@/hooks/use-resource";
-import { ApiClientError, apiFetch, isApiMode } from "@/lib/api/client";
+import { ApiClientError, apiDownload, isApiMode } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { activityService, applicationService, careerService } from "@/lib/services";
 import { formatBytes, formatDate } from "@/lib/utils";
@@ -40,12 +40,11 @@ export default function ApplicationsPage() {
 
   const openResume = async (a: JobApplication) => {
     if (isApiMode) {
-      // The server checks the permission, records the download in the audit log and returns a short-lived signed link.
+      // The server checks the permission, records the download in the audit log and sends the file.
       try {
-        const r = await apiFetch<{ url: string }>(`/api/applications/${a.id}/resume`);
-        window.open(r.url, "_blank", "noopener,noreferrer");
+        await apiDownload(`/api/applications/${a.id}/resume`, "resume");
       } catch (e) {
-        setResumeNotice(e instanceof ApiClientError ? (e.code === "storage_not_configured" ? "File storage is not configured on this server, so resumes cannot be opened yet. Nothing has been downloaded." : e.message) : "Could not open the resume");
+        setResumeNotice(e instanceof ApiClientError ? (e.code === "storage_not_configured" ? "File storage is unavailable on this server, so the resume cannot be opened. Nothing has been downloaded." : e.message) : "Could not open the resume");
         setResumeFor(a);
       }
       return;

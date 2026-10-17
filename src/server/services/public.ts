@@ -1,4 +1,5 @@
 import "server-only";
+import type { Prisma } from "@/generated/prisma/client";
 import { getDb } from "../db";
 import { cleanHtml } from "../resources/sanitize";
 
@@ -122,16 +123,22 @@ export async function getProject(slug: string): Promise<ProjectFull | null> {
 /* ───────────── Products ───────────── */
 export const AVAILABILITY_LABEL: Record<string, string> = { available: "Available", limited_availability: "Limited availability", under_negotiation: "Under negotiation", sold: "Sold", out_of_stock: "Out of stock" };
 export interface CategoryCard { slug: string; name: string; description: string; count: number }
-export interface ProductCard { slug: string; code: string; name: string; category: string; categorySlug: string; shortDescription: string; availability: string; grade: string | null; origin: string | null; featured: boolean }
+export interface ProductCard { slug: string; code: string; name: string; category: string; categorySlug: string; shortDescription: string; availability: string; grade: string | null; origin: string | null; featured: boolean; /** Primary picture (public image route), or null when the product has none. */ image: string | null }
 export interface ProductFull extends ProductCard {
   description: string; applications: string[]; packaging: string | null; loadingPort: string | null; targetMarket: string | null; quantity: string | null;
   specifications: { label: string; value: string; unit: string | null }[]; metaTitle: string; metaDescription: string;
+  /** Every public picture of the product, primary first. */
+  gallery: { url: string; alt: string }[];
 }
-const productSelect = { slug: true, code: true, name: true, shortDescription: true, availability: true, grade: true, origin: true, featured: true, category: { select: { name: true, slug: true } } } as const;
-type ProductRow = { slug: string; code: string; name: string; shortDescription: string; availability: string; grade: string | null; origin: string | null; featured: boolean; category: { name: string; slug: string } };
+const productSelect = {
+  slug: true, code: true, name: true, shortDescription: true, availability: true, grade: true, origin: true, featured: true, category: { select: { name: true, slug: true } },
+  images: { where: { file: { visibility: "public", scanStatus: { not: "quarantined" } } }, orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 1, select: { fileId: true } },
+} satisfies Prisma.ProductSelect;
+type ProductRow = { slug: string; code: string; name: string; shortDescription: string; availability: string; grade: string | null; origin: string | null; featured: boolean; category: { name: string; slug: string }; images: { fileId: string }[] };
 const toProductCard = (p: ProductRow): ProductCard => ({
   slug: p.slug, code: p.code, name: p.name, category: p.category.name, categorySlug: p.category.slug, shortDescription: p.shortDescription,
   availability: AVAILABILITY_LABEL[p.availability] ?? p.availability, grade: p.grade, origin: p.origin, featured: p.featured,
+  image: p.images[0] ? `/api/public/product-image/${p.images[0].fileId}` : null,
 });
 const productWhere = { status: "published" as const, category: { status: "published" as const } };
 
@@ -151,16 +158,22 @@ export async function listProducts(opts: { category?: string; search?: string; t
   ]);
   return { items: rows.map(toProductCard), total };
 }
+/** The newest published products (by publish date), for the home page. */
+export async function listRecentProducts(take = 6): Promise<ProductCard[]> {
+  const rows = await db().product.findMany({ where: productWhere, orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }], take, select: productSelect });
+  return rows.map(toProductCard);
+}
 export async function getProduct(slug: string): Promise<ProductFull | null> {
   const p = await db().product.findFirst({
     where: { ...productWhere, slug },
-    select: { ...productSelect, description: true, applications: true, packaging: true, loadingPort: true, targetMarket: true, availableQuantity: true, quantityUnit: true, metaTitle: true, metaDescription: true, specifications: { orderBy: { sortOrder: "asc" }, select: { label: true, value: true, unit: true } } },
+    select: { ...productSelect, images: { where: { file: { visibility: "public", scanStatus: { not: "quarantined" } } }, orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], select: { fileId: true, alt: true } }, description: true, applications: true, packaging: true, loadingPort: true, targetMarket: true, availableQuantity: true, quantityUnit: true, metaTitle: true, metaDescription: true, specifications: { orderBy: { sortOrder: "asc" }, select: { label: true, value: true, unit: true } } },
   });
   if (!p) return null;
   const q = num(p.availableQuantity);
   return {
     ...toProductCard(p), description: p.description, applications: p.applications, packaging: p.packaging, loadingPort: p.loadingPort, targetMarket: p.targetMarket,
     quantity: q !== null ? `${q.toLocaleString("en-US")} ${p.quantityUnit ?? ""}`.trim() : null, specifications: p.specifications, metaTitle: p.metaTitle, metaDescription: p.metaDescription,
+    gallery: p.images.map((i) => ({ url: `/api/public/product-image/${i.fileId}`, alt: i.alt || p.name })),
   };
 }
 export async function relatedProducts(slug: string, categorySlug: string, take = 3) {

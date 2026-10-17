@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { LuCircleCheck, LuLoaderCircle, LuSend } from "react-icons/lu";
 
 /**
@@ -13,13 +13,21 @@ type Phase = { kind: "idle" } | { kind: "sending" } | { kind: "done"; reference?
 
 const input = "w-full rounded-xl border border-neutral-300 bg-white px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition focus:border-gold-600 focus:outline-none focus:ring-4 focus:ring-gold-500/20 aria-[invalid=true]:border-red-600 disabled:bg-neutral-100";
 
-function Field({ label, error, required, hint, children }: { label: string; name?: string; error?: string; required?: boolean; hint?: string; children: (p: { id: string; describedBy?: string; invalid: boolean }) => ReactNode }) {
+/** Number fields accept no minus sign, plus sign or exponent: typed, pasted or stepped values can never go below zero. */
+const noNegative = {
+  min: 0,
+  inputMode: "decimal" as const,
+  onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => { if (["-", "+", "e", "E"].includes(e.key)) e.preventDefault(); },
+  onInput: (e: FormEvent<HTMLInputElement>) => { const el = e.currentTarget; if (/[-+eE]/.test(el.value)) el.value = el.value.replace(/[-+eE]/g, ""); },
+};
+
+function Field({ label, error, required, hint, children }: { label: string; name?: string; error?: string; required?: boolean; hint?: string; children: (p: { id: string; "aria-describedby"?: string; "aria-invalid"?: boolean }) => ReactNode }) {
   const id = useId();
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
   return (
     <div>
       <label htmlFor={id} className="mb-1.5 block text-sm font-bold text-neutral-800">{label}{required && <span className="text-gold-700" aria-hidden> *</span>}</label>
-      {children({ id, describedBy, invalid: !!error })}
+      {children({ id, "aria-describedby": describedBy, "aria-invalid": error ? true : undefined })}
       {error ? <p id={`${id}-error`} role="alert" className="mt-1.5 text-sm text-red-700">{error}</p> : hint ? <p id={`${id}-hint`} className="mt-1.5 text-sm text-neutral-500">{hint}</p> : null}
     </div>
   );
@@ -117,13 +125,13 @@ export function ContactForm({ source = "contact_page", defaultSubject = "" }: { 
     <form noValidate onSubmit={(e) => submit(e, (form) => { const f = new FormData(form); return { json: true, body: JSON.stringify({ name: val(f, "name"), email: val(f, "email"), phone: val(f, "phone"), company: val(f, "company"), subject: val(f, "subject"), message: val(f, "message"), source, consent: f.get("consent") === "on", website: val(f, "website") }) }; })} className="relative space-y-5" aria-label="Contact form">
       <Honeypot />
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Your name" name="name" required error={errors.name}>{(p) => <input {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name="name" type="text" autoComplete="name" required maxLength={100} className={`${input} h-12`} />}</Field>
-        <Field label="Email" name="email" required error={errors.email}>{(p) => <input {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name="email" type="email" autoComplete="email" required maxLength={160} className={`${input} h-12`} />}</Field>
-        <Field label="Phone" name="phone" error={errors.phone}>{(p) => <input {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name="phone" type="tel" autoComplete="tel" maxLength={30} className={`${input} h-12`} />}</Field>
-        <Field label="Company" name="company" error={errors.company}>{(p) => <input {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name="company" type="text" autoComplete="organization" maxLength={120} className={`${input} h-12`} />}</Field>
+        <Field label="Your name" name="name" required error={errors.name}>{(p) => <input {...p} name="name" type="text" autoComplete="name" required maxLength={100} className={`${input} h-12`} />}</Field>
+        <Field label="Email" name="email" required error={errors.email}>{(p) => <input {...p} name="email" type="email" autoComplete="email" required maxLength={160} className={`${input} h-12`} />}</Field>
+        <Field label="Phone" name="phone" error={errors.phone}>{(p) => <input {...p} name="phone" type="tel" autoComplete="tel" maxLength={30} className={`${input} h-12`} />}</Field>
+        <Field label="Company" name="company" error={errors.company}>{(p) => <input {...p} name="company" type="text" autoComplete="organization" maxLength={120} className={`${input} h-12`} />}</Field>
       </div>
-      <Field label="Subject" name="subject" required error={errors.subject}>{(p) => <input {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name="subject" type="text" required maxLength={150} defaultValue={defaultSubject} className={`${input} h-12`} />}</Field>
-      <Field label="Message" name="message" required error={errors.message} hint="Tell us the mineral, quantity and where it needs to go, if you know.">{(p) => <textarea {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name="message" required rows={6} maxLength={4000} className={`${input} py-3 leading-7`} />}</Field>
+      <Field label="Subject" name="subject" required error={errors.subject}>{(p) => <input {...p} name="subject" type="text" required maxLength={150} defaultValue={defaultSubject} className={`${input} h-12`} />}</Field>
+      <Field label="Message" name="message" required error={errors.message} hint="Tell us the mineral, quantity and where it needs to go, if you know.">{(p) => <textarea {...p} name="message" required rows={6} maxLength={4000} className={`${input} py-3 leading-7`} />}</Field>
       <Consent error={errors.consent} />
       {formError && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{formError}</p>}
       <SubmitButton sending={sending}>Send message</SubmitButton>
@@ -148,14 +156,14 @@ export function RfqForm({ defaultRequirement = "" }: { defaultRequirement?: stri
   const sending = phase.kind === "sending";
   const select = (name: string, label: string, options: string[], error?: string, required = true) => (
     <Field label={label} name={name} required={required} error={error}>{(p) => (
-      <select {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name={name} required={required} defaultValue="" className={`${input} h-12 cursor-pointer`}>
+      <select {...p} name={name} required={required} defaultValue="" className={`${input} h-12 cursor-pointer`}>
         <option value="" disabled>Choose…</option>
         {options.map((o) => <option key={o} value={o}>{o}</option>)}
       </select>
     )}</Field>
   );
   const text = (name: string, label: string, error?: string, extra: { type?: string; required?: boolean; auto?: string; defaultValue?: string; hint?: string; max?: number } = {}) => (
-    <Field label={label} name={name} required={extra.required ?? true} error={error} hint={extra.hint}>{(p) => <input {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name={name} type={extra.type ?? "text"} required={extra.required ?? true} autoComplete={extra.auto} defaultValue={extra.defaultValue} maxLength={extra.max ?? 150} className={`${input} h-12`} />}</Field>
+    <Field label={label} name={name} required={extra.required ?? true} error={error} hint={extra.hint}>{(p) => <input {...p} name={name} type={extra.type ?? "text"} {...(extra.type === "number" ? { ...noNegative, step: "any" } : {})} required={extra.required ?? true} autoComplete={extra.auto} defaultValue={extra.defaultValue} maxLength={extra.max ?? 150} className={`${input} h-12`} />}</Field>
   );
   return (
     <form noValidate onSubmit={(e) => submit(e, (form) => { const f = new FormData(form); return { json: true, body: JSON.stringify({ companyName: val(f, "companyName"), contactName: val(f, "contactName"), email: val(f, "email"), phone: val(f, "phone"), country: val(f, "country"), requirement: val(f, "requirement"), quantity: val(f, "quantity"), quantityUnit: val(f, "quantityUnit"), targetPrice: val(f, "targetPrice"), incoterm: val(f, "incoterm"), deliveryPort: val(f, "deliveryPort"), message: val(f, "message"), consent: f.get("consent") === "on", website: val(f, "website") }) }; })} className="relative space-y-6" aria-label="Request a quotation">
@@ -180,7 +188,7 @@ export function RfqForm({ defaultRequirement = "" }: { defaultRequirement?: stri
           {text("deliveryPort", "Delivery port", errors.deliveryPort, { max: 120 })}
           {text("targetPrice", "Target price (optional)", errors.targetPrice, { required: false, max: 60, hint: "For example: USD 95 per MT" })}
         </div>
-        <Field label="Specification and other details" name="message" error={errors.message} hint="Grade, size, moisture, packaging, shipment schedule and anything else that matters.">{(p) => <textarea {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name="message" rows={5} maxLength={4000} className={`${input} py-3 leading-7`} />}</Field>
+        <Field label="Specification and other details" name="message" error={errors.message} hint="Grade, size, moisture, packaging, shipment schedule and anything else that matters.">{(p) => <textarea {...p} name="message" rows={5} maxLength={4000} className={`${input} py-3 leading-7`} />}</Field>
       </fieldset>
       <Consent error={errors.consent} />
       {formError && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{formError}</p>}
@@ -207,14 +215,14 @@ export function ApplyForm({ slug, title }: { slug: string; title: string }) {
     })} className="relative space-y-5" aria-label={`Apply for ${title}`}>
       <Honeypot />
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Your name" name="applicantName" required error={errors.applicantName}>{(p) => <input {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name="applicantName" type="text" autoComplete="name" required maxLength={100} className={`${input} h-12`} />}</Field>
-        <Field label="Email" name="email" required error={errors.email}>{(p) => <input {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name="email" type="email" autoComplete="email" required maxLength={160} className={`${input} h-12`} />}</Field>
-        <Field label="Phone" name="phone" required error={errors.phone}>{(p) => <input {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name="phone" type="tel" autoComplete="tel" required maxLength={30} className={`${input} h-12`} />}</Field>
-        <Field label="Years of experience" name="experienceYears" required error={errors.experienceYears}>{(p) => <input {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name="experienceYears" type="number" min={0} max={60} step={1} required className={`${input} h-12`} />}</Field>
-        <Field label="Current company" name="currentCompany" error={errors.currentCompany}>{(p) => <input {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name="currentCompany" type="text" autoComplete="organization" maxLength={120} className={`${input} h-12`} />}</Field>
-        <Field label="Resume (optional)" name="resume" error={fileError || errors.resume} hint="PDF or Word document, up to 5 MB.">{(p) => <input {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name="resume" type="file" accept=".pdf,.doc,.docx,application/pdf" onChange={(e) => setFileError((e.target.files?.[0]?.size ?? 0) > MAX_RESUME ? "This file is larger than 5 MB." : "")} className={`${input} cursor-pointer py-2.5 file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-red-50 file:px-4 file:py-2 file:font-bold file:text-red-700`} />}</Field>
+        <Field label="Your name" name="applicantName" required error={errors.applicantName}>{(p) => <input {...p} name="applicantName" type="text" autoComplete="name" required maxLength={100} className={`${input} h-12`} />}</Field>
+        <Field label="Email" name="email" required error={errors.email}>{(p) => <input {...p} name="email" type="email" autoComplete="email" required maxLength={160} className={`${input} h-12`} />}</Field>
+        <Field label="Phone" name="phone" required error={errors.phone}>{(p) => <input {...p} name="phone" type="tel" autoComplete="tel" required maxLength={30} className={`${input} h-12`} />}</Field>
+        <Field label="Years of experience" name="experienceYears" required error={errors.experienceYears}>{(p) => <input {...p} name="experienceYears" type="number" {...noNegative} inputMode="numeric" max={60} step={1} required className={`${input} h-12`} />}</Field>
+        <Field label="Current company" name="currentCompany" error={errors.currentCompany}>{(p) => <input {...p} name="currentCompany" type="text" autoComplete="organization" maxLength={120} className={`${input} h-12`} />}</Field>
+        <Field label="Resume (optional)" name="resume" error={fileError || errors.resume} hint="PDF or Word document, up to 5 MB.">{(p) => <input {...p} name="resume" type="file" accept=".pdf,.doc,.docx,application/pdf" onChange={(e) => setFileError((e.target.files?.[0]?.size ?? 0) > MAX_RESUME ? "This file is larger than 5 MB." : "")} className={`${input} cursor-pointer py-2.5 file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-red-50 file:px-4 file:py-2 file:font-bold file:text-red-700`} />}</Field>
       </div>
-      <Field label="Cover note" name="coverNote" error={errors.coverNote} hint="A few lines about why you are a good fit.">{(p) => <textarea {...p} aria-describedby={p.describedBy} aria-invalid={p.invalid} name="coverNote" rows={5} maxLength={4000} className={`${input} py-3 leading-7`} />}</Field>
+      <Field label="Cover note" name="coverNote" error={errors.coverNote} hint="A few lines about why you are a good fit.">{(p) => <textarea {...p} name="coverNote" rows={5} maxLength={4000} className={`${input} py-3 leading-7`} />}</Field>
       <Consent error={errors.consent} />
       {formError && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{formError}</p>}
       <SubmitButton sending={sending} disabled={!!fileError}>Submit application</SubmitButton>

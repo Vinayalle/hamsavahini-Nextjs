@@ -1,3 +1,6 @@
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 
 /**
@@ -14,7 +17,8 @@ process.env.AUTH_MFA_METHOD = "totp"; // the default is "email"; most suites exe
 process.env.AUTH_TRUST_PROXY = "true"; // lets tests present distinct source addresses
 process.env.AUTH_OTP_RESEND_COOLDOWN_SECONDS = "60";
 process.env.APP_BASE_URL = "http://localhost:3000";
-for (const k of ["S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY", "S3_ENDPOINT", "S3_REGION", "S3_FORCE_PATH_STYLE"]) delete process.env[k];
+// Files go to a throwaway folder, never the real <project>/uploads.
+process.env.UPLOAD_DIR = mkdtempSync(join(tmpdir(), "hv-uploads-"));
 delete process.env.SMTP_HOST;
 delete process.env.SMTP_USER;
 delete process.env.SMTP_PASSWORD;

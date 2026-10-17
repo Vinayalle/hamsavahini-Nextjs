@@ -140,30 +140,3 @@ export function getSmtpConfig(): SmtpConfig | null {
   if (!from) throw new Error("Set MAIL_FROM (or SMTP_USER) so emails have a sender.");
   return { host, port, secure: e.SMTP_SECURE ? e.SMTP_SECURE === "true" : port === 465, user: e.SMTP_USER || undefined, password: e.SMTP_PASSWORD || undefined, from };
 }
-
-export interface StorageConfig {
-  bucket: string;
-  region: string;
-  accessKeyId: string;
-  secretAccessKey: string;
-  /** For S3-compatible services (MinIO, Cloudflare R2, DigitalOcean Spaces, Backblaze ...). Omit for AWS S3. */
-  endpoint?: string;
-  forcePathStyle: boolean;
-}
-
-/**
- * Object storage (S3 or any S3-compatible service) is configured when a bucket and credentials are present.
- * Credentials stay on the server; the browser never receives them. Returns null when nothing is configured.
- */
-export function getStorageConfig(): StorageConfig | null {
-  const e = process.env;
-  if (!e.S3_BUCKET && !e.S3_ACCESS_KEY_ID && !e.S3_SECRET_ACCESS_KEY) return null;
-  for (const name of ["S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"] as const) {
-    if (!e[name]) throw new Error(`Object storage is partly configured: ${name} is missing.`);
-  }
-  if (e.S3_ENDPOINT && !/^https?:\/\//.test(e.S3_ENDPOINT)) throw new Error("S3_ENDPOINT must start with http:// or https://.");
-  return {
-    bucket: e.S3_BUCKET!, region: e.S3_REGION || "us-east-1", accessKeyId: e.S3_ACCESS_KEY_ID!, secretAccessKey: e.S3_SECRET_ACCESS_KEY!,
-    endpoint: e.S3_ENDPOINT || undefined, forcePathStyle: e.S3_FORCE_PATH_STYLE ? e.S3_FORCE_PATH_STYLE === "true" : !!e.S3_ENDPOINT,
-  };
-}

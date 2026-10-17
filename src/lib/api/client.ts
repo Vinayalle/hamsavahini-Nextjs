@@ -61,6 +61,39 @@ export function refreshSession(): Promise<boolean> {
   return refreshing;
 }
 
+/**
+ * Downloads a file from a permission-checked endpoint and saves it through the browser (works with the same sign-in refresh as apiFetch).
+ * The file name comes from the server's Content-Disposition header.
+ */
+export async function apiDownload(path: string, fallbackName = "download", _retried = false): Promise<void> {
+  let res: Response;
+  try {
+    res = await fetch(path, { credentials: "same-origin" });
+  } catch {
+    throw new ApiClientError("Cannot reach the server. Check your connection and try again.", 0, "network");
+  }
+  if (!res.ok) {
+    if (res.status === 401 && !_retried && (await refreshSession())) return apiDownload(path, fallbackName, true);
+    let err: { code?: string; message?: string } | undefined;
+    try { err = (await res.json())?.error; } catch { /* non-JSON body */ }
+    if (res.status === 401) onUnauthorized();
+    throw new ApiClientError(err?.message ?? `Download failed (${res.status})`, res.status, err?.code ?? "error");
+  }
+  const disposition = res.headers.get("content-disposition") ?? "";
+  const encoded = /filename\*=UTF-8''([^;]+)/i.exec(disposition)?.[1];
+  const plain = /filename="([^"]+)"/i.exec(disposition)?.[1];
+  let name = plain ?? fallbackName;
+  if (encoded) { try { name = decodeURIComponent(encoded); } catch { /* keep the plain name */ } }
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
 interface Init {
   method?: string;
   /** JSON-serialisable value, or FormData for file uploads (sent as multipart, no manual Content-Type). */

@@ -138,19 +138,21 @@ export async function openMedia(session: AuthSession, id: string, asDownload: bo
   }
 }
 
-/** A short-lived signed download link for a library document; non-public documents are audited. */
+/** The file of a library document, for a download after the permission check; non-public documents are audited. */
 export async function documentDownload(request: Request, session: AuthSession, id: string) {
   authorize(session, "documents", "download");
   const db = getDb();
   const row = await db.documentFile.findUnique({ where: { id }, include: { file: true } });
   if (!row || row.file.scanStatus === "quarantined") throw errors.notFound("Document");
   const storage = storageOrThrow();
-  let url: string;
+  let bytes: Buffer;
   try {
-    url = await storage.signedDownloadUrl(row.file.storageKey, { fileName: row.file.originalName, expiresInSeconds: 60 });
-  } catch {
-    throw new ApiError(502, "storage_read_failed", "A download link could not be created.");
+    bytes = Buffer.from(await new Response((await storage.get(row.file.storageKey)).stream).arrayBuffer());
+  } catch (e) {
+    if (e instanceof Error && e.name === "NoSuchKey") throw errors.notFound("Document");
+    console.error("[api] document read failed", e instanceof Error ? e.name : "unknown");
+    throw new ApiError(502, "storage_read_failed", "The file could not be read from storage.");
   }
   if (row.visibility !== "public") await recordActivity(db, { session, action: "viewed_sensitive", entityType: documents.entity, entityId: row.id, entityLabel: row.title, detail: "document downloaded", ip: clientIp(request) });
-  return { url, expiresInSeconds: 60 };
+  return { fileName: row.file.originalName, mimeType: row.file.mimeType, bytes };
 }

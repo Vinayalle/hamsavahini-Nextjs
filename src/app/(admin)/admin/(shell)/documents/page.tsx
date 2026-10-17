@@ -9,9 +9,8 @@ import { ResourceList } from "@/components/admin/resource-list";
 import { StatusBadge } from "@/components/admin/status-badge";
 import type { Column } from "@/components/admin/data-table";
 import { EntityFormDialog, type SectionDef, type Values } from "@/components/forms/entity-form";
-import { StorageNotice, useStorageConfigured } from "@/components/admin/storage-notice";
 import { DocumentUploadDialog } from "@/components/modules/document-upload";
-import { ApiClientError, apiFetch, isApiMode } from "@/lib/api/client";
+import { ApiClientError, apiDownload, isApiMode } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { documentService } from "@/lib/services";
 import { formatBytes, formatDate } from "@/lib/utils";
@@ -41,13 +40,11 @@ export default function DocumentLibraryPage() {
   const [editing, setEditing] = useState<DocumentFile | "new" | null>(null);
   const current = editing && editing !== "new" ? editing : undefined;
   const { can } = useAuth();
-  const storage = useStorageConfigured();
-  const canUpload = !isApiMode || (storage === true && can("documents", "upload"));
+  const canUpload = !isApiMode || can("documents", "upload");
 
   const download = async (d: DocumentFile) => {
     try {
-      const r = await apiFetch<{ url: string }>(`/api/documents/${d.id}/download`);
-      window.open(r.url, "_blank", "noopener,noreferrer");
+      await apiDownload(`/api/documents/${d.id}/download`, d.fileName);
     } catch (e) {
       toast.error("Could not download", { description: e instanceof ApiClientError ? e.message : "Something went wrong" });
     }
@@ -82,13 +79,12 @@ export default function DocumentLibraryPage() {
   return (
     <>
       <PageHeader title="Document Library" description="Certificates, policies and brochures available for download." actions={add} />
-      {isApiMode && storage === false && <StorageNotice what="Documents" />}
       <ResourceList
         service={documentService} entityLabel="document" nameOf={(d) => d.title} columns={columns} selectable archivable
         defaultSort={{ by: "updatedAt", dir: "desc" }} searchPlaceholder="Search title or file name…"
         statuses={[{ value: "published" }, { value: "draft" }]} currentStatus={(d) => d.status} emptyAction={add}
         extraRowActions={(d) => [
-          ...(isApiMode ? [{ label: "Download", icon: Download, hidden: !can("documents", "download") || storage !== true, onSelect: () => download(d) }] : []),
+          ...(isApiMode ? [{ label: "Download", icon: Download, hidden: !can("documents", "download"), onSelect: () => download(d) }] : []),
           { label: "Edit", icon: Pencil, hidden: isApiMode && !can("documents", "edit"), onSelect: () => setEditing(d) },
         ]}
         filters={[

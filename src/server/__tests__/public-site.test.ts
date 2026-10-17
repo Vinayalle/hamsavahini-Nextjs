@@ -1,5 +1,4 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import S3rver from "s3rver";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -144,29 +143,24 @@ describe("request for quotation (RFQ) form", () => {
 
 describe("job application form", () => {
   let dir = "";
-  let s3: S3rver;
-  const PORT = 5600 + Math.floor(Math.random() * 300);
-  const ENV = ["S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY", "S3_ENDPOINT", "S3_REGION", "S3_FORCE_PATH_STYLE"] as const;
   const saved: Record<string, string | undefined> = {};
   let careerId = "";
 
   beforeAll(async () => {
-    for (const k of ENV) saved[k] = process.env[k];
-    dir = mkdtempSync(join(tmpdir(), "hv-pub-s3-"));
-    s3 = new S3rver({ port: PORT, address: "127.0.0.1", silent: true, directory: dir, configureBuckets: [{ name: "hv-public", configs: [] }] });
-    await s3.run();
+    saved.UPLOAD_DIR = process.env.UPLOAD_DIR;
+    dir = mkdtempSync(join(tmpdir(), "hv-pub-files-"));
+    process.env.UPLOAD_DIR = dir;
   });
   afterAll(async () => {
-    await s3.close();
     rmSync(dir, { recursive: true, force: true });
     setStorageForTests(undefined);
-    for (const k of ENV) { if (saved[k] === undefined) delete process.env[k]; else process.env[k] = saved[k]; }
+    if (saved.UPLOAD_DIR === undefined) delete process.env.UPLOAD_DIR; else process.env.UPLOAD_DIR = saved.UPLOAD_DIR;
     await db().jobApplication.deleteMany();
     await db().career.deleteMany({ where: { slug: { startsWith: "pub-" } } });
     await db().storedFile.deleteMany({ where: { kind: "resume" } });
   });
-  const withStorage = () => { Object.assign(process.env, { S3_BUCKET: "hv-public", S3_ACCESS_KEY_ID: "S3RVER", S3_SECRET_ACCESS_KEY: "S3RVER", S3_ENDPOINT: `http://127.0.0.1:${PORT}`, S3_REGION: "us-east-1" }); setStorageForTests(undefined); expect(getStorage()).toBeTruthy(); };
-  const noStorage = () => { for (const k of ENV) delete process.env[k]; setStorageForTests(undefined); };
+  const withStorage = () => { process.env.UPLOAD_DIR = dir; setStorageForTests(undefined); expect(getStorage()).toBeTruthy(); };
+  const noStorage = () => setStorageForTests(null);
 
   const career = (over: Record<string, unknown> = {}) => db().career.create({ data: { slug: `pub-${Math.random().toString(36).slice(2, 8)}`, title: "Logistics Coordinator", department: "Operations", location: "Mumbai", employmentType: "full_time", experience: "3+ years", descriptionHtml: "<p>Coordinate shipments.</p>", requirementsHtml: "<ul><li>Port experience</li></ul>", deadline: day(30), status: "open", ...over } });
   const apply = (slug: string, over: Record<string, string> = {}, file?: File) => {

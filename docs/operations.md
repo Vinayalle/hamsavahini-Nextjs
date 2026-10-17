@@ -28,14 +28,12 @@ The application pins its PostgreSQL **session** time zone to UTC (`src/server/db
 ## Backups kept by earlier phases (do not delete without approval)
 `hv_rehearsal` (clone used to rehearse migration 4), `hv_backup_preauth` (clone of the dev database immediately before migration 4), and `.local/backups/` (file-level copies before migrations 2 and 3). They contain development data only.
 
-## File storage (media, documents, resumes)
-Files live in a **private S3-compatible bucket** (AWS S3, Cloudflare R2, MinIO, DigitalOcean Spaces, Backblaze B2 ...), configured with `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (+ `S3_REGION`, `S3_ENDPOINT`, `S3_FORCE_PATH_STYLE` for non-AWS). Credentials never leave the server.
-- Turn **Block all public access** on and give the key only `PutObject`/`GetObject`/`DeleteObject` on that bucket. No bucket policy for the public.
-- **Uploads** go browser → app (multipart) → bucket. The server decides the file type from its bytes (PNG, JPEG, WebP, MP4 for media; PDF, DOC/DOCX, XLS/XLSX for documents), enforces size caps (image 5 MB, video 50 MB, document 10 MB), rejects SVG/HTML/scripts and mismatched types, sanitises the name, and stores under a random key. The reply is a success only after the object **and** its database row both exist; a failed database write removes the object again, a failed storage write stores nothing.
-- **Downloads**: media is streamed through `/api/media/<id>/file` after a `media:view` check (`nosniff`, locked-down CSP, `private` cache); documents and resumes return a **60-second signed link** after `documents:download` / `job_applications:download`; non-public documents and every resume download are written to the audit log.
+## File storage (media, documents, resumes, banners, product files)
+Every uploaded file is stored on the server's own disk, in the project's **`uploads/`** folder (`uploads/media`, `uploads/documents`, `uploads/resumes`, `uploads/banners`, `uploads/products`). There is no bucket and no cloud service. To keep the files somewhere else, set `UPLOAD_DIR` (media, documents, resumes), `BANNER_UPLOAD_DIR` or `PRODUCT_UPLOAD_DIR`.
+- The folder is **never served as static files**; the bytes are only read back through our own routes. The folder is **committed to git** together with the code (it is not ignored), so pictures and documents travel with the repository; keep it on a persistent disk too, and back it up with the database. Mount it on a persistent disk in production (a platform with an ephemeral filesystem would lose it on every deploy).
+- **Uploads** go browser -> app (multipart) -> disk. The server decides the file type from its bytes (PNG, JPEG, WebP, MP4 for media; PDF, DOC/DOCX, XLS/XLSX for documents), enforces size caps (image 5 MB, video 50 MB, document 10 MB), rejects SVG/HTML/scripts, and names the file with a random key (the original name is kept only in the database).
+- **Downloads**: media is streamed through `/api/media/<id>/file` after a `media:view` check (`nosniff`, locked-down CSP, `private` cache); documents and resumes are sent by `/api/documents/<id>/download` and `/api/applications/<id>/resume` after `documents:download` / `job_applications:download` (no public link, nothing to expire); non-public downloads are audited.
 - New files start with `scanStatus = pending`. Nothing scans them yet (add a malware scanner such as ClamAV before opening uploads to untrusted users); a file marked `quarantined` is never served.
-- Product images and product documents are **not** connected to storage yet (the pages say so).
-- Tested against a local S3-compatible server (`s3rver`) with the real AWS SDK; not yet against a live provider.
 
 ## Deployment checklist
 - [ ] `NEXT_PUBLIC_DATA_SOURCE=api` at **build** time; Node 22+.
@@ -48,5 +46,5 @@ Files live in a **private S3-compatible bucket** (AWS S3, Cloudflare R2, MinIO, 
 - [ ] `npx prisma migrate deploy` run once per release (not on every instance start); backup taken first.
 - [ ] First Super Admin: `SEED_ADMIN_EMAIL=… npm run db:seed` (prints a generated password once) → sign in → enrol MFA → store recovery codes.
 - [ ] Scheduled cleanup of expired `Session`, `RefreshToken`, `AuthChallenge`, `UserToken`, `RateLimit` rows.
-- [ ] Object storage configured (`S3_*`, private bucket, least-privilege key) before enabling resumes / media / documents; test one upload and one download.
+- [ ] The `uploads/` folder (or `UPLOAD_DIR`) is on a persistent, backed-up disk; test one upload and one download.
 - [ ] Log shipping and alerting on `login_failed`, `token_reuse`, `mfa_failed`, 429 spikes.

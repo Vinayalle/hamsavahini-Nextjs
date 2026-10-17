@@ -1,4 +1,5 @@
 import "server-only";
+import { isProductKey, readProductFile } from "../product-files";
 import { errors } from "../errors";
 import { getDb } from "../db";
 import { isBannerKey, readBannerFile } from "../banner-files";
@@ -47,6 +48,22 @@ export async function getHeroSlides(now = new Date()): Promise<HeroSlide[]> {
 }
 
 /** The picture of one LIVE hero banner. Anything else (draft, expired, no picture, quarantined, not a banner file) is a plain 404. */
+/** The picture of a PUBLISHED product (in a published category) for the website; nothing else can be read through the public image route. */
+export async function openProductImage(fileId: string) {
+  const row = await getDb().productImage.findFirst({
+    where: { fileId, product: { status: "published", category: { status: "published" } }, file: { kind: "image", visibility: "public", scanStatus: { not: "quarantined" } } },
+    include: { file: true },
+  });
+  if (!row || !isProductKey(row.file.storageKey)) throw errors.notFound("Image");
+  try {
+    return { file: row.file, bytes: await readProductFile(row.file.storageKey) };
+  } catch (e) {
+    const code = (e as NodeJS.ErrnoException).code;
+    if (code !== "ENOENT") console.error("[site] product image read failed", code ?? "unknown");
+    throw errors.notFound("Image");
+  }
+}
+
 export async function openBannerImage(bannerId: string, now = new Date()) {
   const banner = await getDb().banner.findFirst({ where: { id: bannerId, ...liveHeroWhere(now) }, include: { imageFile: true } });
   const file = banner?.imageFile;
