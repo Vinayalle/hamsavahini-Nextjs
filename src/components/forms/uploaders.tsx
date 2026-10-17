@@ -6,10 +6,24 @@ import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/fields";
 import { DOCUMENT_RULES, IMAGE_RULES, fileStorage, validateFile } from "@/lib/storage";
+import { ApiClientError, apiFetch, isApiMode } from "@/lib/api/client";
 import { cn, formatBytes, uid } from "@/lib/utils";
 import type { ProductDocument, ProductImage } from "@/types/entities";
 
-const NOTE = "Previews only — files are not uploaded to any server in this build.";
+const NOTE = isApiMode ? "Pictures are saved inside the project when you save the product." : "Previews only — files are not uploaded to any server in this build.";
+
+type Uploaded = { id: string; url: string; name: string; sizeBytes: number };
+/** Database mode: sends one file to the server (saved inside the project) and returns its file id; null after showing the reason. */
+async function uploadToServer(path: string, file: File): Promise<Uploaded | null> {
+  try {
+    const fd = new FormData();
+    fd.set("file", file);
+    return await apiFetch<Uploaded>(path, { method: "POST", body: fd });
+  } catch (e) {
+    toast.error(e instanceof ApiClientError ? e.message : `${file.name} could not be uploaded`);
+    return null;
+  }
+}
 
 /* ───────────────────────── ImageUploader ───────────────────────── */
 export function ImageUploader({
@@ -31,8 +45,14 @@ export function ImageUploader({
         toast.error(error);
         continue;
       }
+      const alt = file.name.replace(/\.[^.]+$/, "");
+      if (isApiMode) {
+        const up = await uploadToServer("/api/products/image", file);
+        if (up) next.push({ id: up.id, fileId: up.id, url: up.url, alt, isPrimary: next.length === 0 });
+        continue;
+      }
       const stored = await fileStorage.upload(file);
-      next.push({ id: uid("img"), url: stored.url, alt: file.name.replace(/\.[^.]+$/, ""), isPrimary: next.length === 0 });
+      next.push({ id: uid("img"), url: stored.url, alt, isPrimary: next.length === 0 });
     }
     onChange(next);
   };
@@ -109,12 +129,18 @@ export function DocumentUploader({
 }: { documents: ProductDocument[]; onChange: (docs: ProductDocument[]) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const addFiles = (files: FileList) => {
+  const addFiles = async (files: FileList) => {
+    const list = Array.from(files);
     const next = [...documents];
-    for (const file of Array.from(files)) {
+    for (const file of list) {
       const error = validateFile(file, DOCUMENT_RULES);
       if (error) {
         toast.error(error);
+        continue;
+      }
+      if (isApiMode) {
+        const up = await uploadToServer("/api/products/document", file);
+        if (up) next.push({ id: up.id, fileId: up.id, url: up.url, name: up.name, type: "other", sizeBytes: up.sizeBytes });
         continue;
       }
       next.push({ id: uid("doc"), name: file.name, type: "other", sizeBytes: file.size });
@@ -132,10 +158,10 @@ export function DocumentUploader({
         <Button variant="secondary" size="sm" onClick={() => inputRef.current?.click()}><UploadCloud className="size-4" /> Add files</Button>
         <input
           ref={inputRef} type="file" multiple hidden accept={DOCUMENT_RULES.accept.join(",")} aria-label="Upload documents"
-          onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }}
+          onChange={(e) => { if (e.target.files) void addFiles(e.target.files); e.target.value = ""; }}
         />
       </div>
-      <p className="mt-2 text-xs text-faint">File names are recorded only; contents are not uploaded or stored in this build.</p>
+      <p className="mt-2 text-xs text-faint">{isApiMode ? "Documents are saved inside the project when you save the product." : "File names are recorded only; contents are not uploaded or stored in this build."}</p>
 
       {documents.length > 0 && (
         <ul className="mt-4 divide-y divide-line rounded-lg border border-line">

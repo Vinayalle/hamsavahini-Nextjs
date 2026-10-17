@@ -91,7 +91,11 @@ export function ProductGridCard({ product, icon, index = 0 }: { product: Product
   return (
     <Reveal as="li" delay={(index % 3) * 90}>
       <Link href={`/products/${product.slug}`} className={`${card} ${cardHover} group flex h-full flex-col overflow-hidden`}>
-        <CardArt icon={icon} label={product.category} />
+        {product.image ? (
+          <div className="relative aspect-[16/10] overflow-hidden bg-neutral-100">
+            <img src={product.image} alt={product.name} loading="lazy" decoding="async" className="size-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          </div>
+        ) : <CardArt icon={icon} label={product.category} />}
         <div className="flex flex-1 flex-col p-6">
           <h3 className="mb-2 text-xl font-bold leading-snug text-neutral-900 group-hover:text-gold-700">{product.name}</h3>
           <p className="flex-1 text-base leading-7 text-neutral-600">{product.shortDescription}</p>

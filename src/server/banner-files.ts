@@ -13,7 +13,7 @@ import type { getDb } from "./db";
 export const BANNER_KEY_PREFIX = "banners/";
 const GRACE_MS = 60 * 60 * 1000;
 
-const rootDir = () => resolve(process.env.BANNER_UPLOAD_DIR?.trim() || join(process.cwd(), "uploads", "banners"));
+const rootDir = () => resolve(process.env.BANNER_UPLOAD_DIR?.trim() || join(/*turbopackIgnore: true*/ process.cwd(), "uploads", "banners"));
 /** Keys are server-generated; still, only the bare file name is ever used so a key can never point outside the folder. */
 const pathOf = (key: string) => join(rootDir(), basename(key));
 

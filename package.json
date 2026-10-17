@@ -20,8 +20,6 @@
     "brand:build": "node scripts/build-brand.mjs"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1149.0",
-    "@aws-sdk/s3-request-presigner": "^3.1149.0",
     "@hookform/resolvers": "^5.2.0",
     "@node-rs/argon2": "^2.2.2",
     "@prisma/adapter-pg": "^7.10.0",
@@ -61,7 +59,6 @@
     "eslint-config-next": "16.4.0",
     "mailparser": "^3.9.38",
     "prisma": "^7.10.0",
-    "s3rver": "^3.7.1",
     "sharp": "^0.35.5",
     "smtp-server": "^3.19.21",
     "tailwindcss": "^4",

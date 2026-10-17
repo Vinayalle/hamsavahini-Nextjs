@@ -25,14 +25,13 @@ const productFilters = {
   status: (p: Product, v: string) => (v === "active" ? p.status !== "archived" : p.status === v),
 };
 
-/** Fields the products API accepts. Images/documents are intentionally absent: files need the storage module. */
-const PRODUCT_WRITE_FIELDS = ["name", "code", "slug", "categoryId", "shortDescription", "description", "specifications", "seo", "status", "featured"];
+/** Fields the products API accepts. Pictures and documents go as file ids (the files were uploaded and saved inside the project). */
+const PRODUCT_WRITE_FIELDS = ["name", "code", "slug", "categoryId", "shortDescription", "description", "specifications", "seo", "status", "featured", "images", "documents"];
 function toProductPayload(v: Record<string, unknown>): Record<string, unknown> {
   const out = Object.fromEntries(Object.entries(v).filter(([k]) => PRODUCT_WRITE_FIELDS.includes(k)));
-  if (Object.keys(out).length === 0 && ("images" in v || "documents" in v)) {
-    throw new Error("Images and documents can't be saved yet: they need object storage, which is not configured in this build.");
-  }
   if (Array.isArray(out.specifications)) out.specifications = (out.specifications as { label: string; value: string; unit?: string }[]).map(({ label, value, unit }) => ({ label, value, unit: unit || null }));
+  if (Array.isArray(out.images)) out.images = (out.images as { fileId?: string; alt: string; isPrimary: boolean }[]).filter((i) => i.fileId).map(({ fileId, alt, isPrimary }) => ({ fileId, alt, isPrimary }));
+  if (Array.isArray(out.documents)) out.documents = (out.documents as { fileId?: string; type: string }[]).filter((d) => d.fileId).map(({ fileId, type }) => ({ fileId, type }));
   return out;
 }
 

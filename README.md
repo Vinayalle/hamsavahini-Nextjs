@@ -6,8 +6,8 @@ Two data modes, chosen at build time with `NEXT_PUBLIC_DATA_SOURCE`:
 
 - `mock` (default): all data is mock, in browser memory. Changes survive client-side navigation but reset on reload.
 - `api`: every CMS module is stored in PostgreSQL via Prisma, behind real authentication and server-side RBAC (status per module in
-  [docs/cms-modules.md](docs/cms-modules.md)). Media, documents and resume downloads additionally need an S3-compatible bucket
-  (`S3_*` variables, see `.env.example`); without it they say so and refuse, nothing is faked. Product images/documents are not wired to storage yet.
+  [docs/cms-modules.md](docs/cms-modules.md)). Uploaded files (media, documents, resumes, banners, product pictures and documents) are saved
+  on disk inside the project, in the `uploads/` folder: no bucket or cloud account needed.
 
 ## Run
 
@@ -79,8 +79,8 @@ src/types                         typed entities
 | Data | `createCollection()` in `src/lib/mock/collection.ts`, exposed as `CrudService<T>` | HTTP-backed implementations of the same interface; swap `useResource` for a fetch hook |
 | Auth | mock: `src/lib/auth` dev session in `sessionStorage` (no security). api: HttpOnly-cookie JWT + refresh sessions | see docs/authentication.md |
 | Permissions | `can()` is a UI hint only | Backend RBAC on every request. The frontend is never the authority |
-| Files | `localPreviewStorage` makes `blob:` URLs. **Nothing is uploaded** | Pre-signed S3-compatible uploads issued by the API |
+| Files | `localPreviewStorage` makes `blob:` URLs. **Nothing is uploaded** | Saved on the server's disk in `uploads/`, served only through permission-checked routes |
 | Rich text | contentEditable → HTML; admin preview is whitelist-sanitised | Backend must sanitise on save and on render |
-| Resumes | UI explains protected access and logs the view | Short-lived signed URLs after a server permission check |
+| Resumes | UI explains protected access and logs the view | Sent only after a server permission check |
 
-Deliberately **not** included: PostgreSQL, Prisma, S3 SDKs, live commodity feeds, CRM/ERP, BI, customer/supplier portals.
+Deliberately **not** included: PostgreSQL, Prisma, live commodity feeds, CRM/ERP, BI, customer/supplier portals.

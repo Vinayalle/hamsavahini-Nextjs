@@ -38,7 +38,7 @@ src/
     auth, tokens, crypto, ratelimit, mfa, loginotp, mail  authentication and email
     authz/, rbac.ts         role/permission engine
     resources/              config-driven CMS modules (one definition per entity)
-    storage.ts, files.ts    S3-compatible storage and upload validation
+    storage.ts, files.ts    local-disk file storage (uploads/) and upload validation
     db.ts, audit.ts         Prisma access and audit trail
   lib/                      client-side helpers: api client, auth context, services registry, mock data
   proxy.ts                  gate: anonymous visitors to /admin/* are redirected to /admin/login

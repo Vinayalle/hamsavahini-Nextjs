@@ -18,8 +18,6 @@ import { useLocalList } from "@/hooks/use-local-list";
 import { productService } from "@/lib/services";
 import { formatBytes } from "@/lib/utils";
 import type { ProductDocument } from "@/types/entities";
-import { StorageNotice } from "@/components/admin/storage-notice";
-import { isApiMode } from "@/lib/api/client";
 
 const TYPE_LABEL: Record<ProductDocument["type"], string> = { datasheet: "Datasheet", coa: "Certificate of Analysis", msds: "MSDS", brochure: "Brochure", other: "Other" };
 
@@ -124,7 +122,6 @@ export default function ProductDocumentsPage() {
   return (
     <>
       <PageHeader title="Product Documents" description="Datasheets, certificates and brochures attached to products." actions={add} />
-      {isApiMode && <StorageNotice message="Product documents are not connected to file storage yet, so attaching them is unavailable in database mode. Nothing is saved from this page." />}
       <Card className="overflow-hidden">
         <div className="flex flex-col gap-2 border-b border-line p-4 lg:flex-row">
           <SearchInput value={list.search} onChange={list.setSearch} placeholder="Search document or product…" className="lg:w-72" />

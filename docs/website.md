@@ -60,3 +60,7 @@ Every public page is rendered on request (`force-dynamic`) and always sends its 
 - `src/config/brand.ts` is the one place that names the logo files and brand colours; `src/components/brand/Logo.tsx` renders them (variants mark / lockup / full; one colour only, the logo's own gold).
 - `src/styles/brand.css` holds the gold ramp and warm neutral/slate tokens, shared by the website and the admin.
 - Contrast rules: gold-500 (#B98626) only for fills, icons and large graphics; gold-700 for text on light; gold-300 for text on dark; ink text on gold fills; white text only on gold-700 or darker (admin buttons use #8F6418). Error, success and warning colours stay red, green and amber.
+
+## Home page: recent products
+
+The home page shows a "Recently added products" section: the six newest published products (by publish date, in published categories), each as a card with its primary picture, availability, grade and origin, plus an "All products" link. It is hidden when there are no published products. Pictures come from `/api/public/product-image/<file id>`, which serves only pictures of published products (never drafts, archived products, unattached files or documents); a product without a picture shows the icon card instead. Product cards on the Products page and on product detail pages show the same pictures.

@@ -1,12 +1,10 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import S3rver from "s3rver";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateSync } from "node:zlib";
 import { getDb } from "@/server/db";
-import { createS3Storage, getStorage, setStorageForTests, type ObjectStorage } from "@/server/storage";
-import { getStorageConfig } from "@/server/config";
+import { getStorage, setStorageForTests, uploadRoot, type ObjectStorage } from "@/server/storage";
 import { detectFile, cleanFileName } from "@/server/files";
 import { call, ensurePermissions, loginCookie, makeRole, makeUser } from "./helpers";
 import * as mediaUpload from "@/app/api/media/upload/route";
@@ -22,11 +20,8 @@ type H = Parameters<typeof call>[0];
 const db = () => getDb();
 const ck: Record<string, string> = {};
 const uid: Record<string, string> = {};
-let s3: S3rver;
 let dir = "";
-const PORT = 4570 + Math.floor(Math.random() * 300);
-const BUCKET = "hv-test";
-const ENV = ["S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY", "S3_ENDPOINT", "S3_REGION", "S3_FORCE_PATH_STYLE"] as const;
+const ENV = ["UPLOAD_DIR"] as const;
 
 /** A valid 8x6 PNG (real chunks, real CRCs are not checked by the detector but dimensions are read from IHDR). */
 function png(width = 8, height = 6): Buffer {
@@ -55,9 +50,8 @@ const savedEnv: Record<string, string | undefined> = {};
 
 beforeAll(async () => {
   for (const k of ENV) savedEnv[k] = process.env[k];
-  dir = mkdtempSync(join(tmpdir(), "hv-s3-"));
-  s3 = new S3rver({ port: PORT, address: "127.0.0.1", silent: true, directory: dir, configureBuckets: [{ name: BUCKET, configs: [] }] });
-  await s3.run();
+  dir = mkdtempSync(join(tmpdir(), "hv-files-"));
+  process.env.UPLOAD_DIR = dir;
   await ensurePermissions();
   const d = db();
   await d.adminUser.deleteMany();
@@ -75,7 +69,6 @@ beforeAll(async () => {
   for (const k of ["sa", "uploader", "viewer", "downloader", "none"]) ck[k] = await loginCookie(`${k}@s.dev`);
 });
 afterAll(async () => {
-  await s3.close();
   rmSync(dir, { recursive: true, force: true });
   setStorageForTests(undefined);
   for (const k of ENV) {
@@ -85,14 +78,12 @@ afterAll(async () => {
 });
 
 const configure = () => {
-  Object.assign(process.env, { S3_BUCKET: BUCKET, S3_ACCESS_KEY_ID: "S3RVER", S3_SECRET_ACCESS_KEY: "S3RVER", S3_ENDPOINT: `http://127.0.0.1:${PORT}`, S3_REGION: "us-east-1" });
+  process.env.UPLOAD_DIR = dir;
   setStorageForTests(undefined);
   storage = getStorage()!;
 };
-const unconfigure = () => {
-  for (const k of ENV) delete process.env[k];
-  setStorageForTests(undefined);
-};
+/** Storage switched off (only a test can do this: the app always has its local uploads folder). */
+const unconfigure = () => setStorageForTests(null);
 
 beforeEach(async () => {
   await db().activityLog.deleteMany({ where: { entityType: { not: "Session" } } });
@@ -128,7 +119,7 @@ describe("file detection trusts bytes, not names or declared types", () => {
 });
 
 /* ───────────────────────── storage not configured ───────────────────────── */
-describe("when object storage is NOT configured", () => {
+describe("when file storage is switched off (defensive path)", () => {
   beforeAll(() => { unconfigure(); });
   it("says so, and never pretends to store or serve anything", async () => {
     expect((await call(storageStatus.GET as H, { url: "/api/storage/status", cookie: ck.sa })).data).toEqual({ configured: false });
@@ -146,14 +137,18 @@ describe("when object storage is NOT configured", () => {
     expect((await upMedia(ck.none, form(file(png(), "a.png", "image/png")))).status).toBe(403);
     expect((await upMedia(undefined, form(file(png(), "a.png", "image/png")))).status).toBe(401);
   });
-  it("rejects half-configured storage loudly", () => {
-    process.env.S3_BUCKET = "b";
-    try { expect(() => getStorageConfig()).toThrow(/S3_ACCESS_KEY_ID/); } finally { delete process.env.S3_BUCKET; }
+  it("by default the app stores files in the project's own uploads folder", () => {
+    setStorageForTests(undefined);
+    delete process.env.UPLOAD_DIR;
+    try {
+      expect(getStorage()).not.toBeNull();
+      expect(uploadRoot().replace(/\\/g, "/")).toBe(join(process.cwd(), "uploads").replace(/\\/g, "/"));
+    } finally { process.env.UPLOAD_DIR = dir; }
   });
 });
 
 /* ───────────────────────── media library against a real S3 API ───────────────────────── */
-describe("media library with S3-compatible storage", () => {
+describe("media library on local disk", () => {
   beforeAll(() => { configure(); });
 
   it("uploads: validates, stores the object privately, records metadata and audits", async () => {
@@ -167,7 +162,7 @@ describe("media library with S3-compatible storage", () => {
     expect(row.file.storageKey).toMatch(/^media\/\d{4}\/[0-9a-f-]{36}\.png$/); // random key: the name never reaches storage
     expect(row.file.sha256).toMatch(/^[0-9a-f]{64}$/);
     expect(Number(row.file.sizeBytes)).toBe(bytes.length);
-    expect((await objects(storage, row.file.storageKey)).equals(bytes)).toBe(true); // the bytes really are in the bucket
+    expect((await objects(storage, row.file.storageKey)).equals(bytes)).toBe(true); // the bytes really are on disk
     expect(await db().activityLog.count({ where: { entityId: r.data.id, action: "created" } })).toBe(1);
     expect(JSON.stringify(r.data)).not.toContain(row.file.storageKey);
   });
@@ -267,19 +262,9 @@ describe("upload failures are reported honestly", () => {
     const r = await upMedia(ck.uploader, form(file(png(), "a.png", "image/png")));
     expect(r.status).toBe(502);
     expect(r.data.error.code).toBe("storage_upload_failed");
-    expect(JSON.stringify(r.data)).not.toMatch(/refused|Timeout|127\.0\.0\.1|hv-test/);
+    expect(JSON.stringify(r.data)).not.toMatch(/refused|Timeout|127\.0\.0\.1/);
     expect(await db().storedFile.count()).toBe(before);
     expect(await db().mediaAsset.count({ where: { name: "a.png" } })).toBe(0);
-    vi.restoreAllMocks();
-  });
-
-  it("wrong storage credentials fail the same way (no partial state, no secrets in the answer)", async () => {
-    setStorageForTests(createS3Storage({ bucket: BUCKET, region: "us-east-1", accessKeyId: "WRONG", secretAccessKey: "WRONGWRONG", endpoint: `http://127.0.0.1:${PORT}`, forcePathStyle: true }));
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
-    const r = await upMedia(ck.uploader, form(file(png(), "creds.png", "image/png")));
-    expect(r.status).toBe(502);
-    expect(JSON.stringify(r.data)).not.toMatch(/WRONG|S3RVER/);
-    expect(await db().storedFile.count({ where: { originalName: "creds.png" } })).toBe(0);
     vi.restoreAllMocks();
   });
 
@@ -309,10 +294,10 @@ describe("upload failures are reported honestly", () => {
 });
 
 /* ───────────────────────── document library ───────────────────────── */
-describe("document library with S3-compatible storage", () => {
+describe("document library on local disk", () => {
   beforeAll(() => { configure(); });
 
-  it("uploads a document, keeps non-public files private, and offers signed downloads only to permitted employees", async () => {
+  it("uploads a document, keeps non-public files private, and sends downloads only to permitted employees", async () => {
     const bytes = pdf();
     const r = await upDoc(ck.uploader, form(file(bytes, "ISO 9001.pdf", "application/pdf"), docFields));
     expect(r.status, JSON.stringify(r.data)).toBe(201);
@@ -326,11 +311,10 @@ describe("document library with S3-compatible storage", () => {
     expect((await dl(ck.viewer)).status).toBe(403);
     const ok = await dl(ck.downloader);
     expect(ok.status).toBe(200);
-    expect(ok.data.expiresInSeconds).toBe(60);
-    const fetched = await fetch(ok.data.url);
-    expect(fetched.status).toBe(200);
-    expect(Buffer.from(await fetched.arrayBuffer()).equals(bytes)).toBe(true);
-    expect(fetched.headers.get("content-disposition")).toMatch(/attachment; filename="ISO 9001\.pdf"/);
+    expect(ok.raw.equals(bytes)).toBe(true); // the file itself is sent, after the permission check
+    expect(ok.headers.get("content-disposition")).toMatch(/attachment; filename="ISO 9001\.pdf"/);
+    expect(ok.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(ok.headers.get("cache-control")).toMatch(/no-store/);
     expect(await db().activityLog.count({ where: { entityId: r.data.id, action: "viewed_sensitive" } })).toBe(1); // non-public => audited
     await call(itemRoute.PATCH as H, { method: "PATCH", url: `/api/documents/${r.data.id}`, cookie: ck.sa, body: { visibility: "public" }, params: { resource: "documents", id: r.data.id } });
     expect((await db().documentFile.findUniqueOrThrow({ where: { id: r.data.id }, include: { file: true } })).file.visibility).toBe("public"); // the file mirrors the document
@@ -365,9 +349,9 @@ describe("document library with S3-compatible storage", () => {
 /* ───────────────────────── resumes ───────────────────────── */
 describe("resume downloads are protected and real", () => {
   beforeAll(() => { configure(); });
-  it("needs download permission, returns a short-lived signed link to the stored resume and audits it", async () => {
+  it("needs download permission, sends the stored resume and audits it", async () => {
     const bytes = pdf();
-    const key = "resumes/e2e-test.pdf";
+    const key = "resumes/0e2e0000-0000-4000-8000-000000000001.pdf";
     await storage.put(key, bytes, { contentType: "application/pdf" });
     const d = db();
     const career = await d.career.create({ data: { title: "Analyst", slug: "analyst-s", department: "Trade", location: "Mumbai", employmentType: "full_time", experience: "2", descriptionHtml: "<p>d</p>", requirementsHtml: "<p>r</p>", deadline: new Date("2027-01-01") } });
@@ -379,10 +363,8 @@ describe("resume downloads are protected and real", () => {
     expect((await get(ck.none)).status).toBe(403);
     const ok = await get(ck.downloader);
     expect(ok.status).toBe(200);
-    expect(ok.data.url).toMatch(/X-Amz-Signature=/);
-    expect(ok.data.url).toMatch(/X-Amz-Expires=60/); // short-lived
-    const res = await fetch(ok.data.url);
-    expect(Buffer.from(await res.arrayBuffer()).equals(bytes)).toBe(true);
+    expect(ok.raw.equals(bytes)).toBe(true);
+    expect(ok.headers.get("content-disposition")).toMatch(/attachment; filename="cv\.pdf"/);
     expect(await d.activityLog.count({ where: { entityId: app.id, action: "viewed_sensitive" } })).toBe(1);
     await d.jobApplication.update({ where: { id: app.id }, data: { anonymizedAt: new Date() } });
     expect((await get(ck.downloader)).status).toBe(404); // erased applicants have nothing to download

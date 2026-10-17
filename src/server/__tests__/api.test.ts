@@ -284,16 +284,15 @@ describe("products", () => {
     expect(noCat.status).toBe(422);
   });
 
-  it("ignores client-supplied images/documents (files are only attachable via the storage module)", async () => {
+  it("refuses client-supplied image URLs and documents: files are attachable only by the id of an uploaded file", async () => {
     const cat = await makeCategory();
     const r = await call(products.POST, {
       method: "POST", url: "/api/products", cookie: admin,
       body: productBody(cat.id, { images: [{ id: "x", url: "https://evil.example/x.png", alt: "x", isPrimary: true }], documents: [{ id: "d", name: "x.pdf", type: "other", sizeBytes: 1 }] }),
     });
-    expect(r.status).toBe(201);
-    expect(r.data.images).toEqual([]);
-    expect(r.data.documents).toEqual([]);
+    expect(r.status).toBe(422);
     expect(await getDb().productImage.count()).toBe(0);
+    expect(await getDb().product.count()).toBe(0);
   });
 
   it("updates: replaces specs, rejects duplicate labels, sets publishedAt once, audits status changes", async () => {

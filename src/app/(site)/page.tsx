@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { LuBadgeCheck, LuEarth, LuLeaf, LuMapPin, LuNewspaper } from "react-icons/lu";
+import { LuBadgeCheck, LuEarth, LuLeaf, LuMapPin, LuNewspaper, LuPackage } from "react-icons/lu";
 import Hero from "@/components/web/Hero";
 import { Reveal } from "@/components/web/motion";
-import { CheckList, IndustryCard, PostGridCard, SeeAll, SplitFeature } from "@/components/web/sections";
+import { CheckList, IndustryCard, PostGridCard, ProductGridCard, SeeAll, SplitFeature } from "@/components/web/sections";
 import { ButtonLink, CtaBand, PointCard, SectionHeading, Tag, badge, bodyFont, card, container, headingFont } from "@/components/web/ui";
 import { CAPABILITIES, COMPANY, INDUSTRIES, WHY_US, mineralBySlug } from "@/content/site";
 import { getHeroSlides, type HeroSlide } from "@/server/services/site";
-import { listLocations, listPosts, loadPublic } from "@/server/services/public";
+import { listLocations, listPosts, listRecentProducts, loadPublic } from "@/server/services/public";
 
 
 export const metadata: Metadata = {
@@ -18,11 +18,13 @@ export const metadata: Metadata = {
 const SPOTLIGHT = ["iron-ore-fines", "granite-dimension-stones", "quartz-silica-minerals"].map((s) => mineralBySlug(s)!);
 
 export default async function HomePage() {
-  const [slidesResult, postsResult, locationsResult] = await Promise.all([
+  const [slidesResult, postsResult, locationsResult, productsResult] = await Promise.all([
     loadPublic<HeroSlide[]>(() => getHeroSlides(), []),
     loadPublic(() => listPosts({ take: 3 }), { items: [], total: 0 }),
     loadPublic(() => listLocations(), []),
+    loadPublic(() => listRecentProducts(6), []),
   ]);
+  const recentProducts = productsResult.data;
   const posts = postsResult.data.items;
   const locations = locationsResult.data.slice(0, 6);
 
@@ -137,9 +139,22 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Recent products: the newest published products from the admin */}
+      {recentProducts.length > 0 && (
+        <section aria-labelledby="recent-products-title" className="bg-white">
+          <div className={`${container} py-10 md:py-14`}>
+            <SectionHeading id="recent-products-title" eyebrow="Products" title="Recently added products" description="The newest minerals and materials in our catalogue, ready for enquiry." />
+            <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {recentProducts.map((p, i) => <ProductGridCard key={p.slug} product={p} icon={LuPackage} index={i} />)}
+            </ul>
+            <SeeAll href="/products">All products</SeeAll>
+          </div>
+        </section>
+      )}
+
       {/* Latest insights */}
       {posts.length > 0 && (
-        <section aria-labelledby="insights-title" className="bg-white">
+        <section aria-labelledby="insights-title" className="bg-neutral-50">
           <div className={`${container} py-10 md:py-14`}>
             <SectionHeading id="insights-title" eyebrow="Insights" title="Latest from our desk" />
             <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
