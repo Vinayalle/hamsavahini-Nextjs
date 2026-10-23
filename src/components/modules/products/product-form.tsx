@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { LuPlus as Plus, LuTrash2 as Trash2 } from "react-icons/lu";
@@ -9,7 +9,7 @@ import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Switch, Textarea } from "@/components/ui/fields";
 import { DocumentUploader, ImageUploader } from "@/components/forms/uploaders";
-import { Field, FormActions, FormSection, TagInput } from "@/components/forms/form-parts";
+import { Field, FormActions, FormSection } from "@/components/forms/form-parts";
 import { useUnsavedChangesGuard } from "@/components/admin/dialogs";
 import { useAll } from "@/hooks/use-resource";
 import { categoryService, productService } from "@/lib/services";
@@ -35,12 +35,6 @@ const schema = z.object({
     id: z.string(), fileId: z.string().optional(), url: z.string().optional(), name: z.string(), sizeBytes: z.number(),
     type: z.enum(["datasheet", "coa", "msds", "brochure", "other"]),
   })),
-  seo: z.object({
-    metaTitle: z.string().max(70, "Max 70 characters"),
-    metaDescription: z.string().max(160, "Max 160 characters"),
-    canonicalUrl: z.string().optional(),
-    keywords: z.array(z.string()),
-  }),
   status: z.enum(["draft", "published", "archived"]),
   featured: z.boolean(),
 });
@@ -49,7 +43,6 @@ type Values = z.infer<typeof schema>;
 const EMPTY: Values = {
   name: "", code: "", slug: "", categoryId: "", shortDescription: "", description: "",
   images: [], specifications: [], documents: [],
-  seo: { metaTitle: "", metaDescription: "", canonicalUrl: "", keywords: [] },
   status: "draft", featured: false,
 };
 
@@ -65,7 +58,6 @@ export function ProductForm({ product }: { product?: Product }) {
           name: product.name, code: product.code, slug: product.slug, categoryId: product.categoryId,
           shortDescription: product.shortDescription, description: product.description,
           images: product.images, specifications: product.specifications, documents: product.documents,
-          seo: { ...product.seo, canonicalUrl: product.seo.canonicalUrl ?? "" },
           status: product.status, featured: product.featured,
         }
       : EMPTY,
@@ -108,8 +100,6 @@ export function ProductForm({ product }: { product?: Product }) {
   };
 
   const onInvalid = () => toast.error("Please fix the highlighted fields before saving.");
-  const seoTitle = useWatch({ control, name: "seo.metaTitle" });
-  const seoDesc = useWatch({ control, name: "seo.metaDescription" });
 
   return (
     <form onSubmit={handleSubmit(onSubmit, onInvalid)} noValidate className="space-y-6">
@@ -183,24 +173,7 @@ export function ProductForm({ product }: { product?: Product }) {
         )} />
       </FormSection>
 
-      <FormSection title="5. SEO Settings" description="Controls how the product appears in search results.">
-        <Field label="Meta title" htmlFor="metaTitle" error={errors.seo?.metaTitle?.message} hint={`${seoTitle?.length ?? 0}/70 characters`}>
-          <Input id="metaTitle" aria-invalid={!!errors.seo?.metaTitle} {...register("seo.metaTitle")} />
-        </Field>
-        <Field label="Meta description" htmlFor="metaDescription" error={errors.seo?.metaDescription?.message} hint={`${seoDesc?.length ?? 0}/160 characters`}>
-          <Textarea id="metaDescription" rows={3} aria-invalid={!!errors.seo?.metaDescription} {...register("seo.metaDescription")} />
-        </Field>
-        <Field label="Canonical URL" htmlFor="canonicalUrl" hint="Leave empty to use the default product URL.">
-          <Input id="canonicalUrl" {...register("seo.canonicalUrl")} />
-        </Field>
-        <Field label="Keywords" htmlFor="keywords">
-          <Controller control={control} name="seo.keywords" render={({ field }) => (
-            <TagInput id="keywords" value={field.value} onChange={(v) => setValue("seo.keywords", v, { shouldDirty: true })} />
-          )} />
-        </Field>
-      </FormSection>
-
-      <FormSection title="6. Publishing Settings" description="Control visibility on the public website.">
+      <FormSection title="5. Publishing Settings" description="Control visibility on the public website.">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Status" htmlFor="status" hint="Only published products appear on the website.">
             <Select id="status" {...register("status")}>

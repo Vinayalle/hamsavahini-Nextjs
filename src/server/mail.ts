@@ -69,6 +69,11 @@ export function setMailer(mailer: Mailer | null) {
   smtp = undefined;
 }
 
+/** Test hook: the mailer a suite installed with setMailer (or null), so a helper can wrap it without replacing it for good. */
+export function getMailerOverride(): Mailer | null {
+  return override;
+}
+
 export function getMailer(): Mailer {
   if (override) return override;
   if (smtp === undefined) smtp = smtpMailer();

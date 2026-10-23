@@ -64,3 +64,16 @@ Every public page is rendered on request (`force-dynamic`) and always sends its 
 ## Home page: recent products
 
 The home page shows a "Recently added products" section: the six newest published products (by publish date, in published categories), each as a card with its primary picture, availability, grade and origin, plus an "All products" link. It is hidden when there are no published products. Pictures come from `/api/public/product-image/<file id>`, which serves only pictures of published products (never drafts, archived products, unattached files or documents); a product without a picture shows the icon card instead. Product cards on the Products page and on product detail pages show the same pictures.
+
+## Confirmation emails for the website forms
+
+After a visitor submits the contact form, the quotation form or a job application, they get a short "we received it" email at the address they entered (`enquiry_received`, `rfq_received`, `application_received`). The quotation email carries the same reference number the page shows.
+- The subject line is fixed; visitor text only appears escaped inside the body, and the long message is not repeated.
+- It is sent after the response is written, so it never slows the form. If the mail server is down or SMTP is not configured, the form still succeeds and the failure is recorded in `NotificationLog` (the body is never stored).
+- Nothing is sent for refused input, bot submissions (the hidden field), or duplicate applications.
+- Needs `SMTP_USER` and `SMTP_PASSWORD` in `.env`, like the account emails.
+- Staff are not emailed about new submissions yet; they appear in the admin lists.
+
+## Contact details are fixed in the code
+
+The address, phone number and email shown in the footer, on the Contact Us page, in the privacy policy and in the search-engine data are fixed in `src/content/site.ts` (`CONTACT`), not edited in the admin. A line left empty is not shown. The website has no social media links. The admin no longer has the "Contact Details & Social Links", "Footer Settings" or "Navigation Menu" pages; the footer text, copyright line and menus are fixed in the code. The values currently in `CONTACT` are the placeholders that were in the admin settings, so replace them with the real ones.

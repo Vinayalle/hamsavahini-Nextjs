@@ -7,7 +7,7 @@ import { keyedDigest, randomToken } from "./crypto";
 import { getDb } from "./db";
 import { ApiError, errors } from "./errors";
 import { clientIp, recordActivity } from "./audit";
-import { clear, enforce, LIMITS, sourceKey } from "./ratelimit";
+import { enforce, LIMITS, sourceKey } from "./ratelimit";
 import { dummyPasswordHash, hashPassword, hashToken, passwordNeedsRehash, readCookie, verifyPassword } from "./security";
 import { signAccessToken, signPendingMfaToken, verifyAccessToken, verifyPendingMfaToken } from "./tokens";
 import { COOKIES } from "./cookies";
@@ -29,20 +29,6 @@ export interface AuthSession {
 
 const GENERIC_FAILURE = () => new ApiError(401, "invalid_credentials", "Incorrect email or password");
 const emailKey = (email: string) => keyedDigest("rl-email", email).slice(0, 32);
-
-/* ───────────────────────── MFA policy ───────────────────────── */
-
-/**
- * A second sign-in step is mandatory when:
- *  - AUTH_MFA_METHOD=email (default): for EVERY employee, every sign-in (a code is emailed after the password), or
- *  - AUTH_MFA_METHOD=totp: for anyone holding a role whose code is configured (default: super_admin, admin).
- */
-export async function requiresMfa(db: Db, userId: string): Promise<boolean> {
-  if (getAuthConfig().mfaMethod === "email") return true;
-  const codes = getAuthConfig().mfaRoleCodes;
-  const n = await db.userRole.count({ where: { userId, role: { code: { in: codes } } } });
-  return n > 0;
-}
 
 /* ───────────────────────── session creation ───────────────────────── */
 
@@ -91,8 +77,7 @@ export async function createSession(
 /* ───────────────────────── login ───────────────────────── */
 
 export type LoginResult =
-  | ({ kind: "session" } & IssuedSession)
-  | { kind: "mfa"; method: "email" | "totp"; enrolled: boolean; maskedEmail?: string; cookies: string[] };
+  | { kind: "mfa"; maskedEmail: string; cookies: string[] };
 
 /** Progressive, self-healing lockout: 5 failures -> 1 min, then doubling to a 30 min ceiling. Never permanent. */
 export function lockDurationMs(failures: number): number {
@@ -130,30 +115,14 @@ export async function login(request: Request, emailInput: string, password: stri
 
   // Upgrade the stored hash if the Argon2id parameters have been raised since it was created.
   const rehash = passwordNeedsRehash(user.passwordHash) ? await hashPassword(password) : null;
-  const identity = { id: user.id, name: user.name, email: user.email, employeeId: user.employeeId };
 
-  if (await requiresMfa(db, user.id)) {
-    await db.adminUser.update({ where: { id: user.id }, data: { failedLoginCount: 0, lockedUntil: null, ...(rehash ? { passwordHash: rehash } : {}) } });
-    const pending = signPendingMfaToken({ sub: user.id });
-    await recordActivity(db, { actorName: user.name, action: "login", entityType: "Session", entityId: user.id, entityLabel: `${user.name} passed password check; second factor required`, ip });
-    const cookies = async () => [setCookie("mfa", await pending, getAuthConfig().mfaPendingTtlSeconds)];
-    if (getAuthConfig().mfaMethod === "email") {
-      // The password was correct, so the account is already confirmed to the caller; we can say if the email could not be sent.
-      await sendLoginCode(request, user);
-      return { kind: "mfa", method: "email", enrolled: true, maskedEmail: maskEmail(user.email), cookies: await cookies() };
-    }
-    const enrolled = !!(await db.mfaCredential.findFirst({ where: { userId: user.id, enabledAt: { not: null } }, select: { userId: true } }));
-    return { kind: "mfa", method: "totp", enrolled, cookies: await cookies() };
-  }
-
-  const issued = await db.$transaction(async (tx) => {
-    await tx.adminUser.update({ where: { id: user.id }, data: { failedLoginCount: 0, lockedUntil: null, lastLoginAt: new Date(), ...(rehash ? { passwordHash: rehash } : {}) } });
-    const s = await createSession(tx, request, identity, { mfaVerified: false });
-    await recordActivity(tx, { actorName: user.name, action: "login", entityType: "Session", entityId: user.id, entityLabel: `${user.name} signed in`, ip });
-    return s;
-  });
-  await clear(`login:acct:${emailKey(email)}`);
-  return { kind: "session", ...issued };
+  // Every employee takes a second step on every sign-in: a 6-digit code is emailed after the correct password.
+  await db.adminUser.update({ where: { id: user.id }, data: { failedLoginCount: 0, lockedUntil: null, ...(rehash ? { passwordHash: rehash } : {}) } });
+  const pending = signPendingMfaToken({ sub: user.id });
+  await recordActivity(db, { actorName: user.name, action: "login", entityType: "Session", entityId: user.id, entityLabel: `${user.name} passed password check; emailed code required`, ip });
+  // The password was correct, so the account is already confirmed to the caller; we can say if the email could not be sent.
+  await sendLoginCode(request, user);
+  return { kind: "mfa", maskedEmail: maskEmail(user.email), cookies: [setCookie("mfa", await pending, getAuthConfig().mfaPendingTtlSeconds)] };
 }
 
 /** Reads the pending-MFA proof set by a correct password. Returns the user id or throws a generic 401. */
@@ -191,8 +160,8 @@ export async function getSession(request: Request): Promise<AuthSession | null> 
     await db.session.deleteMany({ where: { userId: row.userId } }).catch(() => undefined);
     return null;
   }
-  // A user who has since become an admin must complete MFA enrolment before this session is honoured.
-  if (!row.mfaVerifiedAt && (await requiresMfa(db, row.userId))) return null;
+  // A session is only honoured once the emailed code was entered.
+  if (!row.mfaVerifiedAt) return null;
   return { sessionId: row.id, user: row.user, roles: loaded.roles, access: loaded.access, authenticatedAt: row.reauthAt ?? row.createdAt, mfaVerified: !!row.mfaVerifiedAt };
 }
 
@@ -230,7 +199,7 @@ export async function refresh(request: Request): Promise<IssuedSession> {
     throw reject();
   }
   const loaded = await loadAccess(db, session.userId);
-  if (!loaded.accessible || session.user.status !== "active" || (!session.mfaVerifiedAt && (await requiresMfa(db, session.userId)))) {
+  if (!loaded.accessible || session.user.status !== "active" || !session.mfaVerifiedAt) {
     await db.session.deleteMany({ where: { userId: session.userId } });
     throw reject();
   }
@@ -288,7 +257,7 @@ export async function revokeUserSessions(db: Db, userId: string, exceptSessionId
 }
 
 /** Step-up: re-verify the password (and second factor, if enrolled) and stamp the session. */
-export async function reauthenticate(request: Request, session: AuthSession, password: string, mfaCheck: (userId: string) => Promise<void>) {
+export async function reauthenticate(request: Request, session: AuthSession, password: string) {
   const db = getDb();
   await enforce(`reauth:acct:${session.user.id}`, LIMITS.reauthAccount);
   const user = await db.adminUser.findUniqueOrThrow({ where: { id: session.user.id } });
@@ -296,7 +265,6 @@ export async function reauthenticate(request: Request, session: AuthSession, pas
     await recordActivity(db, { session, action: "login_failed", entityType: "Session", entityId: user.id, entityLabel: "re-authentication failed", ip: clientIp(request) });
     throw new ApiError(401, "invalid_credentials", "Incorrect password");
   }
-  await mfaCheck(user.id);
   await db.session.update({ where: { id: session.sessionId }, data: { reauthAt: new Date() } });
   await recordActivity(db, { session, action: "reauth", entityType: "Session", entityId: user.id, entityLabel: `${user.name} re-authenticated`, ip: clientIp(request) });
 }

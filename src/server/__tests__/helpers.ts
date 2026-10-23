@@ -1,7 +1,6 @@
 import { getDb } from "@/server/db";
 import { hashPassword } from "@/server/security";
-import { encryptSecret } from "@/server/crypto";
-import { generateTotpSecret, totpAt } from "@/server/totp";
+import { getMailerOverride, setMailer } from "@/server/mail";
 import { syncPermissionCatalogue, nextEmployeeId } from "@/lib/authz/bootstrap";
 import type { Scope } from "@/lib/authz/resolve";
 
@@ -53,34 +52,7 @@ export async function makeUser(
       roles: { create: ids.map((roleId) => ({ roleId })) },
     },
   });
-  // Accounts whose roles require MFA are enrolled directly (the enrolment flow itself is tested separately).
-  const needs = await db.userRole.count({ where: { userId: user.id, role: { code: { in: ["super_admin", "admin"] } } } });
-  if (needs > 0 && status === "active") await enrolMfa(user.id);
   return user;
-}
-
-const mfaSecrets = new Map<string, string>();
-/** Directly creates an enabled TOTP credential and remembers the secret so tests can produce valid codes. */
-export async function enrolMfa(userId: string) {
-  const secret = generateTotpSecret();
-  mfaSecrets.set(userId, secret);
-  await getDb().mfaCredential.upsert({
-    where: { userId },
-    create: { userId, secretEnc: encryptSecret(secret, userId), enabledAt: new Date() },
-    update: { secretEnc: encryptSecret(secret, userId), enabledAt: new Date(), lastUsedStep: null },
-  });
-  await getDb().adminUser.update({ where: { id: userId }, data: { twoFactorEnabled: true } });
-  return secret;
-}
-/** Test arrangement: forget the last accepted step so a helper can sign in repeatedly within one 30 s window (replay protection is tested explicitly elsewhere). */
-export async function freshStep(userId: string) {
-  await getDb().mfaCredential.update({ where: { userId }, data: { lastUsedStep: null } });
-}
-/** A currently valid TOTP code for an enrolled test user. `offsetSteps` shifts time by 30 s steps. */
-export function totpFor(userId: string, offsetSteps = 0) {
-  const secret = mfaSecrets.get(userId);
-  if (!secret) throw new Error("test setup: user has no known MFA secret");
-  return totpAt(secret, Date.now() + offsetSteps * 30_000);
 }
 
 /** Directly sets an individual override (bypassing the API) for test arrangement. */
@@ -144,21 +116,44 @@ export function cookieJar(res: { headers: Headers }): Record<string, string> {
 }
 export const cookieHeader = (jar: Record<string, string>) => Object.entries(jar).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("; ");
 
-/** Full sign-in through the REAL handlers (including the MFA step when required). Returns every cookie issued. */
+/**
+ * Full sign-in through the REAL handlers: password, then the emailed code. The code is read from the email the server sends (the mailer
+ * a suite installed keeps receiving every message too). Returns every cookie issued.
+ */
 export async function loginSession(email: string, password = PASSWORD, source = "10.0.0.1") {
+  return (await loginSessionWithResponse(email, password, source)).jar;
+}
+
+/** Same sign-in, also returning the final response's Set-Cookie lines and body (for tests that inspect cookie attributes). */
+export async function loginSessionWithResponse(email: string, password = PASSWORD, source = "10.0.0.1") {
   const login = await import("@/app/api/auth/login/route");
   const mfa = await import("@/app/api/auth/mfa/verify/route");
-  const r = await call(login.POST as Handler, { method: "POST", url: "/api/auth/login", body: { email, password }, headers: { "x-forwarded-for": source } });
-  if (r.status !== 200) throw new Error(`login failed for ${email}: ${r.status} ${JSON.stringify(r.data)}`);
-  let jar = cookieJar(r);
-  if (r.data.status === "mfa_required") {
-    const user = await getDb().adminUser.findUniqueOrThrow({ where: { email } });
-    await freshStep(user.id);
-    const v = await call(mfa.POST as Handler, { method: "POST", url: "/api/auth/mfa/verify", body: { code: totpFor(user.id) }, cookie: cookieHeader(jar), headers: { "x-forwarded-for": source } });
-    if (v.status !== 200) throw new Error(`mfa failed for ${email}: ${v.status} ${JSON.stringify(v.data)}`);
-    jar = cookieJar(v);
+  const db = getDb();
+  const account = await db.adminUser.findUnique({ where: { email }, select: { id: true } });
+  if (account) {
+    // A fresh code is always sent: forget any earlier unused code and this account's hourly code allowance.
+    await db.authChallenge.updateMany({ where: { userId: account.id, purpose: "login", consumedAt: null, invalidatedAt: null }, data: { invalidatedAt: new Date() } });
+    await db.rateLimit.deleteMany({ where: { key: { contains: `login-code:acct:${account.id}` } } });
   }
-  return jar;
+  const previous = getMailerOverride();
+  let code = "";
+  setMailer({
+    send: async (m) => {
+      if (m.to === email) code = /(\d{3}) (\d{3})/.exec(m.text)?.slice(1, 3).join("") ?? code;
+      return previous ? previous.send(m) : { delivered: true, providerMessageId: "test" };
+    },
+  });
+  try {
+    const r = await call(login.POST as Handler, { method: "POST", url: "/api/auth/login", body: { email, password }, headers: { "x-forwarded-for": source } });
+    if (r.status !== 200) throw new Error(`login failed for ${email}: ${r.status} ${JSON.stringify(r.data)}`);
+    const jar = cookieJar(r);
+    if (!code) throw new Error(`no sign-in code was emailed to ${email}`);
+    const v = await call(mfa.POST as Handler, { method: "POST", url: "/api/auth/mfa/verify", body: { code }, cookie: cookieHeader(jar), headers: { "x-forwarded-for": source } });
+    if (v.status !== 200) throw new Error(`sign-in code rejected for ${email}: ${v.status} ${JSON.stringify(v.data)}`);
+    return { jar: cookieJar(v), lines: v.headers.getSetCookie(), data: v.data };
+  } finally {
+    setMailer(previous);
+  }
 }
 
 /** The cookie header the API handlers need for authenticated calls (the access token). */

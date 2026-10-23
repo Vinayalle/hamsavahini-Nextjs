@@ -80,7 +80,7 @@ against real PostgreSQL covering 401/403/422/409, (d) `createApiCollection` entr
 ## 4. Security model (enforced on the server)
 
 - **Authentication**: superseded by the full design in [authentication.md](authentication.md): email-OTP activation, Argon2id
-  (64 MiB / t=3), short-lived access JWT + rotating refresh tokens in HttpOnly cookies, TOTP MFA for Super Admins/Admins,
+  (64 MiB / t=3), short-lived access JWT + rotating refresh tokens in HttpOnly cookies, an emailed sign-in code for every employee,
   database-backed rate limiting and progressive lockout, password reset, step-up re-authentication, SMTP email.
 - **Authorization**: `authorize(session, module, action)` runs **before** body parsing in every handler and again inside
   the service. `view` is required for any other action. Publishing and un-publishing need the separate `publish` permission.

@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/fields";
 import { Field } from "@/components/forms/form-parts";
 import { PasswordInput } from "@/components/auth/password-field";
-import { EmailCodeChallenge, MfaChallenge, MfaEnrollment, RecoveryCodes } from "@/components/auth/mfa";
+import { EmailCodeChallenge } from "@/components/auth/mfa";
 import { ApiClientError, useAuth } from "@/lib/auth";
 import { isApiMode } from "@/lib/api/client";
 
@@ -22,16 +22,15 @@ const schema = z.object({
   password: isApiMode ? z.string().min(1, "Password is required") : z.string().min(8, "Password must be at least 8 characters"),
 });
 type Values = z.infer<typeof schema>;
-type Step = "credentials" | "email" | "mfa" | "enroll" | "recovery";
+type Step = "credentials" | "email";
 
 export default function LoginPage() {
   const router = useRouter();
   // Only same-site admin paths are honoured, so a crafted ?next= cannot redirect to another website.
   const nextParam = useSearchParams().get("next");
   const destination = nextParam && /^\/admin\/[A-Za-z0-9/_-]*$/.test(nextParam) && !nextParam.startsWith("//") ? nextParam : "/admin/dashboard";
-  const { user, ready, signIn, completeMfa, finishSignIn, restoreSession, sessionExpired } = useAuth();
+  const { user, ready, signIn, completeMfa, restoreSession, sessionExpired } = useAuth();
   const [step, setStep] = useState<Step>("credentials");
-  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
   const [notice, setNotice] = useState("");
   const [maskedEmail, setMaskedEmail] = useState<string | undefined>();
   const restoring = useRef(false);
@@ -40,10 +39,10 @@ export default function LoginPage() {
     defaultValues: { email: "", password: "" },
   });
 
-  // Already signed in (and not in the middle of enrolment): go to the destination.
+  // Already signed in: go to the destination.
   useEffect(() => {
-    if (ready && user && step !== "recovery") router.replace(destination);
-  }, [ready, user, router, destination, step]);
+    if (ready && user) router.replace(destination);
+  }, [ready, user, router, destination]);
 
   // The access token is short-lived. If we were redirected here only because it expired, quietly renew the session.
   useEffect(() => {
@@ -65,11 +64,8 @@ export default function LoginPage() {
       const r = await signIn(values.email, values.password);
       if (r.status === "mfa_required") {
         setValue("password", "");
-        if (r.method === "email") {
-          setMaskedEmail(r.maskedEmail);
-          return setStep("email");
-        }
-        return setStep(r.enrolled ? "mfa" : "enroll");
+        setMaskedEmail(r.maskedEmail);
+        return setStep("email");
       }
       router.replace(destination);
     } catch (e) {
@@ -135,36 +131,6 @@ export default function LoginPage() {
               <p className="mt-1 text-sm text-muted">One more step to finish signing in.</p>
               <EmailCodeChallenge maskedEmail={maskedEmail} onSubmit={async (input) => { await completeMfa(input); router.replace(destination); }} onExpired={() => backToStart()} />
               <button type="button" className="mt-4 text-sm text-muted hover:text-ink" onClick={() => backToStart("")}>Back to sign in</button>
-            </>
-          )}
-
-          {step === "mfa" && (
-            <>
-              <h2 className="text-2xl font-semibold tracking-tight text-ink">Two-factor verification</h2>
-              <p className="mt-1 text-sm text-muted">Your role requires a second step to sign in.</p>
-              <MfaChallenge onSubmit={async (input) => { await completeMfa(input); router.replace(destination); }} onExpired={() => backToStart()} />
-              <button type="button" className="mt-4 text-sm text-muted hover:text-ink" onClick={() => backToStart("")}>Back to sign in</button>
-            </>
-          )}
-
-          {step === "enroll" && (
-            <>
-              <h2 className="text-2xl font-semibold tracking-tight text-ink">Set up two-factor authentication</h2>
-              <p className="mt-1 text-sm text-muted">Your role requires it. This takes about a minute.</p>
-              <MfaEnrollment onExpired={() => backToStart()} onEnrolled={async (codes) => {
-                // Show the one-time codes first: once the session loads, the redirect-when-signed-in effect would otherwise fire.
-                setRecoveryCodes(codes);
-                setStep("recovery");
-                await finishSignIn();
-              }} />
-              <button type="button" className="mt-4 text-sm text-muted hover:text-ink" onClick={() => backToStart("")}>Back to sign in</button>
-            </>
-          )}
-
-          {step === "recovery" && (
-            <>
-              <h2 className="text-2xl font-semibold tracking-tight text-ink">Two-factor authentication is on</h2>
-              <RecoveryCodes codes={recoveryCodes} onDone={() => { setRecoveryCodes([]); router.replace(destination); }} doneLabel="Continue to the dashboard" />
             </>
           )}
         </div>

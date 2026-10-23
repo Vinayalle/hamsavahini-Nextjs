@@ -15,7 +15,6 @@ import { passwordProblem } from "@/lib/authz/password-policy";
 import { formatDate } from "@/lib/utils";
 import { Avatar, EmployeeStatus, RoleChips } from "./shared";
 import { NewPasswordFields, PasswordInput } from "@/components/auth/password-field";
-import { SecurityCard } from "@/components/auth/security-card";
 import { useAuth } from "@/lib/auth";
 import type { EmployeeDto } from "./types";
 import { DetailSkeleton } from "@/components/admin/skeletons";
@@ -83,7 +82,6 @@ export function ProfilePage() {
           </div>
         </Card>
       </div>
-      <div className="mt-6 max-w-xl"><SecurityCard /></div>
     </>
   );
 }

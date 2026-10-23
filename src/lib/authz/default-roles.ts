@@ -40,7 +40,7 @@ export const DEFAULT_ROLES: DefaultRole[] = [
     code: "admin", name: "Admin", isSystem: true,
     description: "Manages day-to-day content, trade and enquiries, and can manage employees within the permissions delegated to it.",
     grants: [
-      ...full(...CATALOGUE, "posts", "projects", "careers", "locations", "banners", ...TRADE, "enquiries", "job_applications", "media", "documents", "email_templates"),
+      ...full(...CATALOGUE, "posts", "projects", "careers", "locations", "banners", ...TRADE, "enquiries", "job_applications", "media", "documents"),
       ...some("notification_history", "view"),
       ...some("users", "view", "create", "edit", "assign", "change_status"),
       ...some("user_permissions", "view", "manage_permissions"),

@@ -56,7 +56,6 @@ export function MockProfilePage() {
             </div>
             <div className="border-t border-line p-5">
               <DetailList items={[
-                { label: "Two-factor", value: me.twoFactorEnabled ? "Enabled" : "Not enabled" },
                 { label: "Last login", value: formatDate(me.lastLoginAt, true) },
                 { label: "Member since", value: formatDate(me.createdAt) },
               ]} />

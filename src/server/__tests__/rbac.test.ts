@@ -283,8 +283,8 @@ describe("Admin delegation limits", () => {
     expect((await send(roleGrants.PUT, "PUT", `/api/roles/${roleIds.prodDeleter}/permissions`, rd, { grants: [] }, { id: roleIds.prodDeleter })).status).toBe(403); // cannot strip what they do not hold
   });
 
-  it("cannot reach settings-style or user-administration pages they were not given", async () => {
-    for (const path of ["/admin/settings/general", "/admin/roles/new", "/admin/users/x/dashboard"]) {
+  it("cannot reach user-administration pages they were not given", async () => {
+    for (const path of ["/admin/roles/new", "/admin/users/x/dashboard"]) {
       const r = await call(pageAccess.GET, { url: `/api/auth/page-access?path=${path}`, cookie: ck.admin });
       if (path === "/admin/users/x/dashboard") expect(r.data.allowed).toBe(true); // user_dashboards:view was delegated
       else expect(r.data.allowed).toBe(false);
@@ -300,7 +300,7 @@ describe("Employee access", () => {
     expect((await check("/admin/products/some-id")).allowed).toBe(true);
     expect((await check("/admin/dashboard")).allowed).toBe(true);
     expect((await check("/admin/profile")).allowed).toBe(true);
-    for (const blocked of ["/admin/products/new", "/admin/products/x/edit", "/admin/categories", "/admin/users", "/admin/roles", "/admin/users/x/permissions", "/admin/activity-logs", "/admin/settings/seo", "/admin/not-a-real-page"]) {
+    for (const blocked of ["/admin/products/new", "/admin/products/x/edit", "/admin/categories", "/admin/users", "/admin/roles", "/admin/users/x/permissions", "/admin/activity-logs", "/admin/not-a-real-page"]) {
       expect((await check(blocked)).allowed, blocked).toBe(false);
     }
     expect((await check("/admin/products", "")).reason).toBe("unauthenticated");

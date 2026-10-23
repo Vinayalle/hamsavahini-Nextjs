@@ -4,12 +4,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { getDb } from "@/server/db";
 import { getStorage, setStorageForTests } from "@/server/storage";
-import { call, ensurePermissions, loginCookie, makeRole, makeUser } from "./helpers";
-import * as settingsRoute from "@/app/api/settings/[section]/route";
+import { call } from "./helpers";
+import { CONTACT } from "@/content/site";
 import * as enquiries from "@/app/api/public/enquiries/route";
 import * as rfqs from "@/app/api/public/rfqs/route";
 import * as applications from "@/app/api/public/applications/route";
-import { clearSiteSettingsCache, getSiteSettings, getCareer, getPost, getProduct, getProject, getPublicSettings, listCareers, listCategories, listLocations, listOpportunities, listPosts, listPrices, listProducts, listProjects, listSitemapEntries } from "@/server/services/public";
+import { getSiteSettings, getCareer, getPost, getProduct, getProject, listCareers, listCategories, listLocations, listOpportunities, listPosts, listPrices, listProducts, listProjects, listSitemapEntries } from "@/server/services/public";
 
 /**
  * The public website: what it may read from the CMS (published and safe fields only) and the three public forms
@@ -351,18 +351,13 @@ describe("what the public website may read", () => {
     expect((await listOpportunities()).map((o) => o.title)).toEqual(["Live"]);
   });
 
-  it("settings: only the whitelisted public fields, and only http(s) social links", async () => {
-    await db().siteSetting.create({ data: { key: "site.contact", value: { primaryEmail: "info@hamsavahin.test", primaryPhone: "+91 11 2345 6789", address: "1 Mine Road", socials: { linkedin: "https://linkedin.com/company/x", twitter: "javascript:alert(1)", facebook: "", youtube: "ftp://y" }, internalNote: "never public" } } });
-    await db().siteSetting.create({ data: { key: "site.general", value: { siteName: "Hamsavahin", tagline: "Minerals", maintenanceMode: true, timezone: "UTC" } } });
-    await db().siteSetting.create({ data: { key: "site.seo", value: { googleSiteVerification: "secret-token" } } });
-    const s = await getPublicSettings();
-    expect(s).toMatchObject({ siteName: "Hamsavahin", email: "info@hamsavahin.test", phone: "+91 11 2345 6789", address: "1 Mine Road" });
-    expect(s.socials).toEqual({ linkedin: "https://linkedin.com/company/x", twitter: "", facebook: "", youtube: "" });
-    expect(JSON.stringify(s)).not.toMatch(/never public|secret-token|maintenance|timezone/);
-  });
-
-  it("settings fall back to empty values (no invented contact details) when nothing is configured", async () => {
-    expect(await getPublicSettings()).toMatchObject({ email: "", phone: "", address: "", footerAbout: "", copyright: "" });
+  it("contact details are fixed in the code: the same on every page, and nothing saved in the database changes them", async () => {
+    await db().siteSetting.create({ data: { key: "site.contact", value: { primaryEmail: "other@db.test", primaryPhone: "+1 000", address: "Somewhere else", socials: { linkedin: "https://linkedin.com/company/x" } } } });
+    await db().siteSetting.create({ data: { key: "site.general", value: { siteName: "Other", maintenanceMode: true } } });
+    const s = await getSiteSettings();
+    expect(s).toEqual({ email: CONTACT.email, phone: CONTACT.phone, address: CONTACT.address });
+    expect(JSON.stringify(s)).not.toMatch(/db\.test|Somewhere else|linkedin|maintenance/); // no social links, no database values
+    await db().siteSetting.deleteMany();
   });
 
   it("sitemap lists only public, published content", async () => {
@@ -371,29 +366,5 @@ describe("what the public website may read", () => {
     const paths = (await listSitemapEntries()).map((e) => e.path);
     expect(paths).toContain("/insights/in-sitemap");
     expect(paths).not.toContain("/insights/not-in-sitemap");
-  });
-});
-
-describe("settings saved in the admin reach the public website", () => {
-  it("the admin's contact and footer settings (stored as site.<section>) appear on the website at once, and removing them hides them again", async () => {
-    await ensurePermissions();
-    await db().siteSetting.deleteMany();
-    const role = await makeRole("Settings Admin (public test)", { settings_contact: ["view", "manage_settings"], settings_footer: ["view", "manage_settings"] });
-    const user = await makeUser("settings-pub@s.dev", role.id);
-    const cookie = await loginCookie("settings-pub@s.dev");
-    const put = (section: string, body: unknown) => call(settingsRoute.PUT as H, { method: "PUT", url: `/api/settings/${section}`, cookie, body, params: { section } });
-    expect(await getSiteSettings()).toMatchObject({ email: "", phone: "", address: "" });
-    const contact = { primaryEmail: "sales@hamsavahin.test", primaryPhone: "+91 22 5555 0000", address: "1 Harbour Road, Mumbai", socials: { linkedin: "https://linkedin.com/company/hv", twitter: "", facebook: "", youtube: "" } };
-    const first = await put("contact", contact);
-    expect(first.status, JSON.stringify(first.data)).toBe(200);
-    expect((await put("footer", { aboutText: "About text", copyright: "© HV", showNewsletter: false, columns: [] })).status).toBe(200);
-    expect(await getSiteSettings()).toMatchObject({ email: "sales@hamsavahin.test", phone: "+91 22 5555 0000", address: "1 Harbour Road, Mumbai", footerAbout: "About text", copyright: "© HV" });
-    expect((await getSiteSettings()).socials.linkedin).toBe("https://linkedin.com/company/hv");
-    await put("contact", { ...contact, primaryEmail: "", primaryPhone: "", address: "", socials: { linkedin: "", twitter: "", facebook: "", youtube: "" } });
-    expect(await getSiteSettings()).toMatchObject({ email: "", phone: "", address: "" });
-    clearSiteSettingsCache();
-    await db().siteSetting.deleteMany();
-    await db().adminUser.delete({ where: { id: user.id } });
-    await db().role.delete({ where: { id: role.id } });
   });
 });

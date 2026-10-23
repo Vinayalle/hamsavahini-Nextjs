@@ -1,19 +1,17 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { getDb } from "@/server/db";
 import { setMailer, type MailMessage } from "@/server/mail";
-import { resetAuthConfigForTests } from "@/server/config";
 import { keyedDigest } from "@/server/crypto";
 import { call, cookieHeader, cookieJar, ensurePermissions, makeRole, makeUser, PASSWORD } from "./helpers";
 import * as login from "@/app/api/auth/login/route";
 import * as verify from "@/app/api/auth/mfa/verify/route";
 import * as resend from "@/app/api/auth/mfa/resend/route";
-import * as enrollStart from "@/app/api/auth/mfa/enroll/start/route";
 import * as me from "@/app/api/auth/me/route";
 import * as refresh from "@/app/api/auth/refresh/route";
 import * as products from "@/app/api/products/route";
 
 /**
- * AUTH_MFA_METHOD=email (the default for the product): EVERY employee, whatever their role, receives a 6-digit code by email
+ * The second sign-in step: EVERY employee, whatever their role, receives a 6-digit code by email
  * after a correct password; there is no authenticator app.
  */
 type H = Parameters<typeof call>[0];
@@ -28,11 +26,8 @@ const post = (h: H, url: string, body: unknown = {}, o: { cookie?: string; ip?: 
 const signIn = (email: string, password = PASSWORD) => post(login.POST as H, "/api/auth/login", { email, password });
 const wrongCode = (code: string) => (code === "000000" ? "111111" : "000000");
 const uid: Record<string, string> = {};
-const saved = process.env.AUTH_MFA_METHOD;
 
 beforeAll(async () => {
-  process.env.AUTH_MFA_METHOD = "email";
-  resetAuthConfigForTests();
   await ensurePermissions();
   const d = db();
   await d.adminUser.deleteMany();
@@ -44,9 +39,6 @@ beforeAll(async () => {
   setMailer({ send: async (m) => { sink.push(m); return { delivered: true, providerMessageId: "sink" }; } });
 });
 afterAll(() => {
-  if (saved === undefined) delete process.env.AUTH_MFA_METHOD;
-  else process.env.AUTH_MFA_METHOD = saved;
-  resetAuthConfigForTests();
   setMailer(null);
 });
 beforeEach(async () => {
@@ -55,7 +47,6 @@ beforeEach(async () => {
   await d.rateLimit.deleteMany();
   await d.session.deleteMany();
   await d.authChallenge.deleteMany();
-  await d.mfaCredential.deleteMany();
   await d.adminUser.updateMany({ data: { failedLoginCount: 0, lockedUntil: null } });
 });
 
@@ -64,7 +55,7 @@ describe("email code at every sign-in, for every employee", () => {
     for (const email of ["staff@em.dev", "sa@em.dev"]) {
       const r = await signIn(email);
       expect(r.status).toBe(200);
-      expect(r.data).toMatchObject({ status: "mfa_required", method: "email", enrolled: true });
+      expect(r.data).toMatchObject({ status: "mfa_required" });
       expect(r.data.maskedEmail).toMatch(/^[a-z]\*+@em\.dev$/);
       expect(r.headers.getSetCookie().map((c) => c.split("=")[0])).toEqual(["hv_mfa"]); // no access/refresh token yet
       expect(JSON.stringify(r.data)).not.toContain(email.split("@")[0] + "@");
@@ -166,7 +157,7 @@ describe("email code at every sign-in, for every employee", () => {
     const saJar = cookieJar(await signIn("sa@em.dev"));
     expect((await post(verify.POST as H, "/api/auth/mfa/verify", { code: staffCode }, { cookie: cookieHeader(saJar) })).status).toBe(401); // staff's code on sa's session
     expect((await post(verify.POST as H, "/api/auth/mfa/verify", { code: staffCode })).status).toBe(401); // no proof at all
-    expect((await post(verify.POST as H, "/api/auth/mfa/verify", { recoveryCode: "AAAAA-BBBBB" }, { cookie: cookieHeader(saJar) })).status).toBe(401); // no recovery codes in this mode
+    expect((await post(verify.POST as H, "/api/auth/mfa/verify", { recoveryCode: "AAAAA-BBBBB" }, { cookie: cookieHeader(saJar) })).status).toBe(422); // there are no recovery codes: only the emailed code is accepted
   });
 
   it("is rate limited: guessing, and requesting codes", async () => {
@@ -183,13 +174,6 @@ describe("email code at every sign-in, for every employee", () => {
     }
     expect(codes.slice(0, 10).every((s) => s === 200)).toBe(true);
     expect(codes[11]).toBe(429);
-  });
-
-  it("there is no authenticator-app enrolment in this mode", async () => {
-    const jar = cookieJar(await signIn("sa@em.dev"));
-    const r = await post(enrollStart.POST as H, "/api/auth/mfa/enroll/start", {}, { cookie: cookieHeader(jar) });
-    expect(r.status).toBe(409);
-    expect(await db().mfaCredential.count()).toBe(0);
   });
 
   it("if the email cannot be sent the user is told, nothing is half-issued, and no session exists", async () => {

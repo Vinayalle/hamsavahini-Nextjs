@@ -42,7 +42,6 @@ export function MockUsersPage() {
       </div>
     ) },
     { key: "role", header: "Role", hideBelow: "sm", cell: (u) => roleName(u.roleId) },
-    { key: "2fa", header: "2FA", hideBelow: "lg", cell: (u) => (u.twoFactorEnabled ? "Enabled" : <span className="text-warn-600">Not set</span>) },
     { key: "status", header: "Status", sortKey: "status", cell: (u) => <StatusBadge status={u.status} /> },
     { key: "login", header: "Last login", sortKey: "lastLoginAt", hideBelow: "md", cell: (u) => <span className="text-muted">{formatDate(u.lastLoginAt, true)}</span> },
   ];
@@ -52,7 +51,7 @@ export function MockUsersPage() {
       await userService.update(current.id, { name: str(v.name), email: str(v.email), roleId: str(v.roleId), status: str(v.status) as AdminUser["status"] });
       toast.success("User updated");
     } else {
-      await userService.create({ name: str(v.name), email: str(v.email), roleId: str(v.roleId), status: "invited", lastLoginAt: null, twoFactorEnabled: false });
+      await userService.create({ name: str(v.name), email: str(v.email), roleId: str(v.roleId), status: "invited", lastLoginAt: null });
       toast.success("Invitation recorded", { description: "Mock only — no email is sent." });
     }
     setEditing(null);

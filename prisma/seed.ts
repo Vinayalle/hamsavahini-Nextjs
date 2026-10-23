@@ -14,11 +14,12 @@ import { hash } from "@node-rs/argon2";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { ensureDefaultRoles, nextEmployeeId, syncPermissionCatalogue } from "../src/lib/authz/bootstrap";
 import { categoriesSeed, productsSeed } from "../src/lib/mock/data/catalog";
+import { pgConnection } from "../src/lib/db-url";
 
 async function main() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL is not set");
-  const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: url }) });
+  const db = new PrismaClient({ adapter: new PrismaPg(pgConnection(url)) });
 
   const count = await syncPermissionCatalogue(db);
   const roleIds = await ensureDefaultRoles(db);
@@ -71,12 +72,11 @@ async function main() {
           name: p.name, slug: p.slug, code: p.code.toUpperCase(), categoryId: catIds.get(p.categoryId)!,
           shortDescription: p.shortDescription, description: p.description, status: p.status, featured: p.featured,
           publishedAt: p.status === "published" ? new Date(p.publishedAt ?? p.updatedAt) : null,
-          metaTitle: p.seo.metaTitle, metaDescription: p.seo.metaDescription, keywords: p.seo.keywords,
           specifications: { create: p.specifications.map((s, i) => ({ label: s.label, value: s.value, unit: s.unit ?? null, sortOrder: i })) },
         },
       });
     }
-    console.log(`Sample catalogue ready: ${categoriesSeed.length} categories, ${productsSeed.length} products (no images/documents: those need object storage).`);
+    console.log(`Sample catalogue ready: ${categoriesSeed.length} categories, ${productsSeed.length} products.`);
   }
 
   await db.$disconnect();

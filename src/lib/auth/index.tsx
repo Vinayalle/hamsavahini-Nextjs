@@ -25,15 +25,7 @@ export interface SessionUser {
   employeeId?: string;
 }
 
-export interface MfaState {
-  /** "email": a code is emailed at every sign-in (default). "totp": authenticator app for admin roles. */
-  method?: "email" | "totp";
-  enabled: boolean;
-  required: boolean;
-  recoveryCodesRemaining: number;
-}
-
-export type SignInResult = { status: "authenticated" } | { status: "mfa_required"; method: "email" | "totp"; enrolled: boolean; maskedEmail?: string };
+export type SignInResult = { status: "authenticated" } | { status: "mfa_required"; maskedEmail?: string };
 
 export interface AuthService {
   signIn(email: string): SessionUser;
@@ -86,17 +78,13 @@ export interface AuthApi {
   can: (resource: string, action: string) => boolean;
   /** True for a Super Admin (database mode) or the development mock session. */
   isSuperAdmin: boolean;
-  /** Second-factor status of the signed-in user (api mode). */
-  mfa: MfaState | null;
   /** True after a signed-in session ended without the user asking (expired / revoked). */
   sessionExpired: boolean;
   /** Re-reads identity and permissions from the server (e.g. after the user's own access changed). */
   refresh: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<SignInResult>;
-  /** Second step of sign-in for accounts that require MFA. */
-  completeMfa: (input: { code?: string; recoveryCode?: string }) => Promise<void>;
-  /** After the server confirms MFA enrolment during sign-in: load the new session. */
-  finishSignIn: () => Promise<void>;
+  /** Second step of sign-in: the code emailed after the password. */
+  completeMfa: (input: { code: string }) => Promise<void>;
   /** Quietly re-establishes a session from the refresh cookie (used when the access token has expired). */
   restoreSession: () => Promise<boolean>;
   /** Ends the session on the server, then clears the UI. */
@@ -129,7 +117,7 @@ function useDevAuth(): AuthApi {
   const restore = useCallback(async () => false, []);
   const signOut = useCallback(async () => devAuthService.signOut(), []);
 
-  return { user, ready, can, isSuperAdmin: user?.role === "Super Admin", mfa: null, sessionExpired: false, refresh: noop, signIn, completeMfa: noop, finishSignIn: noop, restoreSession: restore, signOut };
+  return { user, ready, can, isSuperAdmin: user?.role === "Super Admin", sessionExpired: false, refresh: noop, signIn, completeMfa: noop, restoreSession: restore, signOut };
 }
 
 /* ───────────── Real session (NEXT_PUBLIC_DATA_SOURCE=api): HttpOnly cookies + /api/auth/* ───────────── */
@@ -138,11 +126,10 @@ interface ApiAuthState {
   user: SessionUser | null;
   permissions: ReadonlySet<string>;
   isSuperAdmin: boolean;
-  mfa: MfaState | null;
   sessionExpired: boolean;
 }
 const NO_PERMS: ReadonlySet<string> = new Set();
-const UNKNOWN: ApiAuthState = { status: "unknown", user: null, permissions: NO_PERMS, isSuperAdmin: false, mfa: null, sessionExpired: false };
+const UNKNOWN: ApiAuthState = { status: "unknown", user: null, permissions: NO_PERMS, isSuperAdmin: false, sessionExpired: false };
 const anon = (sessionExpired = false): ApiAuthState => ({ ...UNKNOWN, status: "anon", sessionExpired });
 let apiState: ApiAuthState = UNKNOWN;
 let bootstrap: Promise<void> | null = null;
@@ -154,8 +141,8 @@ const setApiState = (next: ApiAuthState) => {
 
 async function loadMe(): Promise<boolean> {
   try {
-    const me = await apiFetch<{ user: SessionUser; permissions: string[]; isSuperAdmin: boolean; mfa: MfaState }>("/api/auth/me");
-    setApiState({ status: "authed", user: me.user, permissions: new Set(me.permissions), isSuperAdmin: me.isSuperAdmin, mfa: me.mfa, sessionExpired: false });
+    const me = await apiFetch<{ user: SessionUser; permissions: string[]; isSuperAdmin: boolean }>("/api/auth/me");
+    setApiState({ status: "authed", user: me.user, permissions: new Set(me.permissions), isSuperAdmin: me.isSuperAdmin, sessionExpired: false });
     return true;
   } catch {
     setApiState(anon());
@@ -187,18 +174,14 @@ function useApiAuth(): AuthApi {
     await loadMe();
   }, []);
   const signIn = useCallback(async (email: string, password: string): Promise<SignInResult> => {
-    const r = await apiFetch<{ status: "authenticated" | "mfa_required"; method?: "email" | "totp"; enrolled?: boolean; maskedEmail?: string }>("/api/auth/login", { method: "POST", body: { email, password } });
-    if (r.status === "mfa_required") return { status: "mfa_required", method: r.method ?? "totp", enrolled: !!r.enrolled, maskedEmail: r.maskedEmail };
+    const r = await apiFetch<{ status: "authenticated" | "mfa_required"; maskedEmail?: string }>("/api/auth/login", { method: "POST", body: { email, password } });
+    if (r.status === "mfa_required") return { status: "mfa_required", maskedEmail: r.maskedEmail };
     resetApiCaches();
     await loadMe();
     return { status: "authenticated" };
   }, []);
-  const completeMfa = useCallback(async (input: { code?: string; recoveryCode?: string }) => {
+  const completeMfa = useCallback(async (input: { code: string }) => {
     await apiFetch("/api/auth/mfa/verify", { method: "POST", body: input });
-    resetApiCaches();
-    await loadMe();
-  }, []);
-  const finishSignIn = useCallback(async () => {
     resetApiCaches();
     await loadMe();
   }, []);
@@ -219,7 +202,7 @@ function useApiAuth(): AuthApi {
     }
   }, []);
 
-  return { user: state.user, ready: state.status !== "unknown", can, isSuperAdmin: state.isSuperAdmin, mfa: state.mfa, sessionExpired: state.sessionExpired, refresh, signIn, completeMfa, finishSignIn, restoreSession, signOut };
+  return { user: state.user, ready: state.status !== "unknown", can, isSuperAdmin: state.isSuperAdmin, sessionExpired: state.sessionExpired, refresh, signIn, completeMfa, restoreSession, signOut };
 }
 
 export const useAuth: () => AuthApi = isApiMode ? useApiAuth : useDevAuth;

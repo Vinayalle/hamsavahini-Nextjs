@@ -252,7 +252,6 @@ export function EmployeeDetail({ id }: { id: string }) {
             <div className="space-y-3 p-5 text-sm">
               <div><p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted">Roles</p><RoleChips roles={emp.roles} max={10} /></div>
               <div><p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted">Pages with access</p><p className="text-ink">{emp.isSuperAdmin ? "All pages (Super Admin)" : emp.assignedPageCount}</p></div>
-              <div><p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted">Two-factor</p><p className="text-ink">{emp.twoFactorEnabled ? "Enabled" : "Not enabled"}</p></div>
             </div>
           </Card>
         </div>

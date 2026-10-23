@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { CrudService } from "@/lib/mock/collection";
 import type { BaseEntity, ListQuery, PagedResult } from "@/types/common";
-import { settingsService } from "@/lib/services/settings";
 import { apiFetch, isApiMode } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
 import { activityService } from "@/lib/services";
@@ -38,18 +37,9 @@ export function useServiceReady(...services: CrudService<BaseEntity>[]): boolean
   return useSyncExternalStore(subscribe, () => services.every((s) => s.ready?.() ?? true), () => true);
 }
 
-/** False until the website settings have been read from the server (api mode), so forms never show the built-in placeholder values. */
-export function useSettingsReady(): boolean {
-  return useSyncExternalStore(settingsService.subscribe, settingsService.ready, () => true);
-}
-
 export function useRecord<T extends BaseEntity>(service: CrudService<T>, id: string): T | undefined {
   const all = useAll(service);
   return all.find((i) => i.id === id);
-}
-
-export function useSettings() {
-  return useSyncExternalStore(settingsService.subscribe, settingsService.snapshot, settingsService.snapshot);
 }
 
 const NO_SUBSCRIBE = () => () => undefined;

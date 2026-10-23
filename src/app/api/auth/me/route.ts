@@ -1,5 +1,4 @@
 import { json, requireSession, route } from "@/server/http";
-import { mfaStatus } from "@/server/mfa";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +20,6 @@ export const GET = route(async (request) => {
     isSuperAdmin: s.access.isSuperAdmin,
     permissions,
     scopes,
-    mfa: await mfaStatus(s.user.id),
     reauthWindowSeconds: Number(process.env.AUTH_REAUTH_WINDOW_SECONDS) || 300,
     authenticatedAt: s.authenticatedAt.toISOString(),
   });

@@ -31,7 +31,6 @@ const P = {
   location: { name: "Mundra Terminal", type: "port_terminal", country: "India", city: "Mundra", address: "Port Road, Mundra, Gujarat", description: "Bulk handling terminal", phone: "+91 20000000", email: "mundra@example.test", active: true },
   banner: { title: "Global supply, local trust", subtitle: "Metals and minerals", section: "hero", ctaLabel: "Explore", ctaUrl: "/products", sortOrder: 1, status: "draft" },
   commodity: { name: "Copper Cathode", slug: "copper-cathode", code: "cu1", group: "Metals", unit: "MT", description: "LME grade A copper cathode", status: "draft" },
-  template: { key: "enquiry_ack", name: "Enquiry acknowledgement", subject: "Hello {{name}}", body: "Dear {{name}}, we received {{reference}}. Thank you for writing to us.", active: true },
 };
 
 beforeAll(async () => {
@@ -41,7 +40,7 @@ beforeAll(async () => {
   await d.role.deleteMany();
   const sa = await makeRole("Super Admin", {}, true);
   // editor: can create/edit but NOT publish, delete, change status, assign
-  const editor = await makeRole("Editor", Object.fromEntries(["posts", "projects", "careers", "locations", "banners", "commodities", "commodity_prices", "trade_opportunities", "email_templates"].map((r) => [r, ["view", "create", "edit"]])));
+  const editor = await makeRole("Editor", Object.fromEntries(["posts", "projects", "careers", "locations", "banners", "commodities", "commodity_prices", "trade_opportunities"].map((r) => [r, ["view", "create", "edit"]])));
   const triage = await makeRole("Triage", { rfqs: ["view", "edit", "change_status", "assign"], enquiries: ["view", "edit", "change_status", "assign"], job_applications: ["view", "edit", "change_status"] });
   const noStatus = await makeRole("No status", { rfqs: ["view", "edit"], enquiries: ["view", "edit"], job_applications: ["view", "edit"] });
   const logViewer = await makeRole("Log viewer", { activity_logs: ["view"], notification_history: ["view", "change_status"] });
@@ -74,7 +73,6 @@ const cases: Case[] = [
   { resource: "locations", model: "location", payload: () => P.location, patch: { capacity: "2 million MT", active: false }, expectDb: (r) => expect(r.active).toBe(false), invalid: { ...P.location, email: "nope" }, field: "email", searchTerm: "Mundra" },
   { resource: "banners", model: "banner", payload: () => P.banner, patch: { sortOrder: 4, subtitle: "Updated" }, expectDb: (r) => expect(r.sortOrder).toBe(4), invalid: { ...P.banner, ctaUrl: "javascript:alert(1)" }, field: "ctaUrl", searchTerm: "Global supply" },
   { resource: "commodities", model: "commodity", payload: () => P.commodity, patch: { unit: "DMT" }, expectDb: (r) => expect(r.unit).toBe("DMT"), invalid: { ...P.commodity, code: "bad code!" }, field: "code", searchTerm: "CU1", unique: { field: "code" } },
-  { resource: "email-templates", model: "emailTemplate", payload: () => P.template, patch: { subject: "Hi {{name}} - {{reference}}" }, expectDb: (r) => expect(r.variables).toEqual(["name", "reference"]), invalid: { ...P.template, key: "Bad Key" }, field: "key", searchTerm: "acknowledgement", unique: { field: "key" } },
 ];
 
 describe.each(cases)("$resource: create, read, update, delete against PostgreSQL", (c) => {
@@ -146,13 +144,12 @@ describe("a partial update never resets fields that were not sent", () => {
     careers: { status: "open", openings: 7 },
     locations: { active: false, description: "Kept description" },
     commodities: { status: "published" },
-    "email-templates": { active: false },
   };
   it.each(cases.filter((c) => nonDefault[c.resource]))("$resource", async (c) => {
     const created = await create(c.resource, ck.sa, { ...c.payload(), ...nonDefault[c.resource] });
     expect(created.status, JSON.stringify(created.data)).toBe(201);
     const before = (await one("GET", c.resource, created.data.id, ck.sa)).data;
-    const patchKey = c.resource === "locations" ? "capacity" : c.resource === "email-templates" ? "name" : "title" in before ? "title" : "name";
+    const patchKey = c.resource === "locations" ? "capacity" : "title" in before ? "title" : "name";
     const patchValue = patchKey === "capacity" ? "Large" : `${before[patchKey]} v2`;
     expect((await one("PATCH", c.resource, created.data.id, ck.sa, { [patchKey]: patchValue })).status).toBe(200);
     const after = (await one("GET", c.resource, created.data.id, ck.sa)).data;

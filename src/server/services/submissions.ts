@@ -7,6 +7,8 @@ import { enforce, sourceKey } from "../ratelimit";
 import { parseBody } from "../http";
 import { newStorageKey, validateUpload } from "../files";
 import { getStorage } from "../storage";
+import { sendFormConfirmation } from "../notify";
+import { applicationReceivedEmail, enquiryReceivedEmail, rfqReceivedEmail } from "../mail-templates";
 import { assertBodySize } from "./library";
 
 /**
@@ -77,6 +79,7 @@ export async function createEnquiry(request: Request) {
   if (isBot(v)) return OK; // pretend success, store nothing
   await throttle("enquiry", request, v.email);
   await getDb().contactEnquiry.create({ data: { name: v.name, email: v.email, phone: v.phone, company: v.company, subject: v.subject, message: v.message, source: v.source, consentAt: new Date() } });
+  await sendFormConfirmation("enquiry_received", v.email, enquiryReceivedEmail(v.name, v.subject));
   return OK;
 }
 
@@ -95,6 +98,7 @@ export async function createRfq(request: Request) {
       await getDb().rfq.create({
         data: { reference, companyName: v.companyName, contactName: v.contactName, email: v.email, phone: v.phone, country: v.country, requirement: v.requirement, quantity: v.quantity, quantityUnit: v.quantityUnit, targetPrice: v.targetPrice, incoterm: v.incoterm, deliveryPort: v.deliveryPort, message: v.message, consentAt: new Date() },
       });
+      await sendFormConfirmation("rfq_received", v.email, rfqReceivedEmail(v.contactName, { reference, requirement: v.requirement, quantity: `${v.quantity.toLocaleString("en-US")} ${v.quantityUnit}`, incoterm: v.incoterm, deliveryPort: v.deliveryPort }));
       return { ...OK, reference };
     } catch (e) {
       if ((e as { code?: string }).code !== "P2002") throw e; // only a reference collision is retried
@@ -129,7 +133,7 @@ export async function createApplication(request: Request) {
   await throttle("application", request, v.email);
 
   const db = getDb();
-  const career = await db.career.findFirst({ where: { slug: v.careerSlug, status: "open", deadline: { gte: new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate())) } }, select: { id: true } });
+  const career = await db.career.findFirst({ where: { slug: v.careerSlug, status: "open", deadline: { gte: new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate())) } }, select: { id: true, title: true } });
   if (!career) throw errors.notFound("Position");
   const already = await db.jobApplication.count({ where: { careerId: career.id, email: v.email, createdAt: { gte: new Date(Date.now() - 30 * 24 * 3600 * 1000) } } });
   if (already > 0) throw new ApiError(409, "already_applied", "We already have your application for this position.");
@@ -138,6 +142,7 @@ export async function createApplication(request: Request) {
   const data = { careerId: career.id, applicantName: v.applicantName, email: v.email, phone: v.phone, currentCompany: v.currentCompany, experienceYears: v.experienceYears, coverNote: v.coverNote, consentAt: new Date() };
   if (!(file instanceof File) || file.size === 0) {
     await db.jobApplication.create({ data });
+    await sendFormConfirmation("application_received", v.email, applicationReceivedEmail(v.applicantName, career.title));
     return OK;
   }
   if (file.size > MAX_RESUME_BYTES) throw new ApiError(413, "file_too_large", "The resume is too large (maximum 5 MB).");
@@ -160,5 +165,6 @@ export async function createApplication(request: Request) {
     await storage.delete(key).catch(() => undefined); // no orphan object when the record could not be written
     throw e;
   }
+  await sendFormConfirmation("application_received", v.email, applicationReceivedEmail(v.applicantName, career.title));
   return OK;
 }

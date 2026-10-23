@@ -22,13 +22,12 @@ In `NEXT_PUBLIC_DATA_SOURCE=api` mode every module below is served by PostgreSQL
 | RFQs | DB | arrive from the public site | status, assignee, notes | DB | assigned-only scope honoured |
 | Contact enquiries | DB | public site | status, assignee, notes | DB | assigned-only scope honoured |
 | Job applications | DB | public site | status, notes | DB | resume download after a permission check (stored in uploads/) |
-| Email templates | DB | DB | DB | DB | variables derived by the server |
 | Notification history | DB (server-paged) | system | "mark for retry" only | not allowed | no mail worker sends queued items |
 | Activity logs | DB (server-paged) | server only | **not allowed** | **not allowed** | append-only through the API |
 | Media library | DB | upload (disk) | name/alt/folder | DB + object | stored in uploads/ |
 | Document library | DB | upload (disk) | metadata | DB + object | stored in uploads/; new file = new upload |
 | Product images / product documents | not connected to storage | | | | pages say so; use the Media Library |
-| Users / roles / permissions / products / categories / settings | DB (earlier phases) | | | | |
+| Users / roles / permissions / products / categories | DB (earlier phases) | | | | |
 
 ## Security notes
 - Every route is authorized on the server; the UI hides controls the employee lacks, but the server is the authority. Out-of-scope records look like "not found".

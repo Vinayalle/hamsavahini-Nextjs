@@ -7,10 +7,9 @@ export const dynamic = "force-dynamic";
 
 const body = z.object({ email: z.string().trim().min(1, "Email is required").max(254), password: z.string().min(1, "Password is required").max(200) });
 
-/** Credentials never appear in the response; tokens travel only in HttpOnly cookies. */
+/** Step one of sign-in. A correct password answers "mfa_required" and emails the code; the session starts only after the code (mfa/verify). */
 export const POST = route(async (request) => {
   const { email, password } = await parseBody(request, body);
   const result = await login(request, email, password);
-  if (result.kind === "mfa") return withCookies(json({ status: "mfa_required", method: result.method, enrolled: result.enrolled, ...(result.maskedEmail ? { maskedEmail: result.maskedEmail } : {}) }), result.cookies);
-  return withCookies(json({ status: "authenticated", user: result.user }), result.cookies);
+  return withCookies(json({ status: "mfa_required", maskedEmail: result.maskedEmail }), result.cookies);
 });

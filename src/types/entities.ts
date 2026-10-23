@@ -43,7 +43,6 @@ export interface Product extends BaseEntity {
   images: ProductImage[];
   specifications: ProductSpec[];
   documents: ProductDocument[];
-  seo: SeoFields;
   status: PublishStatus;
   featured: boolean;
   publishedAt?: string | null;
@@ -237,7 +236,6 @@ export interface AdminUser extends BaseEntity {
   roleId: ID;
   status: "active" | "invited" | "suspended";
   lastLoginAt?: string | null;
-  twoFactorEnabled: boolean;
 }
 
 export const PERMISSION_MODULES = [
@@ -293,15 +291,6 @@ export interface DocumentFile extends BaseEntity {
   status: PublishStatus;
 }
 
-export interface EmailTemplate extends BaseEntity {
-  key: string;
-  name: string;
-  subject: string;
-  body: string;
-  variables: string[];
-  active: boolean;
-}
-
 export interface NotificationLog extends BaseEntity {
   templateKey: string;
   recipient: string;
@@ -318,40 +307,3 @@ export interface ActivityLog extends BaseEntity {
   detail?: string;
 }
 
-export interface NavMenuItem {
-  id: ID;
-  label: string;
-  href: string;
-  visible: boolean;
-  children: { id: ID; label: string; href: string }[];
-}
-
-export interface WebsiteSettings {
-  general: {
-    siteName: string;
-    tagline: string;
-    defaultLanguage: string;
-    timezone: string;
-    maintenanceMode: boolean;
-  };
-  navigation: NavMenuItem[];
-  seo: {
-    titleTemplate: string;
-    defaultDescription: string;
-    defaultOgImage: string;
-    robotsIndex: boolean;
-    googleSiteVerification: string;
-  };
-  contact: {
-    primaryEmail: string;
-    primaryPhone: string;
-    address: string;
-    socials: { linkedin: string; twitter: string; facebook: string; youtube: string };
-  };
-  footer: {
-    aboutText: string;
-    copyright: string;
-    columns: { id: ID; title: string; links: { label: string; href: string }[] }[];
-    showNewsletter: boolean;
-  };
-}
