@@ -73,10 +73,11 @@ const write = async (name, pipeline) => { const buf = await pipeline.toBuffer();
 
 console.log(`sampled logo gold: ${hex(sampled)}  (brand token --brand: ${hex(TONES.gold)})`);
 console.log(`artwork ${W}x${H}: mark ${mark.r - mark.l + 1}x${mark.b - mark.t + 1}, text block ${text.r - text.l + 1}x${text.b - text.t + 1}`);
-for (const [name, tone] of Object.entries(TONES)) {
-  await write(`logo-mark.png`, await render(mark, tone, { height: 400 }));
-  await write(`logo-wordmark.png`, await render(text, tone, { width: 900 }));
-  await write(`logo-full.png`, await render(all, tone, { width: 1000 }));
+{
+  const tone = TONES.gold; // the logo is written in its own gold only
+  await write("logo-mark.png", await render(mark, tone, { height: 400 }));
+  await write("logo-wordmark.png", await render(text, tone, { width: 900 }));
+  await write("logo-full.png", await render(all, tone, { width: 1000 }));
 }
 
 // Browser tab, home-screen and social-share images.

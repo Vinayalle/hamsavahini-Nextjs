@@ -1,6 +1,7 @@
 import "server-only";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
+import { pgConnection } from "@/lib/db-url";
 
 /**
  * Single PrismaClient per process (survives Next.js dev hot reloads).
@@ -14,7 +15,7 @@ function create(): PrismaClient {
   // The driver adapter writes timestamps as UTC wall-clock text. If the database session runs in another time zone, PostgreSQL
   // would store the wrong instant (observed locally: 5.5 h off under Asia/Kolkata). Pinning the SESSION time zone to UTC makes
   // storage correct whatever the server default is, so expiry/rate-limit logic and any raw SQL reporting agree.
-  return new PrismaClient({ adapter: new PrismaPg({ connectionString, options: "-c timezone=UTC", max: poolMax(), idleTimeoutMillis: 10_000, connectionTimeoutMillis: 15_000 }) });
+  return new PrismaClient({ adapter: new PrismaPg({ ...pgConnection(connectionString), options: "-c timezone=UTC", max: poolMax(), idleTimeoutMillis: 10_000, connectionTimeoutMillis: 15_000 }) });
 }
 
 /**

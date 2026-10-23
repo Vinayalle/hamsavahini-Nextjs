@@ -13,7 +13,6 @@ export interface EmployeeDto {
   designation: string | null;
   reportingManager: { id: string; name: string } | null;
   status: "active" | "invited" | "suspended";
-  twoFactorEnabled: boolean;
   roles: RoleRef[];
   assignedPageCount: number;
   isSuperAdmin: boolean;

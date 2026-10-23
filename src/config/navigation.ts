@@ -1,4 +1,4 @@
-import { LuActivity as Activity, LuBadgeDollarSign as BadgeDollarSign, LuChartColumn as BarChart3, LuBoxes as Boxes, LuBriefcase as Briefcase, LuFileText as FileText, LuFolderKanban as FolderKanban, LuEarth as Globe2, LuImage as ImageIcon, LuImagePlus as ImagePlus, LuKeyRound as KeyRound, LuLayoutDashboard as LayoutDashboard, LuLibrary as Library, LuListTree as ListTree, LuLogOut as LogOut, LuMail as Mail, LuMegaphone as Megaphone, LuMenu as MenuIcon, LuMessageSquare as MessageSquare, LuNewspaper as Newspaper, LuPackage as Package, LuPhone as Phone, LuSearch as SearchIcon, LuSettings as Settings, LuShieldCheck as ShieldCheck, LuHandshake as Handshake, LuClipboardList as ClipboardList, LuCircleUser as UserCircle, LuUsers as Users, LuPanelBottom as PanelBottom, LuBell as Bell } from "react-icons/lu";
+import { LuActivity as Activity, LuBadgeDollarSign as BadgeDollarSign, LuChartColumn as BarChart3, LuBoxes as Boxes, LuBriefcase as Briefcase, LuFileText as FileText, LuFolderKanban as FolderKanban, LuEarth as Globe2, LuImage as ImageIcon, LuImagePlus as ImagePlus, LuKeyRound as KeyRound, LuLayoutDashboard as LayoutDashboard, LuLibrary as Library, LuListTree as ListTree, LuLogOut as LogOut, LuMegaphone as Megaphone, LuMessageSquare as MessageSquare, LuNewspaper as Newspaper, LuPackage as Package, LuShieldCheck as ShieldCheck, LuHandshake as Handshake, LuClipboardList as ClipboardList, LuCircleUser as UserCircle, LuUsers as Users, LuBell as Bell } from "react-icons/lu";
 import type { IconType } from "react-icons";
 
 export interface NavItem {
@@ -48,20 +48,12 @@ export const NAV_GROUPS: NavGroup[] = [
     { label: "Document Library", href: "/admin/documents", icon: Library },
   ] },
   { title: "Notifications", items: [
-    { label: "Email Templates", href: "/admin/email-templates", icon: Mail },
     { label: "Notification History", href: "/admin/notifications/history", icon: Bell },
   ] },
   { title: "Administration", items: [
     { label: "Admin Users", href: "/admin/users", icon: Users },
     { label: "Roles & Permissions", href: "/admin/roles", icon: ShieldCheck },
     { label: "Activity Logs", href: "/admin/activity-logs", icon: Activity },
-  ] },
-  { title: "Website Configuration", items: [
-    { label: "General Settings", href: "/admin/settings/general", icon: Settings },
-    { label: "Navigation Menu", href: "/admin/settings/navigation", icon: MenuIcon },
-    { label: "SEO Settings", href: "/admin/settings/seo", icon: SearchIcon },
-    { label: "Contact Details & Social Links", href: "/admin/settings/contact", icon: Phone },
-    { label: "Footer Settings", href: "/admin/settings/footer", icon: PanelBottom },
   ] },
   { title: "Account", items: [
     { label: "My Profile", href: "/admin/profile", icon: UserCircle },
@@ -78,7 +70,6 @@ export const SEGMENT_LABELS: Record<string, string> = {
   new: "Add new",
   edit: "Edit",
   history: "History",
-  settings: "Website Configuration",
   notifications: "Notifications",
 };
 

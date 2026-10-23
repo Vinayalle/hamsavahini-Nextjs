@@ -1,31 +1,8 @@
 import "server-only";
 import { z } from "zod";
 import type { ResourceConfig } from "./framework";
-import { iso, patchOf, pick, text } from "./shared";
+import { iso } from "./shared";
 import { errors } from "../errors";
-
-/* ───────────────────────── Email templates ───────────────────────── */
-const extractVariables = (...texts: string[]) => Array.from(new Set(texts.flatMap((t) => Array.from(t.matchAll(/\{\{\s*([a-zA-Z_]+)\s*\}\}/g)).map((m) => m[1]))));
-const tplBase = z.object({
-  key: z.string().trim().min(3, "System key is required").max(60).regex(/^[a-z][a-z0-9_]*$/, "Lowercase letters, numbers and underscores"),
-  name: text(2, 100, "Name"), subject: text(2, 200, "Subject"), body: text(20, 10_000, "Body"), active: z.boolean().default(true),
-});
-
-export const emailTemplates: ResourceConfig = {
-  key: "email-templates", permission: "email_templates", entity: "Email template", model: "emailTemplate",
-  toDto: (t) => ({ id: t.id, key: t.key, name: t.name, subject: t.subject, body: t.body, variables: t.variables, active: t.active, createdAt: iso(t.createdAt), updatedAt: iso(t.updatedAt) }),
-  label: (t) => t.name,
-  search: ["name", "key", "subject"], sorts: ["name", "key", "updatedAt", "active"], defaultSort: { by: "name", dir: "asc" },
-  filters: { active: (v) => ({ active: v === "true" }) },
-  createSchema: tplBase, patchSchema: patchOf(tplBase),
-  buildCreate: (i) => ({ key: i.key, name: i.name, subject: i.subject, body: i.body, active: i.active, variables: extractVariables(i.subject, i.body) }),
-  buildUpdate: (p, cur) => ({
-    ...pick(p, { key: (v: string) => ({ key: v }), name: (v: string) => ({ name: v }), subject: (v: string) => ({ subject: v }), body: (v: string) => ({ body: v }), active: (v: boolean) => ({ active: v }) }),
-    // Variables are always derived from the final text, never trusted from the client.
-    ...(p.subject !== undefined || p.body !== undefined ? { variables: extractVariables(p.subject ?? cur.subject, p.body ?? cur.body) } : {}),
-  }),
-  unique: [{ fields: ["key"], message: "Another template uses this key", errorField: "key" }],
-};
 
 /* ───────────────────────── Notification history ───────────────────────── */
 export const notifications: ResourceConfig = {

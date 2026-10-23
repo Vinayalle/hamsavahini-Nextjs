@@ -38,7 +38,6 @@ const bool = (name: string, fallback: boolean) => {
 export interface AuthConfig {
   jwtSecret: Uint8Array;
   otpPepper: Buffer;
-  encryptionKey: Buffer;
   issuer: string;
   audience: string;
   accessTtlSeconds: number;
@@ -59,11 +58,7 @@ export interface AuthConfig {
   /** Only when a trusted reverse proxy sets X-Forwarded-For may the client IP be read from it. */
   trustProxy: boolean;
   /** Role codes that must use a second sign-in step. */
-  mfaRoleCodes: string[];
-  /** The second step: a 6-digit code emailed to the user (default) or an authenticator-app code (TOTP). */
-  mfaMethod: "email" | "totp";
-  secureCookies: boolean;
-  mfaIssuer: string;
+    secureCookies: boolean;
   argon: { memoryCost: number; timeCost: number; parallelism: number };
 }
 
@@ -74,8 +69,7 @@ export function getAuthConfig(): AuthConfig {
   const production = process.env.NODE_ENV === "production";
   const jwt = decode("AUTH_JWT_SECRET", process.env.AUTH_JWT_SECRET, 32);
   const pepper = decode("AUTH_OTP_PEPPER", process.env.AUTH_OTP_PEPPER, 32);
-  const enc = decode("AUTH_ENCRYPTION_KEY", process.env.AUTH_ENCRYPTION_KEY, 32, true);
-  if (jwt.equals(pepper) || jwt.equals(enc) || pepper.equals(enc)) throw new Error("AUTH_JWT_SECRET, AUTH_OTP_PEPPER and AUTH_ENCRYPTION_KEY must be three different values.");
+  if (jwt.equals(pepper)) throw new Error("AUTH_JWT_SECRET and AUTH_OTP_PEPPER must be two different values.");
 
   // Argon2id: 64 MiB / 3 passes / 1 lane. Overridable for tests and benchmarking only; production never goes below these.
   const argon = production
@@ -85,7 +79,6 @@ export function getAuthConfig(): AuthConfig {
   cached = {
     jwtSecret: new Uint8Array(jwt),
     otpPepper: pepper,
-    encryptionKey: enc,
     issuer: process.env.AUTH_JWT_ISSUER || "hamsavahin-admin",
     audience: process.env.AUTH_JWT_AUDIENCE || "hamsavahin-admin-api",
     accessTtlSeconds: int("AUTH_ACCESS_TTL_SECONDS", 15 * 60, 30, 3600),
@@ -100,10 +93,7 @@ export function getAuthConfig(): AuthConfig {
     mfaPendingTtlSeconds: int("AUTH_MFA_PENDING_TTL_SECONDS", 10 * 60, 30, 1800),
     reauthWindowSeconds: int("AUTH_REAUTH_WINDOW_SECONDS", 5 * 60, 30, 3600),
     trustProxy: bool("AUTH_TRUST_PROXY", false),
-    mfaRoleCodes: (process.env.AUTH_MFA_ROLE_CODES || "super_admin,admin").split(",").map((s) => s.trim()).filter(Boolean),
     secureCookies: production ? true : bool("AUTH_SECURE_COOKIES", false),
-    mfaMethod: (process.env.AUTH_MFA_METHOD || "email") === "totp" ? "totp" : "email",
-    mfaIssuer: process.env.AUTH_MFA_ISSUER || "Hamsavahin Admin",
     argon,
   };
   return cached;

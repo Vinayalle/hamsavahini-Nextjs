@@ -145,16 +145,6 @@ export default function ProductDetailPage() {
             </div>
           </Card>
           <Card>
-            <CardHeader title="SEO" />
-            <div className="p-5">
-              <DetailList items={[
-                { label: "Meta title", value: product.seo.metaTitle },
-                { label: "Meta description", value: product.seo.metaDescription },
-                { label: "Keywords", value: product.seo.keywords.join(", ") },
-              ]} />
-            </div>
-          </Card>
-          <Card>
             <CardHeader title="Change history (this session)" />
             <ActivityTimeline entries={history} empty="No changes recorded in this session." />
           </Card>

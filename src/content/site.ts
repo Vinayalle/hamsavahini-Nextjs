@@ -17,6 +17,16 @@ export const COMPANY = {
     "Hamsavahin Aarth Mines is a global sourcing and trading company connecting trusted mineral producers with industries that demand excellence and reliability.",
 };
 
+/**
+ * Contact details shown in the website footer, on the Contact Us page and in the search-engine data. They are fixed here in the code, not
+ * edited in the admin. Change them in this one place. A line left empty is simply not shown.
+ */
+export const CONTACT = {
+  email: "info@example-hamsavahin.test",
+  phone: "+00 000 000 0000",
+  address: "Level 21, Bandra Kurla Complex, Mumbai 400051, India",
+};
+
 /* ───────────── Minerals ───────────── */
 export interface Mineral {
   slug: string;

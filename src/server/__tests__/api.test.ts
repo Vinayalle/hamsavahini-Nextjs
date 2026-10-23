@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { getDb } from "@/server/db";
 import { hashToken } from "@/server/security";
-import { PASSWORD, call, ensurePermissions, loginCookie, makeRole, makeUser } from "./helpers";
+import { PASSWORD, call, ensurePermissions, loginCookie, loginSessionWithResponse, makeRole, makeUser } from "./helpers";
 import * as login from "@/app/api/auth/login/route";
 import * as logout from "@/app/api/auth/logout/route";
 import * as me from "@/app/api/auth/me/route";
@@ -20,7 +20,7 @@ let noAccess = "";
 const productBody = (categoryId: string, over: Record<string, unknown> = {}) => ({
   name: "Test Copper Wire", code: "hmv-tst-0001", slug: "test-copper-wire", categoryId,
   shortDescription: "High purity copper wire for testing.", description: "Full description of the test copper wire product for QA.",
-  specifications: [{ label: "Purity", value: "99.9", unit: "%" }], seo: { metaTitle: "Test", metaDescription: "Test", keywords: ["wire"] },
+  specifications: [{ label: "Purity", value: "99.9", unit: "%" }],
   status: "draft", featured: false, ...over,
 });
 
@@ -59,9 +59,9 @@ beforeEach(async () => {
 });
 
 describe("partial updates", () => {
-  it("changing one product field leaves status, featured, specifications and SEO as they were", async () => {
+  it("changing one product field leaves status, featured and specifications as they were", async () => {
     const cat = await makeCategory();
-    const made = await call(products.POST, { method: "POST", url: "/api/products", cookie: admin, body: productBody(cat.id, { code: "hmv-ptc-0001", slug: "patch-check", status: "published", featured: true, seo: { metaTitle: "Keep me", metaDescription: "Keep me too", keywords: ["a"] } }) });
+    const made = await call(products.POST, { method: "POST", url: "/api/products", cookie: admin, body: productBody(cat.id, { code: "hmv-ptc-0001", slug: "patch-check", status: "published", featured: true }) });
     expect(made.status, JSON.stringify(made.data)).toBe(201);
     const r = await call(productById.PATCH, { method: "PATCH", url: `/api/products/${made.data.id}`, cookie: admin, body: { name: "Renamed only" }, params: { id: made.data.id } });
     expect(r.status).toBe(200);
@@ -69,7 +69,6 @@ describe("partial updates", () => {
     expect(r.data.status).toBe("published");
     expect(r.data.featured).toBe(true);
     expect(r.data.specifications).toHaveLength(1);
-    expect(r.data.seo.metaTitle).toBe("Keep me");
     const f = await call(productById.PATCH, { method: "PATCH", url: `/api/products/${made.data.id}`, cookie: admin, body: { featured: false }, params: { id: made.data.id } });
     expect(f.data.status).toBe("published");
   });
@@ -84,10 +83,7 @@ describe("partial updates", () => {
 
 describe("authentication", () => {
   it("sets HttpOnly cookies, keeps the refresh token path-scoped, and stores only a hash of it", async () => {
-    const r = await call(login.POST, { method: "POST", url: "/api/auth/login", body: { email: "VIEWER@test.dev", password: PASSWORD } });
-    expect(r.status).toBe(200);
-    expect(r.data.status).toBe("authenticated");
-    const lines = r.headers.getSetCookie();
+    const { lines, data } = await loginSessionWithResponse("viewer@test.dev");
     const at = lines.find((l) => l.startsWith("hv_at="))!;
     const rt = lines.find((l) => l.startsWith("hv_rt="))!;
     expect(at).toMatch(/HttpOnly/);
@@ -99,7 +95,7 @@ describe("authentication", () => {
     const db = getDb();
     expect(await db.refreshToken.findUnique({ where: { tokenHash: refreshToken } })).toBeNull(); // raw token is never stored
     expect(await db.refreshToken.findUnique({ where: { tokenHash: hashToken(refreshToken) } })).not.toBeNull();
-    expect(JSON.stringify(r.data)).not.toMatch(/passwordHash|argon2|hv_at|eyJ/);
+    expect(JSON.stringify(data)).not.toMatch(/passwordHash|argon2|hv_at|eyJ/);
   });
 
   it("stores timestamps at the correct instant regardless of the database server's time zone", async () => {

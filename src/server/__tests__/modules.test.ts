@@ -6,7 +6,6 @@ import { getResource as getResourceDef } from "@/lib/authz/catalog";
 import { call, ensurePermissions, loginCookie, makeRole, makeUser } from "./helpers";
 import * as listRoute from "@/app/api/[resource]/route";
 import * as itemRoute from "@/app/api/[resource]/[id]/route";
-import * as settingsRoute from "@/app/api/settings/[section]/route";
 import * as assignees from "@/app/api/assignees/route";
 import * as resume from "@/app/api/applications/[id]/resume/route";
 
@@ -28,8 +27,6 @@ beforeAll(async () => {
   const viewAll = await makeRole("View everything", Object.fromEntries(perms.map((p) => [p, ["view"]])));
   const nothing = await makeRole("Nothing", {});
   const assignedOnly = await makeRole("Assigned only", { rfqs: ["view", "edit"], enquiries: ["view", "edit"] }, { scopes: { rfqs: "assigned", enquiries: "assigned" } });
-  const settingsView = await makeRole("Settings viewer", { settings_general: ["view"] });
-  const settingsAdmin = await makeRole("Settings admin", { settings_general: ["view", "manage_settings"], settings_seo: ["view", "manage_settings"] });
   const assigner = await makeRole("Assigner", { rfqs: ["view", "assign"] });
   const hr = await makeRole("HR downloader", { job_applications: ["view", "download"] });
   const hrNoDl = await makeRole("HR no download", { job_applications: ["view"] });
@@ -37,12 +34,10 @@ beforeAll(async () => {
   uid.view = (await makeUser("view@m.dev", viewAll.id)).id;
   uid.none = (await makeUser("none@m.dev", nothing.id)).id;
   uid.assigned = (await makeUser("assigned@m.dev", assignedOnly.id)).id;
-  uid.sview = (await makeUser("sview@m.dev", settingsView.id)).id;
-  uid.sadmin = (await makeUser("sadmin@m.dev", settingsAdmin.id)).id;
   uid.assigner = (await makeUser("assigner@m.dev", assigner.id)).id;
   uid.hr = (await makeUser("hr@m.dev", hr.id)).id;
   uid.hrnd = (await makeUser("hrnd@m.dev", hrNoDl.id)).id;
-  for (const k of ["sa", "view", "none", "assigned", "sview", "sadmin", "assigner", "hr", "hrnd"]) ck[k] = await loginCookie(`${k}@m.dev`);
+  for (const k of ["sa", "view", "none", "assigned", "assigner", "hr", "hrnd"]) ck[k] = await loginCookie(`${k}@m.dev`);
 });
 
 const list = (resource: string, cookie?: string, qs = "") => call(listRoute.GET as H, { url: `/api/${resource}${qs}`, cookie, params: { resource } });
@@ -51,7 +46,7 @@ const one = (method: string, resource: string, id: string, cookie?: string, body
 
 describe("every generic CMS module is protected on the server", () => {
   it("registers the expected modules, each with a catalogued permission", () => {
-    expect(keys.sort()).toEqual(["activity-logs", "applications", "banners", "careers", "commodities", "commodity-prices", "documents", "email-templates", "enquiries", "locations", "media", "notifications", "posts", "projects", "rfqs", "trade-opportunities"]);
+    expect(keys.sort()).toEqual(["activity-logs", "applications", "banners", "careers", "commodities", "commodity-prices", "documents", "enquiries", "locations", "media", "notifications", "posts", "projects", "rfqs", "trade-opportunities"]);
     for (const r of Object.values(RESOURCES)) expect(getResourceDef(r.permission), r.key).toBeTruthy();
   });
 
@@ -130,48 +125,6 @@ describe("record-level scope: employees limited to ASSIGNED records", () => {
   it("an assigned-scope employee cannot widen their own scope by editing", async () => {
     expect((await one("PATCH", "rfqs", mine, ck.assigned, { assignedToId: uid.assigner })).status).toBeGreaterThanOrEqual(400);
     expect((await db().rfq.findUniqueOrThrow({ where: { id: mine } })).assignedToId).toBe(uid.assigned);
-  });
-});
-
-describe("website settings API", () => {
-  const general = { siteName: "Hamsavahin", tagline: "Trade", defaultLanguage: "en", timezone: "Asia/Kolkata", maintenanceMode: false };
-  const put = (section: string, cookie: string | undefined, body: unknown) => call(settingsRoute.PUT as H, { method: "PUT", url: `/api/settings/${section}`, cookie, body, params: { section } });
-  const get = (section: string, cookie?: string) => call(settingsRoute.GET as H, { url: `/api/settings/${section}`, cookie, params: { section } });
-
-  it("requires a session", async () => {
-    expect((await get("general")).status).toBe(401);
-    expect((await put("general", undefined, general)).status).toBe(401);
-  });
-  it("each section has its own permission", async () => {
-    expect((await get("general", ck.sview)).status).toBe(200);
-    expect((await get("seo", ck.sview)).status).toBe(403);
-    expect((await get("general", ck.none)).status).toBe(403);
-  });
-  it("viewing is not editing", async () => {
-    expect((await put("general", ck.sview, general)).status).toBe(403);
-    expect((await put("general", ck.none, general)).status).toBe(403);
-  });
-  it("authorisation comes before validation (no field errors for the unauthorised)", async () => {
-    const r = await put("general", ck.sview, { siteName: 5 });
-    expect(r.status).toBe(403);
-    expect(r.data.error.fields).toBeUndefined();
-  });
-  it("saves, validates, audits and returns the stored value", async () => {
-    expect((await get("general", ck.sadmin)).data.value).toBeNull();
-    const ok = await put("general", ck.sadmin, general);
-    expect(ok.status).toBe(200);
-    expect(ok.data.value).toEqual(general);
-    expect((await get("general", ck.sadmin)).data.value).toEqual(general);
-    expect(await db().activityLog.count({ where: { entityType: "Settings", entityLabel: "general settings" } })).toBe(1);
-    const bad = await put("general", ck.sadmin, { ...general, siteName: "" });
-    expect(bad.status).toBe(422);
-    expect(bad.data.error.fields.siteName).toBeTruthy();
-    expect((await put("general", ck.sadmin, { ...general, extra: "x" })).status).toBe(422); // unknown keys refused
-    expect((await put("seo", ck.sadmin, { titleTemplate: "%s", defaultDescription: "d", defaultOgImage: "javascript:alert(1)", robotsIndex: true, googleSiteVerification: "" })).status).toBe(422); // unsafe link scheme
-  });
-  it("unknown sections are 404", async () => {
-    expect((await get("secrets", ck.sa)).status).toBe(404);
-    expect((await put("__proto__", ck.sa, {})).status).toBe(404);
   });
 });
 

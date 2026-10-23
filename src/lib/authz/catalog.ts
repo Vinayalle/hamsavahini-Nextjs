@@ -43,7 +43,6 @@ export const MODULES: ModuleDef[] = [
   { key: "files", label: "Media & Documents" },
   { key: "notifications", label: "Notifications" },
   { key: "administration", label: "Administration" },
-  { key: "configuration", label: "Website Configuration" },
 ];
 
 const CONTENT = ["view", "create", "edit", "delete", "publish", "unpublish", "archive", "restore"] as const;
@@ -73,7 +72,6 @@ export const RESOURCES: ResourceDef[] = [
   { key: "media", label: "Media Library", module: "files", actions: ["view", "upload", "edit", "delete", "download"] },
   { key: "documents", label: "Document Library", module: "files", actions: ["view", "upload", "edit", "delete", "download", "publish", "unpublish", "archive"] },
   // Notifications
-  { key: "email_templates", label: "Email Templates", module: "notifications", actions: ["view", "create", "edit", "delete"] },
   { key: "notification_history", label: "Notification History", module: "notifications", actions: ["view", "change_status"] },
   // Administration
   { key: "users", label: "Admin Users / Employees", module: "administration", actions: ["view", "create", "edit", "assign", "change_status", "export"], sensitive: true },
@@ -81,12 +79,6 @@ export const RESOURCES: ResourceDef[] = [
   { key: "user_dashboards", label: "Employee Dashboards", module: "administration", actions: ["view", "edit"], sensitive: true },
   { key: "roles", label: "Roles & Permissions", module: "administration", actions: ["view", "create", "edit", "delete", "assign", "change_status", "manage_permissions"], sensitive: true },
   { key: "activity_logs", label: "Activity Logs", module: "administration", actions: ["view", "export"], sensitive: true },
-  // Website Configuration
-  { key: "settings_general", label: "General Settings", module: "configuration", actions: ["view", "manage_settings"], sensitive: true },
-  { key: "settings_navigation", label: "Navigation Menu", module: "configuration", actions: ["view", "manage_settings"], sensitive: true },
-  { key: "settings_seo", label: "SEO Settings", module: "configuration", actions: ["view", "manage_settings"], sensitive: true },
-  { key: "settings_contact", label: "Contact Details & Social Links", module: "configuration", actions: ["view", "manage_settings"], sensitive: true },
-  { key: "settings_footer", label: "Footer Settings", module: "configuration", actions: ["view", "manage_settings"], sensitive: true },
 ];
 
 export type ResourceKey = (typeof RESOURCES)[number]["key"];
@@ -163,7 +155,6 @@ export const PAGE_RULES: PageRule[] = [
   { pattern: /^\/admin\/applications$/, resource: "job_applications", action: "view" },
   { pattern: /^\/admin\/media$/, resource: "media", action: "view" },
   { pattern: /^\/admin\/documents$/, resource: "documents", action: "view" },
-  { pattern: /^\/admin\/email-templates$/, resource: "email_templates", action: "view" },
   { pattern: /^\/admin\/notifications(\/history)?$/, resource: "notification_history", action: "view" },
   { pattern: /^\/admin\/users\/new$/, resource: "users", action: "create" },
   { pattern: new RegExp(`^/admin/users/${id}/permissions$`), resource: "user_permissions", action: "view" },
@@ -174,11 +165,6 @@ export const PAGE_RULES: PageRule[] = [
   { pattern: new RegExp(`^/admin/roles/${id}/edit$`), resource: "roles", action: "edit" },
   { pattern: new RegExp(`^/admin/roles(/${id})?$`), resource: "roles", action: "view" },
   { pattern: /^\/admin\/activity-logs$/, resource: "activity_logs", action: "view" },
-  { pattern: /^\/admin\/settings\/general$/, resource: "settings_general", action: "view" },
-  { pattern: /^\/admin\/settings\/navigation$/, resource: "settings_navigation", action: "view" },
-  { pattern: /^\/admin\/settings\/seo$/, resource: "settings_seo", action: "view" },
-  { pattern: /^\/admin\/settings\/contact$/, resource: "settings_contact", action: "view" },
-  { pattern: /^\/admin\/settings\/footer$/, resource: "settings_footer", action: "view" },
 ];
 
 /** Pages every signed-in employee may open (identity/self-service). */

@@ -10,7 +10,7 @@ import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const envPath = resolve(import.meta.dirname, "..", ".env");
-const names = ["AUTH_JWT_SECRET", "AUTH_OTP_PEPPER", "AUTH_ENCRYPTION_KEY"];
+const names = ["AUTH_JWT_SECRET", "AUTH_OTP_PEPPER"];
 const fresh = () => randomBytes(32).toString("base64url");
 
 if (process.argv.includes("--print")) {

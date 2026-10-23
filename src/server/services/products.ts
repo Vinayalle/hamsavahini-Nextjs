@@ -34,12 +34,6 @@ export const productInput = z.object({
   specifications: z.array(specInput).max(60).default([]),
   images: z.array(imageInput).max(8, "Up to 8 images").optional(),
   documents: z.array(documentInput).max(20, "Up to 20 documents").optional(),
-  seo: z.object({
-    metaTitle: z.string().trim().max(70, "Max 70 characters").default(""),
-    metaDescription: z.string().trim().max(160, "Max 160 characters").default(""),
-    canonicalUrl: z.string().trim().max(300).nullish(),
-    keywords: z.array(z.string().trim().min(1).max(60)).max(30).default([]),
-  }).default({ metaTitle: "", metaDescription: "", keywords: [] }),
   status: publishStatus.default("draft"),
   featured: z.boolean().default(false),
 });
@@ -72,7 +66,6 @@ export function toProductDto(p: ProductRow) {
     images: p.images.filter((i) => i.file.scanStatus !== "quarantined").map((i) => ({ id: i.id, fileId: i.fileId, url: `/api/products/files/${i.fileId}`, alt: i.alt, isPrimary: i.isPrimary })),
     specifications: p.specifications.map((s) => ({ id: s.id, label: s.label, value: s.value, unit: s.unit ?? undefined })),
     documents: p.documents.map((d) => ({ id: d.id, fileId: d.fileId, url: `/api/products/files/${d.fileId}`, name: d.file.originalName, type: d.type, sizeBytes: Number(d.file.sizeBytes) })),
-    seo: { metaTitle: p.metaTitle, metaDescription: p.metaDescription, canonicalUrl: p.canonicalUrl ?? undefined, keywords: p.keywords },
     status: p.status, featured: p.featured, publishedAt: p.publishedAt?.toISOString() ?? null,
     createdAt: p.createdAt.toISOString(), updatedAt: p.updatedAt.toISOString(),
   };
@@ -151,12 +144,11 @@ export async function createProduct(session: AuthSession, input: ProductInput, i
   assertUniqueSpecs(input.specifications);
   await assertRefs(input);
   await assertFiles(input.images, input.documents);
-  const { specifications, seo, images, documents, ...rest } = input;
+  const { specifications, images, documents, ...rest } = input;
   return getDb().$transaction(async (tx) => {
     const row = await tx.product.create({
       data: {
         ...rest,
-        metaTitle: seo.metaTitle, metaDescription: seo.metaDescription, canonicalUrl: seo.canonicalUrl || null, keywords: seo.keywords,
         publishedAt: input.status === "published" ? new Date() : null,
         specifications: { create: specifications.map((s, i) => ({ label: s.label, value: s.value, unit: s.unit || null, sortOrder: i })) },
         images: { create: normaliseImages(images ?? []).map((i, n) => ({ fileId: i.fileId, alt: i.alt, isPrimary: i.isPrimary, sortOrder: n })) },
@@ -178,7 +170,7 @@ export async function updateProduct(session: AuthSession, id: string, patch: Par
   if (patch.specifications) assertUniqueSpecs(patch.specifications);
   await assertRefs(patch, id);
   await assertFiles(patch.images, patch.documents);
-  const { specifications, seo, images, documents, ...rest } = patch;
+  const { specifications, images, documents, ...rest } = patch;
   const statusChanged = patch.status !== undefined && patch.status !== current.status;
 
   return db.$transaction(async (tx) => {
@@ -199,7 +191,6 @@ export async function updateProduct(session: AuthSession, id: string, patch: Par
       where: { id },
       data: {
         ...rest,
-        ...(seo ? { metaTitle: seo.metaTitle, metaDescription: seo.metaDescription, canonicalUrl: seo.canonicalUrl || null, keywords: seo.keywords } : {}),
         ...(statusChanged && patch.status === "published" && !current.publishedAt ? { publishedAt: new Date() } : {}),
       },
       include,

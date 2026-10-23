@@ -36,7 +36,7 @@ npm test                        # integration tests against a throw-away Postgre
 In production use a managed PostgreSQL (TLS required) and set `DATABASE_URL` in the environment, not in the repo.
 
 **Authentication in api mode** (email OTP activation, Argon2id passwords, access JWT + rotating refresh tokens in HttpOnly cookies,
-TOTP MFA for Super Admins/Admins, database-backed rate limiting, SMTP email) is documented in [docs/authentication.md](docs/authentication.md).
+an emailed sign-in code for every employee, database-backed rate limiting, SMTP email) is documented in [docs/authentication.md](docs/authentication.md).
 Every sign-in is: email + password, then a 6-digit code emailed to the employee (needs `SMTP_USER`/`SMTP_PASSWORD`; no authenticator app).
 The first Super Admin is created by `npm run db:seed` with `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` (12+ characters).
 Set `SMTP_*` and `MAIL_FROM` (see `.env.example`) for activation/reset emails; without them emails are reported as *not delivered*.

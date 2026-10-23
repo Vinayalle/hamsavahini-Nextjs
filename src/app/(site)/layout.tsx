@@ -31,14 +31,12 @@ export const viewport: Viewport = { themeColor: BRAND.colors.gold, width: "devic
 
 export default async function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const settings = await getSiteSettings();
-  const sameAs = Object.values(settings.socials).filter(Boolean);
   return (
     <html lang="en">
       <body id="top">
         <JsonLd
           data={{
             "@context": "https://schema.org", "@type": "Organization", name: COMPANY.name, url: base, description: COMPANY.description,
-            ...(sameAs.length ? { sameAs } : {}),
             ...(settings.email || settings.phone ? { contactPoint: { "@type": "ContactPoint", contactType: "sales", ...(settings.email ? { email: settings.email } : {}), ...(settings.phone ? { telephone: settings.phone } : {}) } } : {}),
           }}
         />

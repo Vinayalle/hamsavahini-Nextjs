@@ -66,13 +66,10 @@ export function passwordResetEmail(name: string, resetUrl: string, minutes: numb
   };
 }
 
-export type SecurityNotice = "password_changed" | "password_reset_done" | "mfa_enabled" | "mfa_disabled" | "mfa_reset" | "account_activated";
+export type SecurityNotice = "password_changed" | "password_reset_done" | "account_activated";
 const NOTICE: Record<SecurityNotice, { subject: string; line: string }> = {
   password_changed: { subject: "Your password was changed", line: "The password for your Hamsavahin admin account was changed." },
   password_reset_done: { subject: "Your password was reset", line: "Your password was reset and all your sessions were signed out." },
-  mfa_enabled: { subject: "Two-factor authentication enabled", line: "Two-factor authentication was turned on for your account." },
-  mfa_disabled: { subject: "Two-factor authentication disabled", line: "Two-factor authentication was turned off for your account." },
-  mfa_reset: { subject: "Two-factor authentication was reset", line: "An administrator reset two-factor authentication on your account. You will be asked to set it up again at your next sign-in." },
   account_activated: { subject: "Your account is active", line: "Your Hamsavahin admin account was activated and your password was set." },
 };
 
@@ -82,5 +79,42 @@ export function securityNoticeEmail(name: string, kind: SecurityNotice): Rendere
     subject: `${BRAND}: ${n.subject}`,
     text: `Hello ${name},\n\n${n.line}\n\nIf this was not you, contact your administrator immediately.\n`,
     html: layout(n.subject, p(`Hello ${esc(name)},`) + p(esc(n.line)) + p("<strong>If this was not you, contact your administrator immediately.</strong>")),
+  };
+}
+
+/**
+ * "We received your request" confirmations for the three public website forms. They only repeat what the visitor typed, escaped, and the
+ * subject is fixed (never built from visitor text). The footer says why the email arrived, because the address was typed into a public form.
+ */
+const FORM_FOOTER = "You received this email because this address was entered on a form at our website. If that was not you, you can ignore it.";
+const row = (label: string, value: string) => `<tr><td style="padding:6px 12px 6px 0;color:#665d4e;font-size:14px;vertical-align:top">${esc(label)}</td><td style="padding:6px 0;font-size:14px"><strong>${esc(value)}</strong></td></tr>`;
+const summary = (rows: [string, string][]) => `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px">${rows.map(([l, v]) => row(l, v)).join("")}</table>`;
+const textRows = (rows: [string, string][]) => rows.map(([l, v]) => `${l}: ${v}`).join("\n");
+
+export function enquiryReceivedEmail(name: string, subject: string): Rendered {
+  const rows: [string, string][] = [["Subject", subject]];
+  return {
+    subject: `We received your message | ${BRAND}`,
+    text: `Hello ${name},\n\nThank you for contacting ${BRAND}. We have received your message and a member of our team will reply by email.\n\n${textRows(rows)}\n\n${FORM_FOOTER}\n`,
+    html: layout("We received your message", p(`Hello ${esc(name)},`) + p(`Thank you for contacting ${esc(BRAND)}. We have received your message and a member of our team will reply by email.`) + summary(rows), FORM_FOOTER),
+  };
+}
+
+export function rfqReceivedEmail(name: string, d: { reference: string; requirement: string; quantity: string; incoterm: string; deliveryPort: string }): Rendered {
+  const rows: [string, string][] = [["Reference", d.reference], ["Material", d.requirement], ["Quantity", d.quantity], ["Incoterm", d.incoterm], ["Delivery port", d.deliveryPort]];
+  return {
+    subject: `We received your quotation request ${d.reference} | ${BRAND}`,
+    text: `Hello ${name},\n\nThank you. We have received your request for a quotation. Please quote the reference below if you write to us about it.\n\n${textRows(rows)}\n\nOur team will review it and reply by email with availability and pricing.\n\n${FORM_FOOTER}\n`,
+    html: layout("We received your quotation request", p(`Hello ${esc(name)},`) + p("Thank you. We have received your request for a quotation. Please quote the reference below if you write to us about it.") + summary(rows) +
+      p("Our team will review it and reply by email with availability and pricing."), FORM_FOOTER),
+  };
+}
+
+export function applicationReceivedEmail(name: string, position: string): Rendered {
+  const rows: [string, string][] = [["Position", position]];
+  return {
+    subject: `We received your application | ${BRAND}`,
+    text: `Hello ${name},\n\nThank you for applying to ${BRAND}. We have received your application and will contact you if your profile matches the role.\n\n${textRows(rows)}\n\n${FORM_FOOTER}\n`,
+    html: layout("We received your application", p(`Hello ${esc(name)},`) + p(`Thank you for applying to ${esc(BRAND)}. We have received your application and will contact you if your profile matches the role.`) + summary(rows), FORM_FOOTER),
   };
 }

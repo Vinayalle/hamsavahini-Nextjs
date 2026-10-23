@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import { getDb } from "../db";
 import { cleanHtml } from "../resources/sanitize";
+import { CONTACT } from "@/content/site";
 
 /**
  * Read-only data for the PUBLIC website. Nothing here needs a session, so every query is limited to what an editor has deliberately
@@ -26,53 +27,15 @@ const iso = (d: Date | null | undefined) => (d ? d.toISOString() : null);
 const ymd = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : null);
 const num = (d: { toString(): string } | null | undefined) => (d == null ? null : Number(d.toString()));
 
-/* ───────────── Website settings (Admin -> Settings) ───────────── */
+/* ───────────── Contact details (fixed in the code: src/content/site.ts) ───────────── */
 export interface PublicSettings {
-  siteName: string;
-  tagline: string;
   email: string;
   phone: string;
   address: string;
-  socials: { linkedin: string; twitter: string; facebook: string; youtube: string };
-  footerAbout: string;
-  copyright: string;
 }
-const EMPTY_SETTINGS: PublicSettings = {
-  siteName: "", tagline: "", email: "", phone: "", address: "", socials: { linkedin: "", twitter: "", facebook: "", youtube: "" }, footerAbout: "", copyright: "",
-};
-const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
-
-export async function getPublicSettings(): Promise<PublicSettings> {
-  const { data } = await loadPublic(async () => {
-    // The admin stores each section as SiteSetting `site.<section>` (see services/settings.ts).
-    const rows = await db().siteSetting.findMany({ where: { key: { in: ["site.general", "site.contact", "site.footer"] } } });
-    return Object.fromEntries(rows.map((r) => [r.key.slice("site.".length), r.value as Record<string, unknown>]));
-  }, {} as Record<string, Record<string, unknown>>);
-  const g = data.general ?? {}, c = data.contact ?? {}, f = data.footer ?? {};
-  const s = (c.socials ?? {}) as Record<string, unknown>;
-  const url = (v: unknown) => (/^https?:\/\//i.test(str(v)) ? str(v) : "");
-  return {
-    ...EMPTY_SETTINGS,
-    siteName: str(g.siteName), tagline: str(g.tagline),
-    email: str(c.primaryEmail), phone: str(c.primaryPhone), address: str(c.address),
-    socials: { linkedin: url(s.linkedin), twitter: url(s.twitter), facebook: url(s.facebook), youtube: url(s.youtube) },
-    footerAbout: str(f.aboutText), copyright: str(f.copyright),
-  };
-}
-
-/** Kept on globalThis so the admin's "save settings" (a different route bundle) clears the very same cache the pages read. */
-const cacheHolder = globalThis as unknown as { __hvSiteSettings?: { at: number; value: PublicSettings } | null };
-/** The settings every page needs (footer, contact details), cached briefly so a page view does not always hit the database. */
+/** The details every page needs (footer, Contact Us, privacy policy, search-engine data). Fixed in the code, never read from the database. */
 export async function getSiteSettings(): Promise<PublicSettings> {
-  const cached = cacheHolder.__hvSiteSettings;
-  if (process.env.NODE_ENV !== "test" && cached && Date.now() - cached.at < 30_000) return cached.value;
-  const value = await getPublicSettings();
-  cacheHolder.__hvSiteSettings = { at: Date.now(), value };
-  return value;
-}
-/** Called when an editor saves website settings, so the change shows on the website straight away. */
-export function clearSiteSettingsCache() {
-  cacheHolder.__hvSiteSettings = null;
+  return { email: CONTACT.email.trim(), phone: CONTACT.phone.trim(), address: CONTACT.address.trim() };
 }
 
 /* ───────────── Posts (Insights) ───────────── */
@@ -126,7 +89,7 @@ export interface CategoryCard { slug: string; name: string; description: string;
 export interface ProductCard { slug: string; code: string; name: string; category: string; categorySlug: string; shortDescription: string; availability: string; grade: string | null; origin: string | null; featured: boolean; /** Primary picture (public image route), or null when the product has none. */ image: string | null }
 export interface ProductFull extends ProductCard {
   description: string; applications: string[]; packaging: string | null; loadingPort: string | null; targetMarket: string | null; quantity: string | null;
-  specifications: { label: string; value: string; unit: string | null }[]; metaTitle: string; metaDescription: string;
+  specifications: { label: string; value: string; unit: string | null }[];
   /** Every public picture of the product, primary first. */
   gallery: { url: string; alt: string }[];
 }
@@ -166,13 +129,13 @@ export async function listRecentProducts(take = 6): Promise<ProductCard[]> {
 export async function getProduct(slug: string): Promise<ProductFull | null> {
   const p = await db().product.findFirst({
     where: { ...productWhere, slug },
-    select: { ...productSelect, images: { where: { file: { visibility: "public", scanStatus: { not: "quarantined" } } }, orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], select: { fileId: true, alt: true } }, description: true, applications: true, packaging: true, loadingPort: true, targetMarket: true, availableQuantity: true, quantityUnit: true, metaTitle: true, metaDescription: true, specifications: { orderBy: { sortOrder: "asc" }, select: { label: true, value: true, unit: true } } },
+    select: { ...productSelect, images: { where: { file: { visibility: "public", scanStatus: { not: "quarantined" } } }, orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], select: { fileId: true, alt: true } }, description: true, applications: true, packaging: true, loadingPort: true, targetMarket: true, availableQuantity: true, quantityUnit: true, specifications: { orderBy: { sortOrder: "asc" }, select: { label: true, value: true, unit: true } } },
   });
   if (!p) return null;
   const q = num(p.availableQuantity);
   return {
     ...toProductCard(p), description: p.description, applications: p.applications, packaging: p.packaging, loadingPort: p.loadingPort, targetMarket: p.targetMarket,
-    quantity: q !== null ? `${q.toLocaleString("en-US")} ${p.quantityUnit ?? ""}`.trim() : null, specifications: p.specifications, metaTitle: p.metaTitle, metaDescription: p.metaDescription,
+    quantity: q !== null ? `${q.toLocaleString("en-US")} ${p.quantityUnit ?? ""}`.trim() : null, specifications: p.specifications,
     gallery: p.images.map((i) => ({ url: `/api/public/product-image/${i.fileId}`, alt: i.alt || p.name })),
   };
 }

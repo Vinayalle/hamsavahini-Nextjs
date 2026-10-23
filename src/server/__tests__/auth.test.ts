@@ -1,4 +1,6 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { hash } from "@node-rs/argon2";
 import { getDb } from "@/server/db";
 import { issueUserToken } from "@/server/account";
@@ -8,16 +10,12 @@ import { resetAuthConfigForTests } from "@/server/config";
 import { sourceKey } from "@/server/ratelimit";
 import { hashToken } from "@/server/security";
 import { signAccessToken, signPendingMfaToken } from "@/server/tokens";
-import { totpAt } from "@/server/totp";
-import { PASSWORD, call, cookieHeader, cookieJar, enrolMfa, ensurePermissions, freshStep, loginSession, makeRole, makeUser, totpFor } from "./helpers";
+import { PASSWORD, call, cookieHeader, cookieJar, ensurePermissions, loginSession, makeRole, makeUser } from "./helpers";
 import * as login from "@/app/api/auth/login/route";
 import * as logout from "@/app/api/auth/logout/route";
 import * as refresh from "@/app/api/auth/refresh/route";
 import * as me from "@/app/api/auth/me/route";
 import * as mfaVerify from "@/app/api/auth/mfa/verify/route";
-import * as mfaStart from "@/app/api/auth/mfa/enroll/start/route";
-import * as mfaConfirm from "@/app/api/auth/mfa/enroll/confirm/route";
-import * as mfaSelf from "@/app/api/auth/mfa/route";
 import * as reauth from "@/app/api/auth/reauth/route";
 import * as reqOtp from "@/app/api/auth/activate/request-otp/route";
 import * as verOtp from "@/app/api/auth/activate/verify-otp/route";
@@ -27,7 +25,6 @@ import * as forgot from "@/app/api/auth/password/forgot/route";
 import * as reset from "@/app/api/auth/password/reset/route";
 import * as users from "@/app/api/users/route";
 import * as userStatus from "@/app/api/users/[id]/status/route";
-import * as mfaReset from "@/app/api/users/[id]/mfa-reset/route";
 import * as products from "@/app/api/products/route";
 
 type H = Parameters<typeof call>[0];
@@ -114,7 +111,6 @@ beforeEach(async () => {
   await d.session.deleteMany();
   await d.authChallenge.deleteMany();
   await d.adminUser.updateMany({ data: { failedLoginCount: 0, lockedUntil: null } });
-  await d.mfaCredential.deleteMany({ where: { userId: { notIn: [ids.sa, ids.admin] } } });
   vi.restoreAllMocks();
 });
 
@@ -161,13 +157,12 @@ describe("first-time activation", () => {
     expect(await db().userToken.count({ where: { userId: row.id, usedAt: null } })).toBe(0);
     expect(await db().activityLog.count({ where: { action: "account_activated", entityId: row.id } })).toBe(1);
 
-    // subsequent logins need only email + password: no new OTP challenge is created
-    const before = await db().authChallenge.count();
+    // the next sign-in is password + a fresh emailed code
+    sink.length = 0;
     const next = await post(login.POST as H, "/api/auth/login", { email: "nora@t.dev", password: NEW_PASSWORD });
     expect(next.status).toBe(200);
-    expect(next.data.status).toBe("authenticated");
-    expect(await db().authChallenge.count()).toBe(before);
-    expect(mailTo("nora@t.dev")!.subject).toMatch(/active|verification|invited/i);
+    expect(next.data.status).toBe("mfa_required");
+    expect(mailTo("nora@t.dev")!.subject).toMatch(/sign-in code/i);
   });
 
   it("stores only a keyed digest of the code, never the code", async () => {
@@ -303,14 +298,17 @@ describe("first-time activation", () => {
 
 /* ═══════════════════ password login ═══════════════════ */
 describe("password login", () => {
-  it("signs in with email + password only (no OTP) and sets HttpOnly cookies without leaking tokens in the body", async () => {
+  it("a correct password only starts the sign-in: it emails a code and issues no session, without leaking tokens in the body", async () => {
     const r = await post(login.POST as H, "/api/auth/login", { email: "PLAIN@t.dev", password: PASSWORD });
     expect(r.status).toBe(200);
-    expect(r.data.status).toBe("authenticated");
+    expect(r.data.status).toBe("mfa_required");
+    expect(r.data.maskedEmail).toMatch(/^p\*+@t\.dev$/);
     expect(JSON.stringify(r.data)).not.toMatch(/eyJ|hash|argon|token/i);
     const lines = r.headers.getSetCookie();
-    expect(lines.filter((l) => l.startsWith("hv_at=") || l.startsWith("hv_rt=")).every((l) => /HttpOnly/.test(l))).toBe(true);
-    expect(await db().authChallenge.count()).toBe(0);
+    expect(lines.map((l) => l.split("=")[0])).toEqual(["hv_mfa"]); // only the pending proof, no access or refresh cookie
+    expect(lines.every((l) => /HttpOnly/.test(l))).toBe(true);
+    expect(await db().authChallenge.count({ where: { userId: ids.plain, purpose: "login" } })).toBe(1);
+    expect(mailTo("plain@t.dev")).toBeTruthy();
   });
 
   it("returns one generic answer for wrong password, unknown, deactivated, not-yet-activated and locked accounts", async () => {
@@ -518,21 +516,19 @@ describe("refresh-token rotation", () => {
 });
 
 /* ═══════════════════ MFA ═══════════════════ */
-describe("MFA", () => {
-  it("is mandatory for Super Admins and Admins: password alone issues no session", async () => {
-    for (const email of ["sa@t.dev", "adm@t.dev"]) {
+describe("second step: the emailed code", () => {
+  it("is mandatory for everyone: a password alone issues no session", async () => {
+    for (const email of ["sa@t.dev", "adm@t.dev", "plain@t.dev"]) {
       const r = await post(login.POST as H, "/api/auth/login", { email, password: PASSWORD });
       expect(r.data.status).toBe("mfa_required");
-      const names = r.headers.getSetCookie().map((c) => c.split("=")[0]);
-      expect(names).toEqual(["hv_mfa"]);
+      expect(r.headers.getSetCookie().map((c) => c.split("=")[0])).toEqual(["hv_mfa"]);
       const jar = cookieJar(r);
       expect((await get(me.GET as H, "/api/auth/me", `hv_at=${jar.hv_mfa}`)).status).toBe(401); // the pending proof is not a session
       expect((await get(me.GET as H, "/api/auth/me", cookieHeader(jar))).status).toBe(401);
     }
-    expect((await post(login.POST as H, "/api/auth/login", { email: "plain@t.dev", password: PASSWORD })).data.status).toBe("authenticated");
   });
 
-  it("blocks an admin session that never completed MFA (defence against policy drift)", async () => {
+  it("blocks a session that never completed the emailed code (defence against a planted session)", async () => {
     const s = await db().session.create({ data: { userId: ids.admin, expiresAt: new Date(Date.now() + 3600_000) } });
     const token = await signAccessToken({ sub: ids.admin, sid: s.id });
     expect((await get(me.GET as H, "/api/auth/me", `hv_at=${token}`)).status).toBe(401);
@@ -540,114 +536,29 @@ describe("MFA", () => {
     expect((await get(me.GET as H, "/api/auth/me", `hv_at=${token}`)).status).toBe(200);
   });
 
-  it("verification: wrong code refused, replay of an accepted code refused, next step accepted", async () => {
-    const pending = async () => cookieJar(await post(login.POST as H, "/api/auth/login", { email: "adm@t.dev", password: PASSWORD }));
-    await freshStep(ids.admin);
-    let jar = await pending();
-    const wrong = totpFor(ids.admin) === "000000" ? "111111" : "000000";
+  it("verification: a wrong code is refused, the right code works once, and without the pending proof nothing works", async () => {
+    const start = async () => cookieJar(await post(login.POST as H, "/api/auth/login", { email: "adm@t.dev", password: PASSWORD }));
+    let jar = await start();
+    const code = otpOf(mailTo("adm@t.dev")!);
+    const wrong = code === "000000" ? "111111" : "000000";
     expect((await post(mfaVerify.POST as H, "/api/auth/mfa/verify", { code: wrong }, { cookie: cookieHeader(jar) })).status).toBe(401);
-    const ok = await post(mfaVerify.POST as H, "/api/auth/mfa/verify", { code: totpFor(ids.admin) }, { cookie: cookieHeader(jar) });
+    const ok = await post(mfaVerify.POST as H, "/api/auth/mfa/verify", { code }, { cookie: cookieHeader(jar) });
     expect(ok.status).toBe(200);
     expect(Object.keys(cookieJar(ok))).toEqual(expect.arrayContaining(["hv_at", "hv_rt"]));
-    jar = await pending();
-    const replay = await post(mfaVerify.POST as H, "/api/auth/mfa/verify", { code: totpFor(ids.admin) }, { cookie: cookieHeader(jar) });
-    expect(replay.status).toBe(401); // same time-step already used
-    const next = await post(mfaVerify.POST as H, "/api/auth/mfa/verify", { code: totpFor(ids.admin, 1) }, { cookie: cookieHeader(jar) });
-    expect(next.status).toBe(200);
-    expect((await post(mfaVerify.POST as H, "/api/auth/mfa/verify", { code: totpFor(ids.admin, 1) })).status).toBe(401); // no pending proof at all
+    expect(JSON.stringify(ok.data)).not.toMatch(/recovery/i);
+    jar = await start();
+    expect((await post(mfaVerify.POST as H, "/api/auth/mfa/verify", { code }, { cookie: cookieHeader(jar) })).status).toBe(401); // the used code does not work again
+    expect((await post(mfaVerify.POST as H, "/api/auth/mfa/verify", { code })).status).toBe(401); // no pending proof at all
   });
 
-  it("rate limits code guessing", async () => {
-    const jar = cookieJar(await post(login.POST as H, "/api/auth/login", { email: "adm@t.dev", password: PASSWORD }));
-    const out = [];
-    for (let i = 0; i < 12; i++) out.push((await post(mfaVerify.POST as H, "/api/auth/mfa/verify", { code: "000000" }, { cookie: cookieHeader(jar) })).status);
-    expect(out.slice(0, 10).every((s) => s === 401 || s === 200)).toBe(true);
-    expect(out[11]).toBe(429);
-    expect(await db().activityLog.count({ where: { action: "mfa_failed" } })).toBeGreaterThanOrEqual(5);
-  });
-
-  it("enrolment: secret is encrypted at rest, recovery codes are hashed and shown once, enrolling signs the user in", async () => {
-    const u = await makeUser("newadmin@t.dev", roleIds.admin, "active", PASSWORD, { name: "Nia Fresh" });
-    await db().mfaCredential.deleteMany({ where: { userId: u.id } });
-    const l = await post(login.POST as H, "/api/auth/login", { email: "newadmin@t.dev", password: PASSWORD });
-    expect(l.data).toEqual({ status: "mfa_required", method: "totp", enrolled: false });
-    const jar = cookieJar(l);
-    const start = await post(mfaStart.POST as H, "/api/auth/mfa/enroll/start", {}, { cookie: cookieHeader(jar) });
-    expect(start.status).toBe(200);
-    const secret: string = start.data.secret;
-    seenSecrets.add(secret);
-    expect(start.data.otpauthUri).toContain(`secret=${secret}`);
-    expect(start.data.qrDataUrl).toMatch(/^data:image\/png;base64,/);
-    const stored = await db().mfaCredential.findUniqueOrThrow({ where: { userId: u.id } });
-    expect(stored.secretEnc).not.toContain(secret);
-    expect(stored.enabledAt).toBeNull();
-    // before confirmation the login is still not complete
-    expect((await post(login.POST as H, "/api/auth/login", { email: "newadmin@t.dev", password: PASSWORD })).data.enrolled).toBe(false);
-    expect((await post(mfaConfirm.POST as H, "/api/auth/mfa/enroll/confirm", { code: "000000" }, { cookie: cookieHeader(jar) })).status).toBe(401);
-    const done = await post(mfaConfirm.POST as H, "/api/auth/mfa/enroll/confirm", { code: totpAt(secret, Date.now()) }, { cookie: cookieHeader(jar) });
-    expect(done.status).toBe(200);
-    expect(done.data.status).toBe("authenticated");
-    expect(done.data.recoveryCodes).toHaveLength(10);
-    for (const c of done.data.recoveryCodes) {
-      expect(c).toMatch(/^[A-Z2-7]{5}-[A-Z2-7]{5}$/);
-      seenSecrets.add(c);
+  it("there is no authenticator app: its enrolment, recovery-code and reset endpoints no longer exist", async () => {
+    for (const path of ["app/api/auth/mfa/enroll/start", "app/api/auth/mfa/enroll/confirm", "app/api/auth/mfa/recovery-codes", "app/api/auth/mfa/route.ts"]) {
+      expect(existsSync(join(process.cwd(), "src", path))).toBe(false);
     }
-    const rows = await db().mfaRecoveryCode.findMany({ where: { userId: u.id } });
-    expect(rows).toHaveLength(10);
-    expect(JSON.stringify(rows)).not.toContain(done.data.recoveryCodes[0]);
-    const session = cookieJar(done);
-    const who = await get(me.GET as H, "/api/auth/me", asAccess(session));
-    expect(who.data.mfa).toEqual({ method: "totp", enabled: true, required: true, recoveryCodesRemaining: 10 });
-    expect(JSON.stringify(who.data)).not.toContain(secret);
-    expect((await post(mfaStart.POST as H, "/api/auth/mfa/enroll/start", {}, { cookie: asAccess(session) })).status).toBe(409); // cannot silently re-enrol
-    expect(await db().activityLog.count({ where: { action: "mfa_enrolled", entityId: u.id } })).toBe(1);
-    expect(sink.some((m) => m.to === "newadmin@t.dev" && /Two-factor authentication enabled/.test(m.subject))).toBe(true);
-
-    // recovery code: works once
-    const again = cookieJar(await post(login.POST as H, "/api/auth/login", { email: "newadmin@t.dev", password: PASSWORD }));
-    const code0 = done.data.recoveryCodes[0].toLowerCase().replace("-", " ");
-    const rec = await post(mfaVerify.POST as H, "/api/auth/mfa/verify", { recoveryCode: code0 }, { cookie: cookieHeader(again) });
-    expect(rec.status).toBe(200);
-    expect(rec.data.recoveryCodesRemaining).toBe(9);
-    const again2 = cookieJar(await post(login.POST as H, "/api/auth/login", { email: "newadmin@t.dev", password: PASSWORD }));
-    expect((await post(mfaVerify.POST as H, "/api/auth/mfa/verify", { recoveryCode: done.data.recoveryCodes[0] }, { cookie: cookieHeader(again2) })).status).toBe(401);
+    expect(JSON.stringify((await get(me.GET as H, "/api/auth/me", asAccess(await loginSession("plain@t.dev")))).data)).not.toMatch(/mfa|totp|recovery/i);
   });
 
-  it("a user whose roles do not require MFA can enrol and later disable it; an admin cannot disable it", async () => {
-    const jar = await loginSession("plain@t.dev");
-    const c = asAccess(jar);
-    const start = await post(mfaStart.POST as H, "/api/auth/mfa/enroll/start", {}, { cookie: c });
-    const confirm = await post(mfaConfirm.POST as H, "/api/auth/mfa/enroll/confirm", { code: totpAt(start.data.secret, Date.now()) }, { cookie: c });
-    expect(confirm.status).toBe(200);
-    expect((await call(mfaSelf.DELETE as H, { method: "DELETE", url: "/api/auth/mfa", cookie: c })).status).toBe(200);
-    expect(await db().mfaCredential.count({ where: { userId: ids.plain } })).toBe(0);
-
-    const admin = asAccess(await loginSession("adm@t.dev"));
-    expect((await call(mfaSelf.DELETE as H, { method: "DELETE", url: "/api/auth/mfa", cookie: admin })).status).toBe(403);
-    expect(await db().mfaCredential.count({ where: { userId: ids.admin } })).toBe(1);
-  });
-
-  it("only a Super Admin can reset someone else's MFA: an Admin with user-edit rights cannot, nobody can reset their own", async () => {
-    const victim = await makeUser("victim@t.dev", roleIds.admin, "active", PASSWORD, { name: "Vic Tim" });
-    const adminCookie = asAccess(await loginSession("adm@t.dev"));
-    const saCookie = asAccess(await loginSession("sa@t.dev"));
-    const victimJar = await loginSession("victim@t.dev");
-    const url = `/api/users/${victim.id}/mfa-reset`;
-    expect((await call(mfaReset.POST as H, { method: "POST", url, cookie: adminCookie, body: {}, params: { id: victim.id } })).status).toBe(403);
-    expect((await call(mfaReset.POST as H, { method: "POST", url, cookie: undefined, body: {}, params: { id: victim.id } })).status).toBe(401);
-    expect((await call(mfaReset.POST as H, { method: "POST", url: `/api/users/${ids.sa}/mfa-reset`, cookie: saCookie, body: {}, params: { id: ids.sa } })).status).toBe(403);
-    expect(await db().mfaCredential.count({ where: { userId: victim.id } })).toBe(1);
-    const ok = await call(mfaReset.POST as H, { method: "POST", url, cookie: saCookie, body: {}, params: { id: victim.id } });
-    expect(ok.status).toBe(200);
-    expect(await db().mfaCredential.count({ where: { userId: victim.id } })).toBe(0);
-    expect(await db().mfaRecoveryCode.count({ where: { userId: victim.id } })).toBe(0);
-    expect((await get(me.GET as H, "/api/auth/me", asAccess(victimJar))).status).toBe(401); // sessions revoked
-    expect((await post(login.POST as H, "/api/auth/login", { email: "victim@t.dev", password: PASSWORD })).data.enrolled).toBe(false); // must re-enrol
-    expect(await db().activityLog.count({ where: { action: "mfa_reset", entityId: victim.id } })).toBe(1);
-    expect(sink.some((m) => m.to === "victim@t.dev" && /reset/i.test(m.subject))).toBe(true);
-  });
-
-  it("step-up: high-risk operations need a recent re-authentication (password + second factor)", async () => {
+  it("step-up: high-risk operations need a recent re-authentication with the password", async () => {
     const target = await newStaff();
     const jar = await loginSession("sa@t.dev");
     const c = asAccess(jar);
@@ -657,10 +568,7 @@ describe("MFA", () => {
     expect(denied.status).toBe(403);
     expect(denied.data.error.code).toBe("reauth_required");
     expect((await post(reauth.POST as H, "/api/auth/reauth", { password: "wrong-password-1A!" }, { cookie: c })).status).toBe(401);
-    await freshStep(ids.sa);
-    expect((await post(reauth.POST as H, "/api/auth/reauth", { password: PASSWORD }, { cookie: c })).status).toBe(401); // second factor missing
-    await freshStep(ids.sa);
-    expect((await post(reauth.POST as H, "/api/auth/reauth", { password: PASSWORD, code: totpFor(ids.sa) }, { cookie: c })).status).toBe(200);
+    expect((await post(reauth.POST as H, "/api/auth/reauth", { password: PASSWORD }, { cookie: c })).status).toBe(200);
     expect((await statusCall()).status).toBe(200);
     expect(await db().activityLog.count({ where: { action: "reauth" } })).toBe(1);
   });
@@ -672,14 +580,6 @@ describe("MFA", () => {
     const r = await call(userStatus.POST as H, { method: "POST", url: `/api/users/${target.id}/status`, cookie: staff, body: { status: "suspended" }, params: { id: target.id } });
     expect(r.status).toBe(403);
     expect(r.data.error.code).toBe("forbidden");
-  });
-
-  it("can be enrolled directly in tests but the helper secret never reaches the API (sanity)", async () => {
-    const secret = await enrolMfa(ids.plain);
-    seenSecrets.add(secret);
-    const jar = await loginSession("plain@t.dev");
-    expect(JSON.stringify((await get(me.GET as H, "/api/auth/me", asAccess(jar))).data)).not.toContain(secret);
-    await db().mfaCredential.deleteMany({ where: { userId: ids.plain } });
   });
 });
 
@@ -738,7 +638,7 @@ describe("password reset", () => {
     expect(expired.data.error.message).toBe(unknown.data.error.message);
   });
 
-  it("does not bypass MFA: an admin who resets a password must still complete the second factor", async () => {
+  it("does not bypass the second step: an admin who resets a password must still enter the emailed code", async () => {
     await post(forgot.POST as H, "/api/auth/password/forgot", { email: "adm@t.dev" });
     const token = resetTokenOf(mailTo("adm@t.dev")!);
     expect((await post(reset.POST as H, "/api/auth/password/reset", { token, password: NEW_PASSWORD })).status).toBe(200);
@@ -771,9 +671,8 @@ describe("CSRF and request hygiene", () => {
     expect((await post(handler, url, "a=b", { contentType: "application/x-www-form-urlencoded" })).status).toBe(415);
   });
   it("protected endpoints answer 401 without a session", async () => {
-    for (const h of [me.GET, mfaSelf.GET]) expect((await get(h as H, "/api/x")).status).toBe(401);
+    for (const h of [me.GET]) expect((await get(h as H, "/api/x")).status).toBe(401);
     expect((await post(reauth.POST as H, "/api/auth/reauth", { password: "x" })).status).toBe(401);
-    expect((await post(mfaStart.POST as H, "/api/auth/mfa/enroll/start", {})).status).toBe(401);
   });
   it("internal errors never leak details", async () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
@@ -785,14 +684,14 @@ describe("CSRF and request hygiene", () => {
 
 /* ═══════════════════ nothing sensitive is stored or logged ═══════════════════ */
 describe("no sensitive data in logs, audit trails or notification records", () => {
-  it("never persisted any OTP, reset token, recovery code, TOTP secret or password in a log/audit table", async () => {
+  it("never persisted any OTP, reset token or password in a log/audit table", async () => {
     expect(seenSecrets.size).toBeGreaterThan(5);
     const json = (v: unknown) => JSON.stringify(v, (_k, x) => (typeof x === "bigint" ? x.toString() : x));
     const dump = json([
       await db().activityLog.findMany(), await db().notificationLog.findMany(), await db().permissionChangeLog.findMany(), await db().authChallenge.findMany(), await db().rateLimit.findMany(),
     ]);
     for (const secret of seenSecrets) expect(dump, "a secret value reached a stored log").not.toContain(secret);
-    const stored = json([await db().adminUser.findMany(), await db().userToken.findMany(), await db().mfaCredential.findMany(), await db().mfaRecoveryCode.findMany(), await db().refreshToken.findMany()]);
+    const stored = json([await db().adminUser.findMany(), await db().userToken.findMany(), await db().refreshToken.findMany()]);
     for (const secret of seenSecrets) expect(stored, "a plaintext secret was stored").not.toContain(secret);
   });
   it("the server writes nothing sensitive to the console", async () => {

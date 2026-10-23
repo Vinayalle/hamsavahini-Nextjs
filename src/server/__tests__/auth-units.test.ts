@@ -2,13 +2,12 @@ import { afterEach, describe, expect, it } from "vitest";
 import { SignJWT } from "jose";
 import { hash } from "@node-rs/argon2";
 import { getAuthConfig, resetAuthConfigForTests } from "@/server/config";
-import { decryptSecret, encryptSecret, keyedDigest, randomDigits, randomToken, safeEqualHex } from "@/server/crypto";
+import { keyedDigest, randomDigits, randomToken, safeEqualHex } from "@/server/crypto";
 import { signAccessToken, signPendingMfaToken, verifyAccessToken, verifyPendingMfaToken } from "@/server/tokens";
 import { hashPassword, passwordNeedsRehash, verifyPassword } from "@/server/security";
-import { base32Decode, base32Encode, hotp, matchTotp, otpauthUri, stepAt, totpAt } from "@/server/totp";
 import { lockDurationMs } from "@/server/auth";
 
-const ENV_KEYS = ["AUTH_JWT_SECRET", "AUTH_OTP_PEPPER", "AUTH_ENCRYPTION_KEY", "AUTH_ARGON_MEMORY_KIB", "AUTH_ARGON_TIME_COST", "NODE_ENV"] as const;
+const ENV_KEYS = ["AUTH_JWT_SECRET", "AUTH_OTP_PEPPER", "AUTH_ARGON_MEMORY_KIB", "AUTH_ARGON_TIME_COST", "NODE_ENV"] as const;
 const saved = Object.fromEntries(ENV_KEYS.map((k) => [k, process.env[k]]));
 const env = process.env as Record<string, string | undefined>;
 afterEach(() => {
@@ -19,73 +18,7 @@ afterEach(() => {
   resetAuthConfigForTests();
 });
 
-/* ───────────────────────── TOTP (RFC 6238 / RFC 4226) ───────────────────────── */
-describe("TOTP", () => {
-  // RFC 6238 Appendix B, SHA-1 secret "12345678901234567890"
-  const secret = base32Encode(Buffer.from("12345678901234567890"));
-  it.each([
-    [59, "94287082"],
-    [1111111109, "07081804"],
-    [1111111111, "14050471"],
-    [1234567890, "89005924"],
-    [2000000000, "69279037"],
-  ])("matches the RFC 6238 test vector at t=%i", (t, expected) => {
-    expect(totpAt(secret, t * 1000, 8)).toBe(expected);
-  });
-  it("matches the RFC 4226 HOTP vectors", () => {
-    const key = Buffer.from("12345678901234567890");
-    expect([0, 1, 2, 3].map((c) => hotp(key, c))).toEqual(["755224", "287082", "359152", "969429"]);
-  });
-  it("base32 round-trips", () => {
-    for (const n of [1, 5, 10, 20, 33]) {
-      const buf = Buffer.from(Array.from({ length: n }, (_, i) => (i * 37 + 11) % 256));
-      expect(base32Decode(base32Encode(buf)).equals(buf)).toBe(true);
-    }
-  });
-  it("accepts the current step and one step of drift, nothing further", () => {
-    const now = 1_700_000_000_000;
-    const step = stepAt(now);
-    expect(matchTotp(secret, totpAt(secret, now), now)).toBe(step);
-    expect(matchTotp(secret, totpAt(secret, now - 30_000), now)).toBe(step - 1);
-    expect(matchTotp(secret, totpAt(secret, now + 30_000), now)).toBe(step + 1);
-    expect(matchTotp(secret, totpAt(secret, now - 90_000), now)).toBeNull();
-    expect(matchTotp(secret, totpAt(secret, now + 90_000), now)).toBeNull();
-  });
-  it("rejects malformed codes", () => {
-    for (const bad of ["", "12345", "1234567", "abcdef", "12 3456", "١٢٣٤٥٦"]) expect(matchTotp(secret, bad, Date.now())).toBeNull();
-  });
-  it("builds an otpauth URI without the account password and with the issuer", () => {
-    const uri = otpauthUri("JBSWY3DPEHPK3PXP", "a@b.co", "Hamsavahin Admin");
-    expect(uri).toMatch(/^otpauth:\/\/totp\//);
-    expect(uri).toContain("secret=JBSWY3DPEHPK3PXP");
-    expect(uri).toContain("issuer=Hamsavahin%20Admin");
-  });
-});
-
-/* ───────────────────────── encryption + keyed digests ───────────────────────── */
-describe("AES-256-GCM and keyed digests", () => {
-  it("round-trips and uses a fresh IV every time", () => {
-    const a = encryptSecret("JBSWY3DPEHPK3PXP", "user-1");
-    const b = encryptSecret("JBSWY3DPEHPK3PXP", "user-1");
-    expect(a).not.toBe(b);
-    expect(a).not.toContain("JBSWY3DPEHPK3PXP");
-    expect(a.startsWith("v1.")).toBe(true);
-    expect(decryptSecret(a, "user-1")).toBe("JBSWY3DPEHPK3PXP");
-  });
-  it("detects tampering and a wrong owner (authenticated encryption)", () => {
-    const enc = encryptSecret("top-secret", "user-1");
-    const parts = enc.split(".");
-    const flipped = [...parts.slice(0, 3), Buffer.from(Buffer.from(parts[3], "base64url").map((b, i) => (i === 0 ? b ^ 1 : b))).toString("base64url")].join(".");
-    expect(() => decryptSecret(flipped, "user-1")).toThrow();
-    expect(() => decryptSecret(enc, "user-2")).toThrow();
-    expect(() => decryptSecret("v9.a.b.c", "user-1")).toThrow();
-  });
-  it("cannot be decrypted with a different key", () => {
-    const enc = encryptSecret("top-secret", "u");
-    env.AUTH_ENCRYPTION_KEY = randomToken(32);
-    resetAuthConfigForTests();
-    expect(() => decryptSecret(enc, "u")).toThrow();
-  });
+describe("keyed digests and random codes", () => {
   it("keyed digests are deterministic, domain-separated and depend on the pepper", () => {
     expect(keyedDigest("otp", "a", "123456")).toBe(keyedDigest("otp", "a", "123456"));
     expect(keyedDigest("otp", "a", "123456")).not.toBe(keyedDigest("recovery", "a", "123456"));
@@ -190,17 +123,11 @@ describe("configuration validation", () => {
       expect(message).not.toContain(bad);
     }
   });
-  it("requires an exactly 32-byte encryption key", () => {
-    set("AUTH_ENCRYPTION_KEY", randomToken(16));
-    expect(() => getAuthConfig()).toThrow(/exactly 32/);
-    set("AUTH_ENCRYPTION_KEY", randomToken(48));
-    expect(() => getAuthConfig()).toThrow(/exactly 32/);
-  });
-  it("requires the three secrets to be different", () => {
+  it("requires the two secrets to be different", () => {
     const same = randomToken(32);
     set("AUTH_OTP_PEPPER", same);
     set("AUTH_JWT_SECRET", same);
-    expect(() => getAuthConfig()).toThrow(/three different/);
+    expect(() => getAuthConfig()).toThrow(/two different/);
   });
   it("uses the 64 MiB / 3 pass / 1 lane Argon2id parameters in production regardless of overrides", () => {
     delete env.AUTH_ARGON_MEMORY_KIB;

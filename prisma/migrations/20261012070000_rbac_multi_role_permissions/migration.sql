@@ -1,3 +1,4 @@
+
 -- RBAC upgrade: multiple roles per employee, page/action permission catalogue, individual overrides,
 -- employee profile fields, dashboard preferences and permission history.
 --

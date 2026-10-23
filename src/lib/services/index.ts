@@ -7,12 +7,12 @@ import {
   applicationsSeed, commoditiesSeed, commodityPricesSeed, enquiriesSeed, opportunitiesSeed, rfqsSeed,
 } from "@/lib/mock/data/trade";
 import {
-  activitySeed, documentsSeed, mediaSeed, notificationLogsSeed, rolesSeed, templatesSeed, usersSeed,
+  activitySeed, documentsSeed, mediaSeed, notificationLogsSeed, rolesSeed, usersSeed,
 } from "@/lib/mock/data/admin";
 import type { BaseEntity } from "@/types/common";
 import type {
   ActivityLog, AdminUser, Banner, Career, Category, Commodity, CommodityPrice, ContactEnquiry,
-  DocumentFile, EmailTemplate, JobApplication, Location, MediaAsset, NotificationLog, Post, Product,
+  DocumentFile, JobApplication, Location, MediaAsset, NotificationLog, Post, Product,
   Project, Rfq, Role, TradeOpportunity,
 } from "@/types/entities";
 
@@ -26,7 +26,7 @@ const productFilters = {
 };
 
 /** Fields the products API accepts. Pictures and documents go as file ids (the files were uploaded and saved inside the project). */
-const PRODUCT_WRITE_FIELDS = ["name", "code", "slug", "categoryId", "shortDescription", "description", "specifications", "seo", "status", "featured", "images", "documents"];
+const PRODUCT_WRITE_FIELDS = ["name", "code", "slug", "categoryId", "shortDescription", "description", "specifications", "status", "featured", "images", "documents"];
 function toProductPayload(v: Record<string, unknown>): Record<string, unknown> {
   const out = Object.fromEntries(Object.entries(v).filter(([k]) => PRODUCT_WRITE_FIELDS.includes(k)));
   if (Array.isArray(out.specifications)) out.specifications = (out.specifications as { label: string; value: string; unit?: string }[]).map(({ label, value, unit }) => ({ label, value, unit: unit || null }));
@@ -67,7 +67,6 @@ const ALLOWED: Record<string, string[]> = {
   "/api/rfqs": ["status", "assignedToId", "notes"],
   "/api/enquiries": ["status", "assignedToId", "notes"],
   "/api/applications": ["status", "notes"],
-  "/api/email-templates": ["key", "name", "subject", "body", "active"],
   "/api/notifications": ["status"],
   "/api/media": ["name", "altText", "folder"],
   "/api/documents": ["title", "category", "version", "visibility", "status"],
@@ -171,12 +170,6 @@ export const mediaService = mk<MediaAsset>("/api/media", mediaSeed, {
 export const documentService = mk<DocumentFile>("/api/documents", documentsSeed, {
   name: "documents", entityType: "Document", labelOf: (d) => d.title,
   searchFields: ["title", "fileName", "category"], statusField: "status",
-});
-
-export const templateService = mk<EmailTemplate>("/api/email-templates", templatesSeed, {
-  name: "templates", entityType: "Email template", labelOf: (t) => t.name,
-  searchFields: ["name", "key", "subject"], defaultSort: { by: "name", dir: "asc" },
-  filters: { active: (t, v) => String(t.active) === v },
 });
 
 export const notificationService = mk<NotificationLog>("/api/notifications", notificationLogsSeed, {

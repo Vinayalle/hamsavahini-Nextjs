@@ -71,7 +71,7 @@ export const dashboardInput = z.object({
 
 const employeeSelect = {
   id: true, employeeId: true, name: true, email: true, phone: true, department: true, designation: true, status: true,
-  lastLoginAt: true, createdAt: true, updatedAt: true, deactivatedAt: true, twoFactorEnabled: true,
+  lastLoginAt: true, createdAt: true, updatedAt: true, deactivatedAt: true,
   reportingManager: { select: { id: true, name: true } },
   roles: { select: { assignedAt: true, role: { select: { id: true, name: true, code: true, status: true } } } },
 } satisfies Prisma.AdminUserSelect;
@@ -80,7 +80,7 @@ type EmployeeRow = Prisma.AdminUserGetPayload<{ select: typeof employeeSelect }>
 export function toEmployeeDto(u: EmployeeRow, pageCount: number, isSuperAdmin: boolean) {
   return {
     id: u.id, employeeId: u.employeeId, name: u.name, email: u.email, phone: u.phone, department: u.department, designation: u.designation,
-    reportingManager: u.reportingManager, status: u.status, twoFactorEnabled: u.twoFactorEnabled,
+    reportingManager: u.reportingManager, status: u.status,
     roles: u.roles.map((r) => ({ id: r.role.id, name: r.role.name, code: r.role.code, status: r.role.status })),
     assignedPageCount: pageCount, isSuperAdmin,
     lastLoginAt: u.lastLoginAt?.toISOString() ?? null, createdAt: u.createdAt.toISOString(), updatedAt: u.updatedAt.toISOString(), deactivatedAt: u.deactivatedAt?.toISOString() ?? null,

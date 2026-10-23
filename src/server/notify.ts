@@ -47,3 +47,17 @@ export async function sendSecurityNotice(user: { name: string; email: string }, 
     /* ignore */
   }
 }
+
+/**
+ * Confirmation email to the person who filled in a public form. Sent after the response is written, so it never slows the form down,
+ * and it can never make the form fail: a send problem is recorded in NotificationLog and nothing else happens.
+ */
+export async function sendFormConfirmation(templateKey: string, to: string, message: Rendered): Promise<void> {
+  await deferDelivery(async () => {
+    try {
+      await deliver(templateKey, to, message);
+    } catch {
+      /* the submission is already saved; an email problem is not the visitor's problem */
+    }
+  });
+}

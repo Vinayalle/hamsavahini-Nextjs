@@ -58,11 +58,6 @@ export const productsSeed: Product[] = rows.map((r, i) => ({
     { id: `${r.id}_d1`, name: `${r.code}-datasheet.pdf`, type: "datasheet", sizeBytes: 240_000 + i * 17_000 },
     { id: `${r.id}_d2`, name: `${r.code}-coa-sample.pdf`, type: "coa", sizeBytes: 180_000 + i * 9_000 },
   ],
-  seo: {
-    metaTitle: `${r.name} | Hamsavahin`,
-    metaDescription: r.short,
-    keywords: [r.name.toLowerCase(), "bulk supply", "commodity trading"],
-  },
   status: r.status,
   featured: r.featured,
   publishedAt: r.status === "published" ? D("03-10") : null,

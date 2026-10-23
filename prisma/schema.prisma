@@ -332,7 +332,6 @@ model AdminUser {
   passwordHash       String?
   /// invited = pending invitation, active, suspended = deactivated. Only `active` accounts can sign in.
   status             UserStatus  @default(invited)
-  twoFactorEnabled   Boolean     @default(false)
   failedLoginCount   Int         @default(0)
   lockedUntil        DateTime?   @db.Timestamptz
   lastLoginAt        DateTime?   @db.Timestamptz
@@ -348,8 +347,6 @@ model AdminUser {
   overrides           UserPermissionOverride[] @relation("OverrideTarget")
   overridesCreated    UserPermissionOverride[] @relation("OverrideAuthor")
   dashboardPreference UserDashboardPreference?
-  mfaCredential       MfaCredential?
-  mfaRecoveryCodes    MfaRecoveryCode[]
   authChallenges      AuthChallenge[]
   sessions            Session[]
   tokens              UserToken[]
@@ -491,33 +488,7 @@ model AuthChallenge {
   @@index([userId, purpose, createdAt(sort: Desc)])
 }
 
-/// TOTP second factor. The shared secret is stored ENCRYPTED (AES-256-GCM, key from the environment) because the
-/// server must be able to recompute codes. `lastUsedStep` blocks replay of an already-accepted code.
-model MfaCredential {
-  userId       String    @id @db.Uuid
-  user         AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-  secretEnc    String
-  /// NULL while enrolment is pending (QR shown but not yet confirmed).
-  enabledAt    DateTime? @db.Timestamptz
-  lastUsedStep BigInt?
-  createdAt    DateTime  @default(now()) @db.Timestamptz
-  updatedAt    DateTime  @updatedAt @db.Timestamptz
-}
-
-/// One-time recovery codes. Stored as keyed digests (the codes are high-entropy random values), single use.
-model MfaRecoveryCode {
-  id         String    @id @default(uuid(7)) @db.Uuid
-  userId     String    @db.Uuid
-  user       AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-  codeDigest String
-  usedAt     DateTime? @db.Timestamptz
-  createdAt  DateTime  @default(now()) @db.Timestamptz
-
-  @@unique([userId, codeDigest])
-  @@index([userId])
-}
-
-/// Fixed-window counters shared by every app instance (login, OTP, recovery limits).
+/// Fixed-window counters shared by every app instance (login and emailed-code limits).
 model RateLimit {
   key         String   @id
   windowStart DateTime @db.Timestamptz
@@ -644,10 +615,6 @@ model Product {
   loadingPort      String?
   targetMarket     String?
   availability     AvailabilityStatus @default(available)
-  metaTitle        String        @default("")
-  metaDescription  String        @default("")
-  canonicalUrl     String?
-  keywords         String[]      @default([])
   createdAt        DateTime      @default(now()) @db.Timestamptz
   updatedAt        DateTime      @updatedAt @db.Timestamptz
 
@@ -1000,26 +967,9 @@ model EnquiryNote {
 
 // ───────────────────────── Notifications ─────────────────────────
 
-model EmailTemplate {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  /// Stable machine key the backend looks up, e.g. enquiry_ack. UNIQUE.
-  key       String   @unique
-  name      String
-  subject   String
-  body      String
-  variables String[] @default([])
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
-
-  logs NotificationLog[]
-}
-
 model NotificationLog {
   id                String             @id @default(uuid(7)) @db.Uuid
-  templateId        String?            @db.Uuid
-  template          EmailTemplate?     @relation(fields: [templateId], references: [id], onDelete: SetNull)
-  /// Snapshot so history stays readable if the template is renamed or deleted.
+  /// Which fixed email this was (enquiry_received, login_code, security_password_changed ...).
   templateKey       String
   recipient         String
   subject           String
@@ -1032,7 +982,6 @@ model NotificationLog {
 
   @@index([status, createdAt(sort: Desc)])
   @@index([recipient])
-  @@index([templateId])
 }
 
 // ───────────────────────── Audit & settings ─────────────────────────
@@ -1058,7 +1007,7 @@ model ActivityLog {
   @@index([actorId, createdAt(sort: Desc)])
 }
 
-/// One row per settings section: general | navigation | seo | contact | footer.
+/// Small JSON settings documents (for example the dashboard layout `dashboard_default`).
 /// `value` is validated against a Zod schema on write.
 model SiteSetting {
   key         String    @id
