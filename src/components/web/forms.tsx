@@ -13,6 +13,21 @@ type Phase = { kind: "idle" } | { kind: "sending" } | { kind: "done"; reference?
 
 const input = "w-full rounded-xl border border-neutral-300 bg-white px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition focus:border-gold-600 focus:outline-none focus:ring-4 focus:ring-gold-500/20 aria-[invalid=true]:border-red-600 disabled:bg-neutral-100";
 
+/** Names take letters only (spaces, dot, apostrophe and hyphen are fine); digits and other symbols are dropped as they are typed or pasted. */
+const NAME_JUNK = /[^\p{L}\p{M}\s.'\u2019-]/gu;
+const nameOnly = {
+  onInput: (e: FormEvent<HTMLInputElement>) => { const el = e.currentTarget; if (NAME_JUNK.test(el.value)) { NAME_JUNK.lastIndex = 0; el.value = el.value.replace(NAME_JUNK, ""); } NAME_JUNK.lastIndex = 0; },
+};
+/** Phone numbers take digits only, with an optional + at the start and spaces between groups; letters and other symbols are dropped. */
+const phoneOnly = {
+  inputMode: "tel" as const,
+  onInput: (e: FormEvent<HTMLInputElement>) => {
+    const el = e.currentTarget;
+    const v = el.value.replace(/[^\d+\s]/g, "").replace(/(?!^)\+/g, "");
+    if (v !== el.value) el.value = v;
+  },
+};
+
 /** Number fields accept no minus sign, plus sign or exponent: typed, pasted or stepped values can never go below zero. */
 const noNegative = {
   min: 0,
@@ -125,9 +140,9 @@ export function ContactForm({ source = "contact_page", defaultSubject = "" }: { 
     <form noValidate onSubmit={(e) => submit(e, (form) => { const f = new FormData(form); return { json: true, body: JSON.stringify({ name: val(f, "name"), email: val(f, "email"), phone: val(f, "phone"), company: val(f, "company"), subject: val(f, "subject"), message: val(f, "message"), source, consent: f.get("consent") === "on", website: val(f, "website") }) }; })} className="relative space-y-5" aria-label="Contact form">
       <Honeypot />
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Your name" name="name" required error={errors.name}>{(p) => <input {...p} name="name" type="text" autoComplete="name" required maxLength={100} className={`${input} h-12`} />}</Field>
+        <Field label="Your name" name="name" required error={errors.name}>{(p) => <input {...p} name="name" type="text" autoComplete="name" required maxLength={100} {...nameOnly} className={`${input} h-12`} />}</Field>
         <Field label="Email" name="email" required error={errors.email}>{(p) => <input {...p} name="email" type="email" autoComplete="email" required maxLength={160} className={`${input} h-12`} />}</Field>
-        <Field label="Phone" name="phone" error={errors.phone}>{(p) => <input {...p} name="phone" type="tel" autoComplete="tel" maxLength={30} className={`${input} h-12`} />}</Field>
+        <Field label="Phone" name="phone" error={errors.phone}>{(p) => <input {...p} name="phone" type="tel" autoComplete="tel" maxLength={30} {...phoneOnly} className={`${input} h-12`} />}</Field>
         <Field label="Company" name="company" error={errors.company}>{(p) => <input {...p} name="company" type="text" autoComplete="organization" maxLength={120} className={`${input} h-12`} />}</Field>
       </div>
       <Field label="Subject" name="subject" required error={errors.subject}>{(p) => <input {...p} name="subject" type="text" required maxLength={150} defaultValue={defaultSubject} className={`${input} h-12`} />}</Field>
@@ -135,6 +150,35 @@ export function ContactForm({ source = "contact_page", defaultSubject = "" }: { 
       <Consent error={errors.consent} />
       {formError && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{formError}</p>}
       <SubmitButton sending={sending}>Send message</SubmitButton>
+    </form>
+  );
+}
+
+/* ───────────── quote request for one product ───────────── */
+export function ProductQuoteForm({ productSlug, productName }: { productSlug: string; productName: string }) {
+  const { phase, errors, formError, submit } = useSubmit("/api/public/enquiries");
+  if (phase.kind === "done") return <Success title="Thank you, we have your request">We received your quote request for {productName} and will reply by email as soon as we can.</Success>;
+  const sending = phase.kind === "sending";
+  return (
+    <form
+      noValidate
+      aria-label={`Request a quote for ${productName}`}
+      onSubmit={(e) => submit(e, (form) => {
+        const f = new FormData(form);
+        return { json: true, body: JSON.stringify({ name: val(f, "name"), email: val(f, "email"), phone: val(f, "phone"), subject: `Quote request: ${productName}`, message: val(f, "message"), source: "product_page", productSlug, consent: f.get("consent") === "on", website: val(f, "website") }) };
+      })}
+      className="relative space-y-5"
+    >
+      <Honeypot />
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Field label="Your name" name="name" required error={errors.name}>{(p) => <input {...p} name="name" type="text" autoComplete="name" required maxLength={100} {...nameOnly} className={`${input} h-12`} />}</Field>
+        <Field label="Phone number" name="phone" required error={errors.phone}>{(p) => <input {...p} name="phone" type="tel" autoComplete="tel" required maxLength={30} {...phoneOnly} className={`${input} h-12`} />}</Field>
+      </div>
+      <Field label="Email" name="email" required error={errors.email}>{(p) => <input {...p} name="email" type="email" autoComplete="email" required maxLength={160} className={`${input} h-12`} />}</Field>
+      <Field label="Your requirements" name="message" required error={errors.message} hint="Write the quantity, the grade or size, where it must be delivered, and anything else we should know.">{(p) => <textarea {...p} name="message" required rows={5} maxLength={3500} className={`${input} py-3 leading-7`} />}</Field>
+      <Consent error={errors.consent} />
+      {formError && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{formError}</p>}
+      <SubmitButton sending={sending}>Send quote request</SubmitButton>
     </form>
   );
 }
@@ -163,7 +207,7 @@ export function RfqForm({ defaultRequirement = "" }: { defaultRequirement?: stri
     )}</Field>
   );
   const text = (name: string, label: string, error?: string, extra: { type?: string; required?: boolean; auto?: string; defaultValue?: string; hint?: string; max?: number } = {}) => (
-    <Field label={label} name={name} required={extra.required ?? true} error={error} hint={extra.hint}>{(p) => <input {...p} name={name} type={extra.type ?? "text"} {...(extra.type === "number" ? { ...noNegative, step: "any" } : {})} required={extra.required ?? true} autoComplete={extra.auto} defaultValue={extra.defaultValue} maxLength={extra.max ?? 150} className={`${input} h-12`} />}</Field>
+    <Field label={label} name={name} required={extra.required ?? true} error={error} hint={extra.hint}>{(p) => <input {...p} name={name} type={extra.type ?? "text"} {...(extra.type === "number" ? { ...noNegative, step: "any" } : extra.type === "tel" ? phoneOnly : name === "contactName" ? nameOnly : {})} required={extra.required ?? true} autoComplete={extra.auto} defaultValue={extra.defaultValue} maxLength={extra.max ?? 150} className={`${input} h-12`} />}</Field>
   );
   return (
     <form noValidate onSubmit={(e) => submit(e, (form) => { const f = new FormData(form); return { json: true, body: JSON.stringify({ companyName: val(f, "companyName"), contactName: val(f, "contactName"), email: val(f, "email"), phone: val(f, "phone"), country: val(f, "country"), requirement: val(f, "requirement"), quantity: val(f, "quantity"), quantityUnit: val(f, "quantityUnit"), targetPrice: val(f, "targetPrice"), incoterm: val(f, "incoterm"), deliveryPort: val(f, "deliveryPort"), message: val(f, "message"), consent: f.get("consent") === "on", website: val(f, "website") }) }; })} className="relative space-y-6" aria-label="Request a quotation">
@@ -215,9 +259,9 @@ export function ApplyForm({ slug, title }: { slug: string; title: string }) {
     })} className="relative space-y-5" aria-label={`Apply for ${title}`}>
       <Honeypot />
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Your name" name="applicantName" required error={errors.applicantName}>{(p) => <input {...p} name="applicantName" type="text" autoComplete="name" required maxLength={100} className={`${input} h-12`} />}</Field>
+        <Field label="Your name" name="applicantName" required error={errors.applicantName}>{(p) => <input {...p} name="applicantName" type="text" autoComplete="name" required maxLength={100} {...nameOnly} className={`${input} h-12`} />}</Field>
         <Field label="Email" name="email" required error={errors.email}>{(p) => <input {...p} name="email" type="email" autoComplete="email" required maxLength={160} className={`${input} h-12`} />}</Field>
-        <Field label="Phone" name="phone" required error={errors.phone}>{(p) => <input {...p} name="phone" type="tel" autoComplete="tel" required maxLength={30} className={`${input} h-12`} />}</Field>
+        <Field label="Phone" name="phone" required error={errors.phone}>{(p) => <input {...p} name="phone" type="tel" autoComplete="tel" required maxLength={30} {...phoneOnly} className={`${input} h-12`} />}</Field>
         <Field label="Years of experience" name="experienceYears" required error={errors.experienceYears}>{(p) => <input {...p} name="experienceYears" type="number" {...noNegative} inputMode="numeric" max={60} step={1} required className={`${input} h-12`} />}</Field>
         <Field label="Current company" name="currentCompany" error={errors.currentCompany}>{(p) => <input {...p} name="currentCompany" type="text" autoComplete="organization" maxLength={120} className={`${input} h-12`} />}</Field>
         <Field label="Resume (optional)" name="resume" error={fileError || errors.resume} hint="PDF or Word document, up to 5 MB.">{(p) => <input {...p} name="resume" type="file" accept=".pdf,.doc,.docx,application/pdf" onChange={(e) => setFileError((e.target.files?.[0]?.size ?? 0) > MAX_RESUME ? "This file is larger than 5 MB." : "")} className={`${input} cursor-pointer py-2.5 file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-red-50 file:px-4 file:py-2 file:font-bold file:text-red-700`} />}</Field>

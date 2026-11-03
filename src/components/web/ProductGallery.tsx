@@ -21,7 +21,7 @@ export default function ProductGallery({ images, name }: { images: { url: string
   if (count === 0) {
     return (
       <div className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.02] shadow-2xl shadow-black/40">
-        <div aria-hidden className="absolute inset-0 bg-[radial-gradient(60%_70%_at_70%_20%,rgba(185,134,38,0.35),transparent_65%)]" />
+        <div aria-hidden className="absolute inset-0 bg-[radial-gradient(60%_70%_at_70%_20%,rgba(176,128,64,0.35),transparent_65%)]" />
         <div className="relative flex flex-col items-center gap-3 text-center">
           <span className="flex size-20 items-center justify-center rounded-3xl bg-gradient-to-br from-gold-400 to-gold-700 text-white shadow-lg shadow-gold-500/30"><LuPackage className="size-9" aria-hidden /></span>
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-gold-300">{name}</p>

@@ -9,8 +9,8 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import { ActivityTimeline, type TimelineEntry } from "@/components/admin/detail-parts";
 import { useAll } from "@/hooks/use-resource";
 import {
-  activityService, applicationService, bannerService, careerService, enquiryService, locationService,
-  postService, productService, projectService, rfqService, commodityService, categoryService,
+  activityService, applicationService, careerService, enquiryService, locationService,
+  postService, productService, projectService, rfqService, commodityService,
 } from "@/lib/services";
 import { formatDate } from "@/lib/utils";
 
@@ -63,9 +63,7 @@ export function MockDashboardPage() {
   const rfqs = useAll(rfqService);
   const applications = useAll(applicationService);
   const careers = useAll(careerService);
-  const banners = useAll(bannerService);
   const commodities = useAll(commodityService);
-  const categories = useAll(categoryService);
   const activity = useAll(activityService);
 
   const openEnquiries = enquiries.filter((e) => e.status === "new" || e.status === "contacted").length;
@@ -76,7 +74,6 @@ export function MockDashboardPage() {
     ...products.map((p) => ({ id: p.id, title: p.name, type: "Product", status: p.status, at: p.updatedAt, href: `/admin/products/${p.id}` })),
     ...posts.map((p) => ({ id: p.id, title: p.title, type: "Post", status: p.status, at: p.updatedAt, href: `/admin/posts/${p.id}` })),
     ...projects.map((p) => ({ id: p.id, title: p.title, type: "Project", status: p.status, at: p.updatedAt, href: `/admin/projects/${p.id}` })),
-    ...banners.map((b) => ({ id: b.id, title: b.title, type: "Banner", status: b.status, at: b.updatedAt, href: "/admin/banners" })),
   ].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 6);
 
   const recentEnquiries = [...enquiries].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 5);
@@ -125,7 +122,7 @@ export function MockDashboardPage() {
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader title="Recent Content Activity" description="Latest edits across products, posts, projects and banners" />
+          <CardHeader title="Recent Content Activity" description="Latest edits across products, posts and projects" />
           <ul className="divide-y divide-line">
             {recentContent.map((c) => (
               <li key={`${c.type}-${c.id}`}>
@@ -144,11 +141,9 @@ export function MockDashboardPage() {
           <CardHeader title="Content Status Overview" description="Published, draft and archived records" />
           <div className="space-y-1 p-3">
             <StatusBar label="Products" href="/admin/products" counts={countBy(products, (p) => p.status)} />
-            <StatusBar label="Categories" href="/admin/categories" counts={countBy(categories, (p) => p.status)} />
             <StatusBar label="Posts" href="/admin/posts" counts={countBy(posts, (p) => p.status)} />
             <StatusBar label="Projects" href="/admin/projects" counts={countBy(projects, (p) => p.status)} />
             <StatusBar label="Careers" href="/admin/careers" counts={countBy(careers, (c) => c.status === "closed" ? "archived" : c.status === "open" ? "published" : "draft")} />
-            <StatusBar label="Banners" href="/admin/banners" counts={countBy(banners, (p) => p.status)} />
             <StatusBar label="Commodities" href="/admin/commodities" counts={countBy(commodities, (p) => p.status)} />
           </div>
         </Card>

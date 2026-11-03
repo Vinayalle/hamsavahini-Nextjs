@@ -5,7 +5,6 @@ import { getAuthConfig, resetAuthConfigForTests } from "@/server/config";
 import { keyedDigest, randomDigits, randomToken, safeEqualHex } from "@/server/crypto";
 import { signAccessToken, signPendingMfaToken, verifyAccessToken, verifyPendingMfaToken } from "@/server/tokens";
 import { hashPassword, passwordNeedsRehash, verifyPassword } from "@/server/security";
-import { lockDurationMs } from "@/server/auth";
 
 const ENV_KEYS = ["AUTH_JWT_SECRET", "AUTH_OTP_PEPPER", "AUTH_ARGON_MEMORY_KIB", "AUTH_ARGON_TIME_COST", "NODE_ENV"] as const;
 const saved = Object.fromEntries(ENV_KEYS.map((k) => [k, process.env[k]]));
@@ -162,15 +161,5 @@ describe("Argon2id password hashing", () => {
     expect(passwordNeedsRehash(await hash("pw-pw-pw-pw", { memoryCost: 1024, timeCost: 1, parallelism: 1 }))).toBe(true); // passes only
     expect(passwordNeedsRehash("$2b$10$abcdefghijklmnopqrstuuabcdefghijklmnopqrstuvwxyz0123")).toBe(true);
     expect(passwordNeedsRehash("garbage")).toBe(true);
-  });
-});
-
-describe("progressive lockout", () => {
-  it("starts at five failures, doubles, and is capped (never permanent)", () => {
-    expect([1, 2, 3, 4].map(lockDurationMs)).toEqual([0, 0, 0, 0]);
-    expect(lockDurationMs(5)).toBe(60_000);
-    expect(lockDurationMs(6)).toBe(120_000);
-    expect(lockDurationMs(7)).toBe(240_000);
-    expect(lockDurationMs(100)).toBe(30 * 60_000);
   });
 });

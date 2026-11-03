@@ -16,7 +16,8 @@ function isActive(pathname: string, href: string) {
 export function AdminSidebar({ collapsed, groups }: { collapsed: boolean; groups: NavGroup[] }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const roleLabel = user?.role?.trim() || "Admin";
   const [closed, setClosed] = useState<Record<string, boolean>>({});
   const [signingOut, setSigningOut] = useState(false);
 
@@ -58,12 +59,21 @@ export function AdminSidebar({ collapsed, groups }: { collapsed: boolean; groups
 
   return (
     <nav aria-label="Main navigation" className="flex h-full flex-col bg-bark-900 text-slate-200">
-      <div className={cn("flex h-16 shrink-0 items-center gap-2.5 border-b border-white/10 px-5", collapsed && "justify-center px-0")}>
-        {collapsed ? <Logo variant="mark" className="h-7" /> : (
-          <div className="leading-tight">
-            <Logo variant="lockup" className="h-8" />
-            <div className="mt-1 text-[11px] text-slate-400">Super Admin</div>
-          </div>
+      <div className={cn("shrink-0 border-b border-white/10", collapsed ? "flex justify-center px-2 py-3.5" : "px-4 pb-3.5 pt-4")}>
+        {/* The logo keeps its own colours, so it sits on a soft cream tile that stands out from the dark brown. */}
+        {collapsed ? (
+          <span className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-b from-[#fffaf0] to-[#f4e9d4] p-1.5 shadow-md shadow-black/30 ring-1 ring-gold-300/40"><Logo variant="mark" className="h-full" /></span>
+        ) : (
+          <>
+            <div className="flex items-center justify-center rounded-2xl bg-gradient-to-b from-[#fffaf0] to-[#f4e9d4] px-3 py-3 shadow-md shadow-black/30 ring-1 ring-gold-300/40">
+              <Logo variant="lockup" className="h-10" />
+            </div>
+            <p className="mt-3 flex items-center gap-2.5 text-[10.5px] font-semibold uppercase tracking-[0.2em] text-gold-300" title={roleLabel}>
+              <span aria-hidden className="h-px flex-1 bg-gold-300/25" />
+              <span className="max-w-[10rem] truncate">{roleLabel}</span>
+              <span aria-hidden className="h-px flex-1 bg-gold-300/25" />
+            </p>
+          </>
         )}
       </div>
 

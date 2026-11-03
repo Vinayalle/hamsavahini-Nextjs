@@ -84,10 +84,11 @@ type Ctx<P> = { params: Promise<P> };
  * Handlers that need a user call `requireSession(request)` / `authorize(...)` themselves
  * so that authentication and authorization are visible at the top of every handler.
  */
-export function route<P = Record<string, never>>(fn: (request: Request, params: P) => Promise<Response>, opts: { multipart?: boolean } = {}) {
+export function route<P = Record<string, never>>(fn: (request: Request, params: P) => Promise<Response>, opts: { multipart?: boolean; machine?: boolean } = {}) {
   return async (request: Request, ctx?: Ctx<P>): Promise<Response> => {
     try {
-      assertSameOrigin(request, opts.multipart);
+      // `machine`: called by a scheduler (no browser, no cookies, no Origin header); such a handler must check its own secret.
+      if (!opts.machine) assertSameOrigin(request, opts.multipart);
       return await fn(request, ((await ctx?.params) ?? {}) as P);
     } catch (e) {
       return toResponse(e);

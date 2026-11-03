@@ -2,7 +2,7 @@
 
 The public website lives at `/` (code: `src/app/(site)`, components: `src/components/web`). It is built from three sources:
 
-1. **The admin CMS** (database): products and categories, posts, projects, careers, locations, commodity prices and trade opportunities, hero banners, and the website settings (Admin -> Settings). Only what an editor has *published* is shown.
+1. **The admin CMS** (database): products and categories, posts, projects, careers, locations, commodity prices and trade opportunities, and the website settings (Admin -> Settings). Only what an editor has *published* is shown.
 2. **Written content** in `src/content/site.ts`: the minerals, industries, quality and sustainability copy, and the menus. Edit this file to change wording; no layout code needs to change.
 3. **The About page** (`src/app/(site)/about/page.tsx`), written from the company's own text.
 
@@ -10,7 +10,7 @@ The public website lives at `/` (code: `src/app/(site)`, components: `src/compon
 
 | Address | What it is | Data |
 | --- | --- | --- |
-| `/` | Home: hero slider, introduction, services, mineral spotlights, quality and responsibility, global reach, industries, latest insights | banners, locations, posts |
+| `/` | Home: hero video, introduction, services, mineral spotlights, quality and responsibility, global reach, industries, latest insights | locations, posts |
 | `/about` | About us (anchors `#vision`, `#why`) | static |
 | `/minerals`, `/minerals/<slug>` | The six minerals (and granite at `/minerals/granite-dimension-stones`) | `src/content/site.ts` |
 | `/industries` | Five industries, each with the minerals it uses | `src/content/site.ts` |
@@ -55,11 +55,11 @@ Every public page is rendered on request (`force-dynamic`) and always sends its 
 
 ## Brand: logo and colours
 
-- Source artwork: `assets/brand/logo-original.png` (not served). Replace it and run `npm run brand:build` to regenerate everything below.
+- Source artwork: `assets/brand/logo-original.jpeg` (not served). Replace it and run `npm run brand:build` to regenerate everything below.
 - Generated: `public/brand/logo-{mark,wordmark,full}.png`, `public/brand/og-default.png`, and the tab icons `src/app/icon.png`, `apple-icon.png`, `favicon.ico`.
-- `src/config/brand.ts` is the one place that names the logo files and brand colours; `src/components/brand/Logo.tsx` renders them (variants mark / lockup / full; one colour only, the logo's own gold).
+- `src/config/brand.ts` is the one place that names the logo files and brand colours; `src/components/brand/Logo.tsx` renders them (variants mark / lockup / full; the logo always keeps its own colours, and on a dark surface it sits on a cream tile with `onDark`).
 - `src/styles/brand.css` holds the gold ramp and warm neutral/slate tokens, shared by the website and the admin.
-- Contrast rules: gold-500 (#B98626) only for fills, icons and large graphics; gold-700 for text on light; gold-300 for text on dark; ink text on gold fills; white text only on gold-700 or darker (admin buttons use #8F6418). Error, success and warning colours stay red, green and amber.
+- Contrast rules: gold-500 (#B08040) only for fills, icons and large graphics; gold-700 for text on light; gold-300 for text on dark; ink text on gold fills; white text only on gold-700 or darker (admin buttons use #8A5C2C). Error, success and warning colours stay red, green and amber.
 
 ## Home page: recent products
 
@@ -77,3 +77,15 @@ After a visitor submits the contact form, the quotation form or a job applicatio
 ## Contact details are fixed in the code
 
 The address, phone number and email shown in the footer, on the Contact Us page, in the privacy policy and in the search-engine data are fixed in `src/content/site.ts` (`CONTACT`), not edited in the admin. A line left empty is not shown. The website has no social media links. The admin no longer has the "Contact Details & Social Links", "Footer Settings" or "Navigation Menu" pages; the footer text, copyright line and menus are fixed in the code. The values currently in `CONTACT` are the placeholders that were in the admin settings, so replace them with the real ones.
+
+## Products on the website, quote requests and the company mailbox
+
+- **Product card** (catalogue, home page, related products): picture, category, name, a two-line description, the first four specifications, what it is used for ("Application"), the location, and two buttons: *View details* and *Request quote*.
+- **Product page:** the picture gallery, the full details the admin wrote, what it is used for, the location, all specifications, and the *Request a quote* form beside them.
+- **Request a quote** asks for name, email, phone number and a note with the requirements. It sends:
+  - to the company mailbox (`SMTP_USER`; for a server with no sign-in, the address inside `MAIL_FROM`): the visitor's details, the note, the product and a link to it, with Reply-To set to the visitor, so replying answers them;
+  - to the visitor: a thank-you naming the product, saying the team will contact them.
+  The product and its link come from the database (a published product), never from what the visitor sends. The contact form, the quotation form and job applications also e-mail the company mailbox. Links use the site address in `src/lib/site-url.ts`, so set the real address there.
+- **Admin product form:** name, category, used for, location, details, optional specifications and pictures. The category field is a dropdown: pick one or type a new name to add it (needs permission to create categories). The code, web address and short summary are made automatically. A new product is shown on the website straight away; the *On website* switch on the products list hides or shows it (a person who may add products but not publish them adds them hidden).
+- **Categories** have no page of their own any more; the website lists only categories that have a product to show.
+- **Home page motion:** a ticker of mineral names under the hero, a numbers band that counts up (real counts only), cards that lean towards the pointer, a light sweep on gold buttons, staggered lists and floating light. All of it is CSS or small client components and is off for visitors who prefer reduced motion.

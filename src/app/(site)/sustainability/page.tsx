@@ -1,4 +1,5 @@
 import { LuLeaf } from "react-icons/lu";
+import { PHOTOS } from "@/content/photos";
 import { SplitFeature } from "@/components/web/sections";
 import { ButtonLink, CtaBand, PageHero, PointCard, SectionHeading, bodyFont, container } from "@/components/web/ui";
 import { PILLARS, SUSTAINABILITY_PRACTICES } from "@/content/site";
@@ -13,7 +14,7 @@ export default function SustainabilityPage() {
 
       <section aria-label="Our commitment" className="bg-white">
         <div className={`${container} py-10 md:py-14`}>
-          <SplitFeature eyebrow="Our commitment" title="A stronger, more sustainable supply chain" icon={LuLeaf} action={<ButtonLink href="/quality-compliance">See how we document quality</ButtonLink>}>
+          <SplitFeature eyebrow="Our commitment" title="A stronger, more sustainable supply chain" icon={LuLeaf} photo={PHOTOS.sustainability} action={<ButtonLink href="/quality-compliance">See how we document quality</ButtonLink>}>
             <p>At Hamsavahin Aarth Mines, sustainability is integral to our operations. We promote responsible mining practices, fair trade, and environmental stewardship, ensuring that every partnership contributes to a stronger, more sustainable global supply chain.</p>
             <p>Our vision is to be a globally trusted and sustainable leader in mineral sourcing and trading, building bridges between resource-rich regions and the industries shaping the world&rsquo;s future.</p>
           </SplitFeature>

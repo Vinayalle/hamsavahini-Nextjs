@@ -114,19 +114,44 @@ export interface SmtpConfig {
 }
 
 /**
- * Email needs only SMTP_USER and SMTP_PASSWORD (for Gmail, enter the account and an "app password"). Everything else has a
- * default: SMTP_HOST=smtp.gmail.com, SMTP_PORT=465 (implicit TLS), MAIL_FROM=SMTP_USER. Set SMTP_HOST/SMTP_PORT only for another
- * provider (SES, SendGrid, Outlook ...) and MAIL_FROM only to show a different sender. Returns null when nothing is configured
- * (delivery then honestly reports "not configured").
+ * Email through the mailbox your hosting provider gives you (Hostinger, cPanel, or any other host with SMTP).
+ *
+ *   SMTP_HOST      the provider's outgoing mail server. Hostinger: smtp.hostinger.com. cPanel: usually mail.yourdomain.com
+ *                  (use the exact name your provider shows under "Email accounts > Connect devices / Configure mail client").
+ *   SMTP_PORT      465 (default, SSL/TLS from the first byte; Hostinger and cPanel both offer it) or 587 (STARTTLS).
+ *   SMTP_USER      the FULL mailbox address, for example no-reply@yourdomain.com. (Only a local test relay that needs no sign-in
+ *                  can leave SMTP_USER and SMTP_PASSWORD out, with MAIL_FROM set.)
+ *   SMTP_PASSWORD  that mailbox's password.
+ *   MAIL_FROM      optional sender text. Hosting providers only accept a sender that is the logged-in mailbox, so by default it is
+ *                  SMTP_USER; use `Hamsavahin <no-reply@yourdomain.com>` to add a display name while keeping the same address.
+ *   SMTP_SECURE    optional "true"/"false" to override the port-based choice (true for 465, false for 587).
+ *
+ * Returns null when nothing is configured (delivery then honestly reports "not configured"). A half-filled setup throws a
+ * message that names the missing variable, never a value.
  */
 export function getSmtpConfig(): SmtpConfig | null {
   const e = process.env;
-  if (!e.SMTP_HOST && !e.SMTP_USER) return null;
-  const host = e.SMTP_HOST || "smtp.gmail.com";
-  const port = e.SMTP_PORT ? Number(e.SMTP_PORT) : 465;
-  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("SMTP_PORT must be a valid port number.");
-  if (e.SMTP_USER && !e.SMTP_PASSWORD) throw new Error("SMTP_USER is set but SMTP_PASSWORD is missing.");
-  const from = e.MAIL_FROM || e.SMTP_USER;
-  if (!from) throw new Error("Set MAIL_FROM (or SMTP_USER) so emails have a sender.");
-  return { host, port, secure: e.SMTP_SECURE ? e.SMTP_SECURE === "true" : port === 465, user: e.SMTP_USER || undefined, password: e.SMTP_PASSWORD || undefined, from };
+  const host = (e.SMTP_HOST ?? "").trim();
+  const user = (e.SMTP_USER ?? "").trim();
+  if (!host && !user) return null;
+  if (!host) throw new Error("SMTP_HOST is missing. Use your hosting provider's outgoing mail server (Hostinger: smtp.hostinger.com; cPanel: mail.yourdomain.com).");
+  if (/[\s/:@]/.test(host)) throw new Error("SMTP_HOST must be only the server name (for example smtp.hostinger.com), without smtp://, a port or an address.");
+  const port = e.SMTP_PORT?.trim() ? Number(e.SMTP_PORT) : 465;
+  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("SMTP_PORT must be a valid port number (465 or 587).");
+  if (user && !e.SMTP_PASSWORD) throw new Error("SMTP_USER is set but SMTP_PASSWORD is missing.");
+  const from = (e.MAIL_FROM ?? "").trim() || user;
+  if (!from) throw new Error("Set SMTP_USER (the full mailbox address) so emails have a sender, or MAIL_FROM for a server that needs no sign-in.");
+  return { host, port, secure: e.SMTP_SECURE ? e.SMTP_SECURE === "true" : port === 465, user: user || undefined, password: user ? e.SMTP_PASSWORD : undefined, from };
+}
+
+/**
+ * The mailbox that receives every message about a form a visitor filled in: SMTP_USER (the hosting mailbox you send from).
+ * A server that needs no sign-in has no SMTP_USER; then the address inside MAIL_FROM is used. Null when neither is an address.
+ */
+export function getNotificationAddress(): string | null {
+  const user = process.env.SMTP_USER?.trim();
+  if (user && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(user)) return user;
+  const from = process.env.MAIL_FROM?.trim() ?? "";
+  const m = /<([^\s@<>]+@[^\s@<>]+\.[^\s@<>]+)>/.exec(from) ?? /^([^\s@<>]+@[^\s@<>]+\.[^\s@<>]+)$/.exec(from);
+  return m ? m[1] : null;
 }

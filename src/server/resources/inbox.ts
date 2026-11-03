@@ -6,6 +6,7 @@ import { errors } from "../errors";
 import { getDb } from "../db";
 import { hasPermission } from "@/lib/authz/resolve";
 import { loadAccess } from "../authz/access";
+import { removeStoredFile } from "./library";
 
 /**
  * Inbound workflow modules: RFQs, contact enquiries, job applications.
@@ -113,4 +114,5 @@ export const applications: ResourceConfig = {
   }),
   fieldActions: { status: "change_status", notes: "edit" },
   status: { field: "status", mode: "workflow", values: APP_STATUS },
+  afterDelete: (row, db) => removeStoredFile(row.resumeFileId, db as ReturnType<typeof getDb>), // the candidate's resume leaves the uploads folder too
 };

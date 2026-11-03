@@ -29,7 +29,6 @@ const P = {
   project: { title: "Cathode shipment Chile", slug: "cathode-shipment-chile", client: "Acme Metals", commodity: "Copper", region: "South America", summary: "Delivered 12,000 MT of cathode to East Asia.", content: "<p>The story of a long-running supply arrangement.</p>", startDate: "2026-01-01", endDate: null, projectStatus: "active", status: "draft", featured: false },
   career: { title: "Trade analyst", slug: "trade-analyst", department: "Trading", location: "Mumbai, India", employmentType: "full_time", experience: "3+ years", description: "<p>Analyse physical commodity flows and prepare reports.</p>", requirements: "<p>Degree plus strong Excel skills.</p>", deadline: "2027-02-01", openings: 2, status: "draft" },
   location: { name: "Mundra Terminal", type: "port_terminal", country: "India", city: "Mundra", address: "Port Road, Mundra, Gujarat", description: "Bulk handling terminal", phone: "+91 20000000", email: "mundra@example.test", active: true },
-  banner: { title: "Global supply, local trust", subtitle: "Metals and minerals", section: "hero", ctaLabel: "Explore", ctaUrl: "/products", sortOrder: 1, status: "draft" },
   commodity: { name: "Copper Cathode", slug: "copper-cathode", code: "cu1", group: "Metals", unit: "MT", description: "LME grade A copper cathode", status: "draft" },
 };
 
@@ -40,7 +39,7 @@ beforeAll(async () => {
   await d.role.deleteMany();
   const sa = await makeRole("Super Admin", {}, true);
   // editor: can create/edit but NOT publish, delete, change status, assign
-  const editor = await makeRole("Editor", Object.fromEntries(["posts", "projects", "careers", "locations", "banners", "commodities", "commodity_prices", "trade_opportunities"].map((r) => [r, ["view", "create", "edit"]])));
+  const editor = await makeRole("Editor", Object.fromEntries(["posts", "projects", "careers", "locations", "commodities", "commodity_prices", "trade_opportunities"].map((r) => [r, ["view", "create", "edit"]])));
   const triage = await makeRole("Triage", { rfqs: ["view", "edit", "change_status", "assign"], enquiries: ["view", "edit", "change_status", "assign"], job_applications: ["view", "edit", "change_status"] });
   const noStatus = await makeRole("No status", { rfqs: ["view", "edit"], enquiries: ["view", "edit"], job_applications: ["view", "edit"] });
   const logViewer = await makeRole("Log viewer", { activity_logs: ["view"], notification_history: ["view", "change_status"] });
@@ -71,7 +70,6 @@ const cases: Case[] = [
   { resource: "projects", model: "project", payload: () => P.project, patch: { client: "Beta Metals", featured: true }, expectDb: (r) => expect(r.featured).toBe(true), invalid: { ...P.project, endDate: "2025-01-01" }, field: "endDate", searchTerm: "Chile", unique: { field: "slug" } },
   { resource: "careers", model: "career", payload: () => P.career, patch: { openings: 5, location: "Delhi, India" }, expectDb: (r) => expect(r.openings).toBe(5), invalid: { ...P.career, openings: 0 }, field: "openings", searchTerm: "analyst", unique: { field: "slug" } },
   { resource: "locations", model: "location", payload: () => P.location, patch: { capacity: "2 million MT", active: false }, expectDb: (r) => expect(r.active).toBe(false), invalid: { ...P.location, email: "nope" }, field: "email", searchTerm: "Mundra" },
-  { resource: "banners", model: "banner", payload: () => P.banner, patch: { sortOrder: 4, subtitle: "Updated" }, expectDb: (r) => expect(r.sortOrder).toBe(4), invalid: { ...P.banner, ctaUrl: "javascript:alert(1)" }, field: "ctaUrl", searchTerm: "Global supply" },
   { resource: "commodities", model: "commodity", payload: () => P.commodity, patch: { unit: "DMT" }, expectDb: (r) => expect(r.unit).toBe("DMT"), invalid: { ...P.commodity, code: "bad code!" }, field: "code", searchTerm: "CU1", unique: { field: "code" } },
 ];
 

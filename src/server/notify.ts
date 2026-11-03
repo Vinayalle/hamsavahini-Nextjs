@@ -2,11 +2,14 @@ import "server-only";
 import { after } from "next/server";
 import { getDb } from "./db";
 import { getMailer, type MailResult } from "./mail";
+import { getNotificationAddress } from "./config";
 import { securityNoticeEmail, type Rendered, type SecurityNotice } from "./mail-templates";
 
 /** Sends a rendered message and records the OUTCOME in NotificationLog (never the body, so no code or link is stored). */
-export async function deliver(templateKey: string, to: string, message: Rendered): Promise<MailResult> {
-  const result = await getMailer().send({ to, subject: message.subject, text: message.text, html: message.html });
+export async function deliver(templateKey: string, to: string, message: Rendered, replyTo?: string): Promise<MailResult> {
+  const result = await getMailer().send({ to, subject: message.subject, text: message.text, html: message.html, ...(replyTo ? { replyTo } : {}) });
+  // Say WHY a message was not sent, so a wrong mail setting is easy to find. Only the reason is printed: no address, no body, no password.
+  if (!result.delivered && process.env.NODE_ENV !== "test") console.error(`[mail] "${templateKey}" was not delivered: ${result.error ?? "unknown reason"}`);
   try {
     await getDb().notificationLog.create({
       data: {
@@ -58,6 +61,28 @@ export async function sendFormConfirmation(templateKey: string, to: string, mess
       await deliver(templateKey, to, message);
     } catch {
       /* the submission is already saved; an email problem is not the visitor's problem */
+    }
+  });
+}
+
+/**
+ * Tells the company mailbox (SMTP_USER) about something a visitor just submitted. Sent after the response, so it never slows the form,
+ * and it can never make the form fail. Reply-To is the visitor, so answering the email answers them. Nothing is sent when no mailbox is configured.
+ */
+export async function sendStaffNotification(templateKey: string, message: Rendered, replyTo: string): Promise<void> {
+  let to: string | null = null;
+  try {
+    to = getNotificationAddress();
+  } catch {
+    to = null;
+  }
+  if (!to) return;
+  const address = to;
+  await deferDelivery(async () => {
+    try {
+      await deliver(templateKey, address, message, replyTo);
+    } catch {
+      /* the submission is already saved */
     }
   });
 }

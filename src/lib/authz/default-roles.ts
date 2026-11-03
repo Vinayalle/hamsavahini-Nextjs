@@ -40,7 +40,7 @@ export const DEFAULT_ROLES: DefaultRole[] = [
     code: "admin", name: "Admin", isSystem: true,
     description: "Manages day-to-day content, trade and enquiries, and can manage employees within the permissions delegated to it.",
     grants: [
-      ...full(...CATALOGUE, "posts", "projects", "careers", "locations", "banners", ...TRADE, "enquiries", "job_applications", "media", "documents"),
+      ...full(...CATALOGUE, "posts", "projects", "careers", "locations", ...TRADE, "enquiries", "job_applications", "media", "documents"),
       ...some("notification_history", "view"),
       ...some("users", "view", "create", "edit", "assign", "change_status"),
       ...some("user_permissions", "view", "manage_permissions"),
@@ -51,8 +51,8 @@ export const DEFAULT_ROLES: DefaultRole[] = [
   },
   {
     code: "content_manager", name: "Content Manager", isSystem: true,
-    description: "Manages posts, projects, banners and media. Cannot manage users or settings.",
-    grants: [...full("posts", "projects", "banners"), ...some("locations", "view", "create", "edit", "publish", "unpublish", "archive", "restore"), ...some("media", "view", "upload", "edit", "download"), ...some("documents", "view", "download")],
+    description: "Manages posts, projects and media. Cannot manage users or settings.",
+    grants: [...full("posts", "projects"), ...some("locations", "view", "create", "edit", "publish", "unpublish", "archive", "restore"), ...some("media", "view", "upload", "edit", "download"), ...some("documents", "view", "download")],
   },
   {
     code: "product_manager", name: "Product Manager", isSystem: true,

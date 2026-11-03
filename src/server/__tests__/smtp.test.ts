@@ -68,7 +68,7 @@ afterAll(async () => {
   await new Promise<void>((r) => server.close(() => r()));
 });
 
-describe("minimal SMTP configuration", () => {
+describe("hosting-provider SMTP configuration (Hostinger, cPanel ...)", () => {
   const keys = ["SMTP_HOST", "SMTP_PORT", "SMTP_SECURE", "SMTP_USER", "SMTP_PASSWORD", "MAIL_FROM"];
   const withEnv = (env: Record<string, string | undefined>, fn: () => void) => {
     const old = Object.fromEntries(keys.map((k) => [k, process.env[k]]));
@@ -76,22 +76,49 @@ describe("minimal SMTP configuration", () => {
     Object.assign(process.env, env);
     try { fn(); } finally { for (const k of keys) { if (old[k] === undefined) delete process.env[k]; else process.env[k] = old[k]; } }
   };
-  it("needs only the account and its app password", () => {
-    withEnv({ SMTP_USER: "me@gmail.com", SMTP_PASSWORD: "app-pass" }, () => {
-      expect(getSmtpConfig()).toEqual({ host: "smtp.gmail.com", port: 465, secure: true, user: "me@gmail.com", password: "app-pass", from: "me@gmail.com" });
+  it("a Hostinger mailbox: host, mailbox and password; port 465 with implicit TLS and the mailbox as sender by default", () => {
+    withEnv({ SMTP_HOST: "smtp.hostinger.com", SMTP_USER: "no-reply@example.com", SMTP_PASSWORD: "mailbox-pass" }, () => {
+      expect(getSmtpConfig()).toEqual({ host: "smtp.hostinger.com", port: 465, secure: true, user: "no-reply@example.com", password: "mailbox-pass", from: "no-reply@example.com" });
     });
   });
-  it("lets another provider override host, port and sender", () => {
-    withEnv({ SMTP_USER: "u", SMTP_PASSWORD: "p", SMTP_HOST: "smtp.example.com", SMTP_PORT: "587", MAIL_FROM: "Hamsavahin <no-reply@example.com>" }, () => {
-      expect(getSmtpConfig()).toMatchObject({ host: "smtp.example.com", port: 587, secure: false, from: "Hamsavahin <no-reply@example.com>" });
+  it("a cPanel mailbox on 587 uses STARTTLS, and the sender can carry a display name", () => {
+    withEnv({ SMTP_HOST: "mail.example.com", SMTP_PORT: "587", SMTP_USER: "no-reply@example.com", SMTP_PASSWORD: "p", MAIL_FROM: "Hamsavahin <no-reply@example.com>" }, () => {
+      expect(getSmtpConfig()).toMatchObject({ host: "mail.example.com", port: 587, secure: false, from: "Hamsavahin <no-reply@example.com>" });
+    });
+    withEnv({ SMTP_HOST: "mail.example.com", SMTP_PORT: "2465", SMTP_SECURE: "true", SMTP_USER: "a@b.c", SMTP_PASSWORD: "p" }, () => {
+      expect(getSmtpConfig()).toMatchObject({ port: 2465, secure: true });
     });
   });
-  it("is off when nothing is set, and rejects a username without a password", () => {
+  it("no longer assumes Gmail: a username without a host is a clear error", () => {
+    withEnv({ SMTP_USER: "me@example.com", SMTP_PASSWORD: "p" }, () => expect(() => getSmtpConfig()).toThrow(/SMTP_HOST is missing.*hostinger/i));
+  });
+  it("is off when nothing is set, and names the missing or wrong variable otherwise", () => {
     withEnv({}, () => expect(getSmtpConfig()).toBeNull());
-    withEnv({ SMTP_USER: "me@gmail.com" }, () => expect(() => getSmtpConfig()).toThrow(/SMTP_PASSWORD/));
-    withEnv({ SMTP_HOST: "h", SMTP_PORT: "abc", MAIL_FROM: "a@b.c" }, () => expect(() => getSmtpConfig()).toThrow(/SMTP_PORT/));
+    withEnv({ SMTP_HOST: "smtp.hostinger.com" }, () => expect(() => getSmtpConfig()).toThrow(/sender/));
+    withEnv({ SMTP_HOST: "127.0.0.1", MAIL_FROM: "Dev <dev@example.test>" }, () => expect(getSmtpConfig()).toMatchObject({ host: "127.0.0.1", user: undefined, from: "Dev <dev@example.test>" })); // a local relay without sign-in
+    withEnv({ SMTP_HOST: "smtp.hostinger.com", SMTP_USER: "me@example.com" }, () => expect(() => getSmtpConfig()).toThrow(/SMTP_PASSWORD/));
+    withEnv({ SMTP_HOST: "smtp.hostinger.com", SMTP_PORT: "abc", SMTP_USER: "a@b.c", SMTP_PASSWORD: "p" }, () => expect(() => getSmtpConfig()).toThrow(/SMTP_PORT/));
+    withEnv({ SMTP_HOST: "smtp://smtp.hostinger.com:465", SMTP_USER: "a@b.c", SMTP_PASSWORD: "p" }, () => expect(() => getSmtpConfig()).toThrow(/SMTP_HOST must be only the server name/));
+  });
+  it("incomplete settings never crash a request: the mailer answers 'not delivered' and says which setting is missing", async () => {
+    await withEnvAsync({ SMTP_USER: "me@example.com", SMTP_PASSWORD: "hunter2-secret" }, async () => {
+      setMailer(null);
+      const r = await getMailer().send({ to: "x@y.z", subject: "s", text: "t" });
+      expect(r.delivered).toBe(false);
+      expect(r.error).toMatch(/SMTP_HOST/);
+      expect(r.error).not.toContain("hunter2-secret");
+      setMailer(null); // forget the cached mailer built from the incomplete settings
+    });
   });
 });
+
+async function withEnvAsync(env: Record<string, string | undefined>, fn: () => Promise<void>) {
+  const keys = ["SMTP_HOST", "SMTP_PORT", "SMTP_SECURE", "SMTP_USER", "SMTP_PASSWORD", "MAIL_FROM"];
+  const old = Object.fromEntries(keys.map((k) => [k, process.env[k]]));
+  for (const k of keys) delete process.env[k];
+  Object.assign(process.env, env);
+  try { await fn(); } finally { for (const k of keys) { if (old[k] === undefined) delete process.env[k]; else process.env[k] = old[k]; } }
+}
 
 describe("SMTP delivery against a local sink", () => {
   it("delivers a branded OTP email containing the real code, from the configured sender", async () => {

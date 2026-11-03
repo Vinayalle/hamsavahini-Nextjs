@@ -303,6 +303,6 @@ export const FOOTER_COLUMNS: { title: string; links: { label: string; href: stri
 /** Every public path, used by the sitemap and the link checks. Dynamic pages (products, posts, projects, careers) are added from the database. */
 export const STATIC_PATHS = [
   "/", "/about", "/minerals", "/industries", "/products", "/insights", "/projects", "/commodity-desk", "/global-operations", "/careers",
-  "/contact-us", "/request-a-quote", "/quality-compliance", "/sustainability", "/privacy-policy", "/terms",
+  "/contact-us", "/request-a-quote", "/quality-compliance", "/sustainability", "/privacy-policy", "/terms", "/photo-credits",
   ...MINERALS.map((m) => `/minerals/${m.slug}`),
 ];

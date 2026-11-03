@@ -122,13 +122,12 @@ describe("authentication", () => {
     }
   });
 
-  it("locks an account after repeated failures and records audit entries", async () => {
+  it("never locks an account after repeated failures, and records each failure in the audit trail", async () => {
     const db = getDb();
     const role = await db.role.findFirstOrThrow({ where: { name: "NoAccess" } });
     await makeUser("lock@test.dev", role.id);
     for (let i = 0; i < 5; i++) await call(login.POST, { method: "POST", url: "/api/auth/login", body: { email: "lock@test.dev", password: "wrong-password-1" } });
-    const afterLock = await call(login.POST, { method: "POST", url: "/api/auth/login", body: { email: "lock@test.dev", password: PASSWORD } });
-    expect(afterLock.status).toBe(401); // correct password is refused while locked
+    expect(await loginCookie("lock@test.dev")).toMatch(/^hv_at=/); // the correct password and the emailed code still work: there is no lockout
     expect(await db.activityLog.count({ where: { action: "login_failed", entityLabel: "lock@test.dev" } })).toBeGreaterThanOrEqual(5);
   });
 

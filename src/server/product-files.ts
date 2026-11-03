@@ -1,8 +1,9 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
-import { basename, join, resolve } from "node:path";
+import { basename, join } from "node:path";
 import type { getDb } from "./db";
+import { productDir } from "@/lib/upload-dirs";
 
 /**
  * Product pictures and documents live INSIDE the project, on local disk (default `<project>/uploads/products`, override with PRODUCT_UPLOAD_DIR).
@@ -12,7 +13,7 @@ import type { getDb } from "./db";
 export const PRODUCT_KEY_PREFIX = "products/";
 const GRACE_MS = 60 * 60 * 1000;
 
-const rootDir = () => resolve(process.env.PRODUCT_UPLOAD_DIR?.trim() || join(/*turbopackIgnore: true*/ process.cwd(), "uploads", "products"));
+const rootDir = productDir;
 /** Keys are server-generated; still, only the bare file name is ever used so a key can never point outside the folder. */
 const pathOf = (key: string) => join(rootDir(), basename(key));
 
@@ -46,4 +47,29 @@ export async function purgeOrphanProductFiles(db: Db, now = new Date()) {
     await db.storedFile.delete({ where: { id: o.id } }).catch(() => undefined);
     await deleteProductFile(o.storageKey).catch(() => undefined);
   }
+}
+
+/**
+ * Deletes product files (record and disk file) that no product uses any more. Called right after a product is deleted or its pictures or
+ * documents are changed, so removed files do not linger. A file that another product still uses is left alone.
+ */
+export async function removeUnusedProductFiles(db: Db, fileIds: string[]) {
+  if (fileIds.length === 0) return;
+  const unused = await db.storedFile.findMany({
+    where: { id: { in: fileIds }, storageKey: { startsWith: PRODUCT_KEY_PREFIX }, productImages: { none: {} }, productDocuments: { none: {} } },
+    select: { id: true, storageKey: true },
+  });
+  for (const f of unused) {
+    await db.storedFile.delete({ where: { id: f.id } }).catch(() => undefined);
+    await deleteProductFile(f.storageKey).catch(() => undefined);
+  }
+}
+
+/** The ids of every picture and document file currently attached to these products. */
+export async function filesOfProducts(db: Db, productIds: string[]): Promise<string[]> {
+  const [images, documents] = await Promise.all([
+    db.productImage.findMany({ where: { productId: { in: productIds } }, select: { fileId: true } }),
+    db.productDocument.findMany({ where: { productId: { in: productIds } }, select: { fileId: true } }),
+  ]);
+  return [...images, ...documents].map((r) => r.fileId);
 }

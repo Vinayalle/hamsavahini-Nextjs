@@ -11,7 +11,6 @@ import { ApiError, errors } from "./errors";
 import { appBaseUrl } from "./mail";
 import { invitationEmail, otpEmail, passwordResetEmail } from "./mail-templates";
 import { deferDelivery, deliver, sendSecurityNotice } from "./notify";
-import { enforce, LIMITS, sourceKey } from "./ratelimit";
 import { hashPassword, hashToken, newToken, readCookie, verifyPassword } from "./security";
 import { revokeUserSessions, type AuthSession } from "./auth";
 import { recordAccessChange } from "./authz/history";
@@ -20,7 +19,6 @@ type Db = PrismaClient | Prisma.TransactionClient;
 type TokenType = "invite" | "password_reset" | "activation_grant";
 
 const RESET_TTL_SECONDS = 60 * 60;
-const emailKey = (email: string) => keyedDigest("rl-email", email).slice(0, 32);
 const normEmail = (e: string) => e.trim().toLowerCase();
 
 /** Creates a single-use token (replacing any unused one of the same type). Only the SHA-256 is stored. */
@@ -90,8 +88,6 @@ const otpDigest = (challengeId: string, userId: string, code: string) => keyedDi
 /** Public. Always answers the same way (no account enumeration), whether or not an email was sent. */
 export async function requestActivationOtp(request: Request, emailInput: string): Promise<void> {
   const email = normEmail(emailInput);
-  await enforce(`otp-req:src:${sourceKey(request)}`, LIMITS.otpRequestSource);
-  await enforce(`otp-req:acct:${emailKey(email)}`, LIMITS.otpRequestAccount);
   const db = getDb();
   const cfg = getAuthConfig();
   const user = await activatableUser(db, email);
@@ -121,8 +117,6 @@ export async function requestActivationOtp(request: Request, emailInput: string)
 /** Public. A correct code is consumed exactly once and yields a short-lived single-use activation grant (HttpOnly cookie). */
 export async function verifyActivationOtp(request: Request, emailInput: string, code: string): Promise<string[]> {
   const email = normEmail(emailInput);
-  await enforce(`otp-ver:src:${sourceKey(request)}`, LIMITS.otpVerifySource);
-  await enforce(`otp-ver:acct:${emailKey(email)}`, LIMITS.otpVerifyAccount);
   const db = getDb();
   const cfg = getAuthConfig();
   const user = await activatableUser(db, email);
@@ -162,7 +156,6 @@ export async function verifyActivationOtp(request: Request, emailInput: string, 
 
 /** Public. Creates the first password using the activation grant. Does NOT sign the user in. */
 export async function setActivationPassword(request: Request, password: string): Promise<string[]> {
-  await enforce(`grant:src:${sourceKey(request)}`, LIMITS.grantSource);
   const raw = readCookie(request.headers.get("cookie"), COOKIES.activation.name);
   const expired = () => new ApiError(401, "activation_expired", "Your verification expired. Request a new code.");
   if (!raw) throw expired();
@@ -181,7 +174,7 @@ export async function setActivationPassword(request: Request, password: string):
     if (claimed.count !== 1) throw expired();
     await tx.adminUser.update({
       where: { id: u.id },
-      data: { passwordHash: await hashPassword(password), status: "active", emailVerifiedAt: new Date(), passwordChangedAt: new Date(), failedLoginCount: 0, lockedUntil: null },
+      data: { passwordHash: await hashPassword(password), status: "active", emailVerifiedAt: new Date(), passwordChangedAt: new Date() },
     });
     await tx.userToken.updateMany({ where: { userId: u.id, type: "invite", usedAt: null }, data: { usedAt: new Date() } });
     await recordActivity(tx, { actorName: u.name, action: "account_activated", entityType: "Admin user", entityId: u.id, entityLabel: u.name, detail: "email verified, password created", ip: clientIp(request) });
@@ -197,8 +190,6 @@ export async function setActivationPassword(request: Request, password: string):
 /** Public: always succeeds from the caller's perspective (no account enumeration). */
 export async function requestPasswordReset(request: Request, emailInput: string): Promise<void> {
   const email = normEmail(emailInput);
-  await enforce(`forgot:src:${sourceKey(request)}`, LIMITS.forgotSource);
-  await enforce(`forgot:acct:${emailKey(email)}`, LIMITS.forgotAccount);
   const db = getDb();
   const user = await db.adminUser.findUnique({ where: { email } });
   if (!user || user.status !== "active" || !user.passwordHash) return; // silently nothing: same response either way
@@ -213,7 +204,6 @@ export async function requestPasswordReset(request: Request, emailInput: string)
 
 /** Public: complete a reset. Revokes every session and refresh token of the account. */
 export async function resetPassword(request: Request, token: string, password: string): Promise<void> {
-  await enforce(`reset:src:${sourceKey(request)}`, LIMITS.resetSource);
   const db = getDb();
   const invalid = () => errors.invalid("This link is invalid or has expired", { token: "This link is invalid or has expired" });
   const user = await db.$transaction(async (tx) => {
@@ -226,7 +216,7 @@ export async function resetPassword(request: Request, token: string, password: s
     if (u.passwordHash && (await verifyPassword(u.passwordHash, password))) throw errors.invalid("Choose a password you have not used before", { password: "Choose a password you have not used before" });
     const claimed = await tx.userToken.updateMany({ where: { id: row.id, usedAt: null }, data: { usedAt: new Date() } });
     if (claimed.count !== 1) throw invalid();
-    await tx.adminUser.update({ where: { id: u.id }, data: { passwordHash: await hashPassword(password), passwordChangedAt: new Date(), failedLoginCount: 0, lockedUntil: null } });
+    await tx.adminUser.update({ where: { id: u.id }, data: { passwordHash: await hashPassword(password), passwordChangedAt: new Date() } });
     await tx.userToken.deleteMany({ where: { userId: u.id, type: "password_reset", usedAt: null } });
     await revokeUserSessions(tx, u.id);
     await recordActivity(tx, { actorName: u.name, action: "password_reset", entityType: "Admin user", entityId: u.id, entityLabel: u.name, detail: "password reset completed; all sessions revoked", ip: clientIp(request) });
@@ -237,7 +227,6 @@ export async function resetPassword(request: Request, token: string, password: s
 
 /** Authenticated: change own password. Requires the current one; ends all OTHER sessions. */
 export async function changeOwnPassword(request: Request, session: AuthSession, current: string, next: string): Promise<void> {
-  await enforce(`chgpw:acct:${session.user.id}`, LIMITS.changePasswordAccount);
   const db = getDb();
   const user = await db.adminUser.findUniqueOrThrow({ where: { id: session.user.id } });
   if (!user.passwordHash || !(await verifyPassword(user.passwordHash, current))) throw errors.invalid("Current password is incorrect", { current: "Current password is incorrect" });

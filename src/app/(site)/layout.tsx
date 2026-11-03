@@ -4,6 +4,7 @@ import Footer from "@/components/web/Footer";
 import { JsonLd } from "@/components/web/ui";
 import { COMPANY } from "@/content/site";
 import { BRAND } from "@/config/brand";
+import { siteBaseUrl } from "@/lib/site-url";
 import { getSiteSettings } from "@/server/services/public";
 import "./globals.css";
 
@@ -16,7 +17,7 @@ import "./globals.css";
  */
 export const dynamic = "force-dynamic";
 
-const base = (process.env.APP_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+const base = siteBaseUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(base),

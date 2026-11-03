@@ -47,7 +47,6 @@ beforeEach(async () => {
   await d.rateLimit.deleteMany();
   await d.session.deleteMany();
   await d.authChallenge.deleteMany();
-  await d.adminUser.updateMany({ data: { failedLoginCount: 0, lockedUntil: null } });
 });
 
 describe("email code at every sign-in, for every employee", () => {
@@ -160,20 +159,17 @@ describe("email code at every sign-in, for every employee", () => {
     expect((await post(verify.POST as H, "/api/auth/mfa/verify", { recoveryCode: "AAAAA-BBBBB" }, { cookie: cookieHeader(saJar) })).status).toBe(422); // there are no recovery codes: only the emailed code is accepted
   });
 
-  it("is rate limited: guessing, and requesting codes", async () => {
+  it("nothing is rate limited: any number of wrong codes and any number of code requests are answered normally", async () => {
     const jar = cookieJar(await signIn("staff@em.dev"));
     const out = [];
     for (let i = 0; i < 12; i++) out.push((await post(verify.POST as H, "/api/auth/mfa/verify", { code: "000000" }, { cookie: cookieHeader(jar) })).status);
-    expect(out[11]).toBe(429);
-    await db().rateLimit.deleteMany();
+    expect(out.every((s) => s === 401)).toBe(true); // a code stops working after its own 5 wrong tries, but there is never a 429
     const codes: number[] = [];
     for (let i = 0; i < 12; i++) {
       await db().authChallenge.updateMany({ where: { userId: uid.sa }, data: { createdAt: new Date(Date.now() - 120_000) } });
-      await db().rateLimit.deleteMany({ where: { key: { startsWith: "login:" } } }); // isolate the code-request limit from the password limits
       codes.push((await signIn("sa@em.dev")).status);
     }
-    expect(codes.slice(0, 10).every((s) => s === 200)).toBe(true);
-    expect(codes[11]).toBe(429);
+    expect(codes.every((s) => s === 200)).toBe(true);
   });
 
   it("if the email cannot be sent the user is told, nothing is half-issued, and no session exists", async () => {

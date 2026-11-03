@@ -59,7 +59,6 @@ export const RESOURCES: ResourceDef[] = [
   { key: "projects", label: "Projects / Trade Stories", module: "content", actions: [...CONTENT] },
   { key: "careers", label: "Careers & Job Openings", module: "content", actions: [...CONTENT] },
   { key: "locations", label: "Global Operations / Locations", module: "content", actions: [...CONTENT] },
-  { key: "banners", label: "Banners & Homepage Sections", module: "content", actions: [...CONTENT] },
   // Trade Management
   { key: "commodities", label: "Commodities", module: "trade", actions: [...CONTENT] },
   { key: "commodity_prices", label: "Commodity Prices", module: "trade", actions: ["view", "create", "edit", "delete", "publish", "unpublish"] },
@@ -140,9 +139,6 @@ export const PAGE_RULES: PageRule[] = [
   { pattern: /^\/admin\/locations\/new$/, resource: "locations", action: "create" },
   { pattern: new RegExp(`^/admin/locations/${id}/edit$`), resource: "locations", action: "edit" },
   { pattern: /^\/admin\/locations$/, resource: "locations", action: "view" },
-  { pattern: /^\/admin\/banners\/new$/, resource: "banners", action: "create" },
-  { pattern: new RegExp(`^/admin/banners/${id}/edit$`), resource: "banners", action: "edit" },
-  { pattern: /^\/admin\/banners$/, resource: "banners", action: "view" },
   { pattern: /^\/admin\/commodities\/new$/, resource: "commodities", action: "create" },
   { pattern: new RegExp(`^/admin/commodities/${id}/edit$`), resource: "commodities", action: "edit" },
   { pattern: /^\/admin\/commodities$/, resource: "commodities", action: "view" },

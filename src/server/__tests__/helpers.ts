@@ -131,9 +131,8 @@ export async function loginSessionWithResponse(email: string, password = PASSWOR
   const db = getDb();
   const account = await db.adminUser.findUnique({ where: { email }, select: { id: true } });
   if (account) {
-    // A fresh code is always sent: forget any earlier unused code and this account's hourly code allowance.
+    // A fresh code is always sent: forget any earlier unused code.
     await db.authChallenge.updateMany({ where: { userId: account.id, purpose: "login", consumedAt: null, invalidatedAt: null }, data: { invalidatedAt: new Date() } });
-    await db.rateLimit.deleteMany({ where: { key: { contains: `login-code:acct:${account.id}` } } });
   }
   const previous = getMailerOverride();
   let code = "";

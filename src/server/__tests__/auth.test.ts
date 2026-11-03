@@ -110,7 +110,6 @@ beforeEach(async () => {
   await d.rateLimit.deleteMany();
   await d.session.deleteMany();
   await d.authChallenge.deleteMany();
-  await d.adminUser.updateMany({ data: { failedLoginCount: 0, lockedUntil: null } });
   vi.restoreAllMocks();
 });
 
@@ -311,13 +310,11 @@ describe("password login", () => {
     expect(mailTo("plain@t.dev")).toBeTruthy();
   });
 
-  it("returns one generic answer for wrong password, unknown, deactivated, not-yet-activated and locked accounts", async () => {
+  it("returns one generic answer for wrong password, unknown, deactivated and not-yet-activated accounts", async () => {
     const susp = await newStaff({ status: "suspended" });
     const inv = await newInvited();
-    const locked = await newStaff();
-    await db().adminUser.update({ where: { email: locked.email }, data: { lockedUntil: new Date(Date.now() + 600_000) } });
     const attempts = [
-      ["plain@t.dev", "wrong-password-1A!"], ["ghost@t.dev", PASSWORD], [susp.email, PASSWORD], [inv.email, PASSWORD], [locked.email, PASSWORD],
+      ["plain@t.dev", "wrong-password-1A!"], ["ghost@t.dev", PASSWORD], [susp.email, PASSWORD], [inv.email, PASSWORD],
     ];
     const out = [];
     for (const [email, password] of attempts) out.push(await post(login.POST as H, "/api/auth/login", { email, password }, { ip: `192.0.2.${out.length + 1}` }));
@@ -341,41 +338,14 @@ describe("password login", () => {
     expect((await db().adminUser.findUniqueOrThrow({ where: { email: u.email } })).passwordHash).toBe(weak);
   });
 
-  it("locks progressively (not permanently): refused while locked, recovers when the lock lapses", async () => {
+  it("never restricts sign-in attempts: any number of wrong passwords stays a generic 401, and the right password still works afterwards", async () => {
     const u = await newStaff();
-    for (let i = 0; i < 5; i++) await post(login.POST as H, "/api/auth/login", { email: u.email, password: "wrong-password-1A!" });
-    const row = await db().adminUser.findUniqueOrThrow({ where: { email: u.email } });
-    expect(row.lockedUntil!.getTime()).toBeGreaterThan(Date.now());
-    expect((await post(login.POST as H, "/api/auth/login", { email: u.email, password: PASSWORD })).status).toBe(401);
-    await db().adminUser.update({ where: { email: u.email }, data: { lockedUntil: new Date(Date.now() - 1000) } });
-    expect((await post(login.POST as H, "/api/auth/login", { email: u.email, password: PASSWORD })).status).toBe(200);
-    expect((await db().adminUser.findUniqueOrThrow({ where: { email: u.email } })).failedLoginCount).toBe(0);
-  });
-
-  it("rate limits per account (429 + Retry-After), even for the correct password, and recovers when the window passes", async () => {
-    const u = await newStaff();
-    for (let i = 0; i < 8; i++) await post(login.POST as H, "/api/auth/login", { email: u.email, password: "wrong-password-1A!" });
-    const blocked = await post(login.POST as H, "/api/auth/login", { email: u.email, password: PASSWORD });
-    expect(blocked.status).toBe(429);
-    expect(Number(blocked.headers.get("retry-after"))).toBeGreaterThan(0);
-    expect(blocked.data.error.code).toBe("rate_limited");
-    await db().rateLimit.updateMany({ data: { windowStart: new Date(Date.now() - 16 * 60_000) } }); // window expired
-    await db().adminUser.update({ where: { email: u.email }, data: { lockedUntil: null, failedLoginCount: 0 } });
-    expect((await post(login.POST as H, "/api/auth/login", { email: u.email, password: PASSWORD })).status).toBe(200);
-  });
-
-  it("rate limits per source address across many accounts, without affecting other sources", async () => {
+    const res = await Promise.all(Array.from({ length: 15 }, () => post(login.POST as H, "/api/auth/login", { email: u.email, password: "wrong-password-1A!" })));
+    expect(res.every((r) => r.status === 401)).toBe(true);
     let last = 0;
-    for (let i = 0; i < 61; i++) last = (await post(login.POST as H, "/api/auth/login", { email: `ghost${i}@t.dev`, password: "x-wrong-password-1A" }, { ip: "203.0.113.50" })).status;
-    expect(last).toBe(429);
-    expect((await post(login.POST as H, "/api/auth/login", { email: "plain@t.dev", password: PASSWORD }, { ip: "203.0.113.51" })).status).toBe(200);
-  });
-
-  it("counters are atomic under concurrency: 20 parallel attempts allow exactly the limit", async () => {
-    const u = await newStaff();
-    const res = await Promise.all(Array.from({ length: 20 }, () => post(login.POST as H, "/api/auth/login", { email: u.email, password: "wrong-password-1A!" })));
-    expect(res.filter((r) => r.status === 429)).toHaveLength(12);
-    expect(res.filter((r) => r.status === 401)).toHaveLength(8);
+    for (let i = 0; i < 70; i++) last = (await post(login.POST as H, "/api/auth/login", { email: `ghost${i}@t.dev`, password: "x-wrong-password-1A" }, { ip: "203.0.113.50" })).status;
+    expect(last).toBe(401);
+    expect((await post(login.POST as H, "/api/auth/login", { email: u.email, password: PASSWORD })).status).toBe(200); // no lock after 15 wrong passwords
   });
 
   it("ignores X-Forwarded-For unless a trusted proxy is configured", () => {
@@ -507,12 +477,6 @@ describe("refresh-token rotation", () => {
     expect((await post(refresh.POST as H, "/api/auth/refresh", {}, { cookie: asRefresh(jar.hv_rt) })).status).toBe(401);
     expect(await db().activityLog.count({ where: { action: "logout" } })).toBeGreaterThanOrEqual(1);
   });
-
-  it("is rate limited per source", async () => {
-    let last = 0;
-    for (let i = 0; i < 121; i++) last = (await post(refresh.POST as H, "/api/auth/refresh", {}, { ip: "203.0.113.77" })).status;
-    expect(last).toBe(429);
-  });
 });
 
 /* ═══════════════════ MFA ═══════════════════ */
@@ -596,13 +560,6 @@ describe("password reset", () => {
     expect(a.data).toEqual(c.data);
     expect(sink.map((m) => m.to)).toEqual([u.email]);
     expect(mailTo(u.email)!.html).toContain("Hamsavahin");
-  });
-
-  it("rate limits requests per account", async () => {
-    const u = await newStaff();
-    const codes = [];
-    for (let i = 0; i < 4; i++) codes.push((await post(forgot.POST as H, "/api/auth/password/forgot", { email: u.email })).status);
-    expect(codes).toEqual([200, 200, 200, 429]);
   });
 
   it("enforces the password policy, forbids reuse, is single use, expires, and revokes every session and refresh token", async () => {

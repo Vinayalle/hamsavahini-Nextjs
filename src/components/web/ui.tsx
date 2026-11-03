@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import type { IconType } from "react-icons";
 import { LuChevronRight, LuInbox, LuTriangleAlert } from "react-icons/lu";
 import { cleanHtml } from "@/server/resources/sanitize";
-import { Reveal } from "./motion";
+import { Reveal, Tilt } from "./motion";
 
 /** Shared building blocks of the public website. Server-safe (no hooks); animation comes from <Reveal> and the CSS in (site)/globals.css. */
 export const headingFont = "font-[family-name:var(--font-hero-title)] font-normal";
@@ -22,7 +22,7 @@ export function PageHero({ eyebrow, title, description, crumbs, children }: { ey
   return (
     <section aria-labelledby="page-title" className="relative isolate overflow-hidden bg-neutral-950 text-white">
       <div aria-hidden className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(60%_90%_at_85%_10%,rgba(185,134,38,0.45),transparent_62%),radial-gradient(45%_60%_at_5%_100%,rgba(185,134,38,0.2),transparent_62%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(60%_90%_at_85%_10%,rgba(176,128,64,0.45),transparent_62%),radial-gradient(45%_60%_at_5%_100%,rgba(176,128,64,0.2),transparent_62%)]" />
         <div className="about-grid absolute inset-0 opacity-[0.09]" />
         <div className="about-float absolute -right-20 top-0 size-80 rounded-full bg-gold-500/25 blur-3xl" />
       </div>
@@ -61,7 +61,7 @@ export function SectionHeading({ id, eyebrow, title, description, light, center 
 
 type ButtonVariant = "primary" | "outline" | "white" | "ghost";
 const BUTTON: Record<ButtonVariant, string> = {
-  primary: "bg-gold-500 text-ink shadow-lg shadow-gold-500/25 hover:bg-gold-400",
+  primary: "btn-sheen bg-gradient-to-b from-gold-400 to-gold-500 text-ink shadow-lg shadow-gold-500/25 hover:from-gold-300 hover:to-gold-400",
   outline: "border border-gold-600 text-gold-700 hover:bg-gold-500 hover:text-ink",
   white: "bg-white text-neutral-900 hover:bg-neutral-100",
   ghost: "border border-white/30 text-white hover:bg-white/10",
@@ -98,11 +98,13 @@ export function CtaBand({ title = "Looking for a reliable mineral supplier?", te
 export function PointCard({ icon: Icon, title, text, index }: { icon: IconType; title: string; text: string; index?: number }) {
   return (
     <Reveal as="li" delay={((index ?? 0) % 3) * 90}>
-      <div className={`${card} ${cardHover} group h-full p-6 md:p-8`}>
-        <div aria-hidden className={`${badge} mb-5 size-14 transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110`}><Icon className="size-7" /></div>
-        <h3 className="mb-2 text-xl font-bold text-neutral-900">{title}</h3>
-        <p className="text-base leading-7 text-neutral-600">{text}</p>
-      </div>
+      <Tilt className="h-full rounded-3xl">
+        <div className={`${card} ${cardHover} group h-full p-6 md:p-8`}>
+          <div aria-hidden className={`${badge} mb-5 size-14 transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110`}><Icon className="size-7" /></div>
+          <h3 className="mb-2 text-xl font-bold text-neutral-900">{title}</h3>
+          <p className="text-base leading-7 text-neutral-600">{text}</p>
+        </div>
+      </Tilt>
     </Reveal>
   );
 }

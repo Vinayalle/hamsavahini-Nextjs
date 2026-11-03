@@ -13,6 +13,7 @@ import * as publicImage from "@/app/api/public/product-image/[id]/route";
 import { getProduct, listRecentProducts } from "@/server/services/public";
 import * as products from "@/app/api/products/route";
 import * as productById from "@/app/api/products/[id]/route";
+import * as productsBulk from "@/app/api/products/bulk/route";
 
 /**
  * Product pictures and documents: uploaded through our own routes, saved inside the project on local disk, attached to a product by
@@ -160,26 +161,40 @@ describe("product pictures and documents (stored inside the project)", () => {
     await db().storedFile.delete({ where: { id: lib.id } });
   });
 
-  it("removes files from disk once no product uses them (after the grace period), and never while one does", async () => {
+  it("removes files from disk when a product is deleted or loses them, and never while another product uses them", async () => {
     const a = await upload("image", png(), "a.png", "image/png");
-    const b = await upload("image", png(14, 14), "b.png", "image/png");
-    const created = await create(body({ images: [{ fileId: a.id }] }));
-    const id = (created.data as { id: string }).id;
-    const later = new Date(Date.now() + 2 * 60 * 60 * 1000);
-    await purgeOrphanProductFiles(db(), new Date()); // inside the grace period: nothing goes
+    const d = await upload("document", pdf(), "d.pdf", "application/pdf");
+    const made = await create(body({ images: [{ fileId: a.id }], documents: [{ fileId: d.id }] }));
+    const id = (made.data as { id: string }).id;
     expect(files()).toHaveLength(2);
-    await purgeOrphanProductFiles(db(), later); // b was never attached
-    expect(await stored(b.id)).toBeNull();
-    expect(files()).toHaveLength(1);
-    await patch(id, { images: [] }); // a is taken off the product
-    await purgeOrphanProductFiles(db(), later);
+    await patch(id, { images: [] }); // the picture is taken off the product
+    await new Promise((r) => setTimeout(r, 200)); // the cleanup runs just after the answer
     expect(await stored(a.id)).toBeNull();
+    expect(files()).toHaveLength(1); // the document is still attached
+    expect((await remove(id)).status).toBe(200); // deleting the product deletes its document file as well
+    expect(await stored(d.id)).toBeNull();
     expect(files()).toEqual([]);
-    const c = await upload("image", png(), "c.png", "image/png");
-    const p2 = await create(body({ code: "IOF-2", slug: "iron-two", images: [{ fileId: c.id }] }));
-    await remove((p2.data as { id: string }).id); // deleting the product leaves the file orphaned; the next purge deletes it
+  });
+
+  it("bulk deleting products removes their files too", async () => {
+    const x = await upload("image", png(), "x.png", "image/png");
+    const y = await upload("image", png(12, 12), "y.png", "image/png");
+    const p1 = await create(body({ code: "BLK-1", slug: "bulk-one", images: [{ fileId: x.id }] }));
+    const p2 = await create(body({ code: "BLK-2", slug: "bulk-two", images: [{ fileId: y.id }] }));
+    const ids = [(p1.data as { id: string }).id, (p2.data as { id: string }).id];
+    const r = await call(productsBulk.POST as H, { method: "POST", url: "/api/products/bulk", cookie: ck.sa, body: { action: "delete", ids } });
+    expect(r.status).toBe(200);
+    expect(files()).toEqual([]);
+    expect(await stored(x.id)).toBeNull();
+  });
+
+  it("removes uploads that were never saved on a product only after the grace period", async () => {
+    const lonely = await upload("image", png(), "lonely.png", "image/png");
+    const later = new Date(Date.now() + 2 * 60 * 60 * 1000);
+    await purgeOrphanProductFiles(db(), new Date());
+    expect(files()).toHaveLength(1); // inside the grace period: a form may still be open
     await purgeOrphanProductFiles(db(), later);
-    expect(await stored(c.id)).toBeNull();
+    expect(await stored(lonely.id)).toBeNull();
     expect(files()).toEqual([]);
   });
 });

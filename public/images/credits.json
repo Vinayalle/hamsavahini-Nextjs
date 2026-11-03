@@ -1,0 +1,38 @@
+{
+  "iron-ore": {
+    "title": "One of the iron ore mines in Keonjhar district.jpg",
+    "author": "Bikashkumargiri1997",
+    "license": "CC BY-SA 4.0",
+    "page": "https://commons.wikimedia.org/wiki/File:One_of_the_iron_ore_mines_in_Keonjhar_district.jpg"
+  },
+  "granite": {
+    "title": "Granite mines.jpg",
+    "author": "Sri2161k",
+    "license": "CC BY-SA 4.0",
+    "page": "https://commons.wikimedia.org/wiki/File:Granite_mines.jpg"
+  },
+  "quartz": {
+    "title": "Quartz, Tibet.jpg",
+    "author": "JJ Harrison (https://www.jjharrison.com.au/)",
+    "license": "CC BY-SA 2.5",
+    "page": "https://commons.wikimedia.org/wiki/File:Quartz,_Tibet.jpg"
+  },
+  "quality": {
+    "title": "U12G-CORE SAMPLES, NEVADA TEST SITE - DPLA - 136f2118b20294eadc5a6dc4e00b1a90.jpg",
+    "author": "Department of Energy. National Nuclear Security Administration. Sandia National Laboratories. 3/1/2000",
+    "license": "Public domain",
+    "page": "https://commons.wikimedia.org/wiki/File:U12G-CORE_SAMPLES,_NEVADA_TEST_SITE_-_DPLA_-_136f2118b20294eadc5a6dc4e00b1a90.jpg"
+  },
+  "sustainability": {
+    "title": "Land Reclamation activities by communities.jpg",
+    "author": "Audrey Mulama",
+    "license": "CC BY-SA 4.0",
+    "page": "https://commons.wikimedia.org/wiki/File:Land_Reclamation_activities_by_communities.jpg"
+  },
+  "global": {
+    "title": "Port of West Sacramento, loading a bulk carrier.jpg",
+    "author": "Quintin Soloviev",
+    "license": "CC BY 4.0",
+    "page": "https://commons.wikimedia.org/wiki/File:Port_of_West_Sacramento,_loading_a_bulk_carrier.jpg"
+  }
+}

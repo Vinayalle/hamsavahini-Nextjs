@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
+import { siteBaseUrl } from "./src/lib/site-url";
 
 const isProd = process.env.NODE_ENV === "production";
-// HTTPS-only directives are applied only when the site is really served over HTTPS (APP_BASE_URL=https://...), so a local
-// `next start` on http://localhost keeps working.
-const isHttps = (process.env.APP_BASE_URL ?? "").startsWith("https://");
+// HTTPS-only directives are applied only when the site is really served over HTTPS: the live site (production) does so by itself;
+// to run a production build on http://localhost, set APP_BASE_URL=http://localhost:3000.
+const isHttps = siteBaseUrl().startsWith("https://");
 
 /**
  * Content-Security-Policy. Next.js injects small inline scripts/styles, so those are allowed ('unsafe-inline'); everything else is
@@ -43,15 +44,13 @@ const nextConfig: NextConfig = {
   async headers() {
     // The file routes set their own, stricter headers (sandboxing CSP, caching) because they serve user-uploaded files,
     // so the generic site-wide headers must not overwrite them.
-    const notMediaFile = "((?!api/media/[^/]+/file|api/public/banner-image/[^/]+).*)";
+    const notMediaFile = "((?!api/media/[^/]+/file).*)";
     return [
       { source: `/:path${notMediaFile}`, headers: baseHeaders },
       // The admin application and every API answer: never indexed, never cached by browsers or shared caches.
       { source: "/admin/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }, { key: "Cache-Control", value: "no-store" }] },
-      { source: "/api/:path((?!media/[^/]+/file|public/banner-image/[^/]+).*)", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }, { key: "Cache-Control", value: "no-store" }] },
+      { source: "/api/:path((?!media/[^/]+/file).*)", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }, { key: "Cache-Control", value: "no-store" }] },
       { source: "/api/media/:id/file", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] },
-      // Public website pictures set their own sandboxing CSP and public caching.
-      { source: "/api/public/banner-image/:id", headers: [{ key: "X-Robots-Tag", value: "noindex" }] },
     ];
   },
 };

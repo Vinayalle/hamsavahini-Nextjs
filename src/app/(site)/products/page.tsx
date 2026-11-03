@@ -22,7 +22,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const chip = (active: boolean) => `inline-flex items-center rounded-full border px-5 py-2.5 text-sm font-bold transition ${active ? "border-gold-600 bg-gold-500 text-ink" : "border-neutral-200 bg-white text-neutral-700 hover:border-gold-200 hover:text-gold-700"}`;
   return (
     <div className={`${bodyFont} text-neutral-800`}>
-      <PageHero eyebrow="Catalogue" title="Product catalogue" description="The materials we supply, with grade, origin, packaging and current availability." crumbs={[{ label: "Product catalogue" }]} />
+      <PageHero eyebrow="Catalogue" title="Product catalogue" description="The materials we supply. Open any product for the details, or request a quote." crumbs={[{ label: "Product catalogue" }]} />
       <section aria-label="Products" className="bg-neutral-50">
         <div className={`${container} py-9 md:py-12`}>
           <form action="/products" method="get" role="search" className="mb-8 flex flex-col gap-3 sm:flex-row">

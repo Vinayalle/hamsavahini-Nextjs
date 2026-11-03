@@ -21,7 +21,7 @@ export default function Footer(_props: { settings: PublicSettings }) {
         <div className="grid gap-12 lg:grid-cols-[1.3fr_2.7fr]">
           <div>
             <Link href="/" className="inline-flex items-center gap-3" aria-label="Hamsavahin Aarth Mines, home">
-              <Logo variant="lockup" className="h-12" />
+              <Logo variant="lockup" onDark className="h-20" />
             </Link>
             <p className="mt-5 max-w-sm text-[15px] leading-7 text-white/70">{COMPANY.description}</p>
             {/* Contact details (address, phone, email): hidden for now. Remove this comment to show them again.
@@ -55,6 +55,7 @@ export default function Footer(_props: { settings: PublicSettings }) {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <Link href="/privacy-policy" className="hover:text-white">Privacy policy</Link>
             <Link href="/terms" className="hover:text-white">Terms of use</Link>
+            <Link href="/photo-credits" className="hover:text-white">Photo credits</Link>
             <a href="#top" className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-white/80 transition hover:border-gold-500 hover:bg-gold-500 hover:text-white">Back to top <LuArrowUp className="size-4" aria-hidden /></a>
           </div>
         </div>

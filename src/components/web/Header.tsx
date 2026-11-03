@@ -47,7 +47,7 @@ export default function Header() {
       <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-10">
         <div className="flex h-[calc(var(--site-header-h)-1px)] items-center justify-between gap-6">
           <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="Hamsavahin Aarth Mines, home">
-            <Logo variant="lockup" priority className="h-10 sm:h-12" />
+            <Logo variant="lockup" priority className="h-12 sm:h-16" />
           </Link>
 
           {/* desktop */}

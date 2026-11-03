@@ -7,8 +7,9 @@ import { enforce, sourceKey } from "../ratelimit";
 import { parseBody } from "../http";
 import { newStorageKey, validateUpload } from "../files";
 import { getStorage } from "../storage";
-import { sendFormConfirmation } from "../notify";
-import { applicationReceivedEmail, enquiryReceivedEmail, rfqReceivedEmail } from "../mail-templates";
+import { sendFormConfirmation, sendStaffNotification } from "../notify";
+import { applicationReceivedEmail, enquiryReceivedEmail, quoteReceivedEmail, rfqReceivedEmail, staffNotificationEmail } from "../mail-templates";
+import { visitorSiteUrl } from "../mail";
 import { assertBodySize } from "./library";
 
 /**
@@ -32,23 +33,29 @@ const text = (min: number, max: number, label: string) =>
   z.string({ error: `${label} is required` }).transform(clean).pipe(z.string().min(min, min ? `${label} is required` : undefined).max(max, `${label} is too long`));
 const optionalText = (max: number) => z.string().transform(clean).pipe(z.string().max(max, "Too long")).optional().transform((v) => (v ? v : null));
 const email = z.string({ error: "Email is required" }).trim().toLowerCase().pipe(z.string().email("Enter a valid email address").max(160));
+/** A person's name: letters, spaces, dot, apostrophe, hyphen. No digits. */
+const personName = (label: string) => text(2, 100, label).refine((v) => /^[\p{L}\p{M}\s.'\u2019-]+$/u.test(v), `${label} can have letters only`);
 const phone = (required: boolean) =>
-  z.string().trim().transform((v) => v.replace(/\s+/g, " ")).pipe(z.string().max(30).regex(/^[0-9+()\-.\s]{0,30}$/, "Use digits, spaces and + ( ) - only").refine((v) => !required || v.replace(/\D/g, "").length >= 6, "Enter a valid phone number"));
+  z.string().trim().transform((v) => v.replace(/\s+/g, " ")).pipe(z.string().max(30).regex(/^\+?[0-9\s]{0,30}$/, "Phone number can have digits only").refine((v) => !required || v.replace(/\D/g, "").length >= 6, "Enter a valid phone number"));
 const consent = z.literal(true, { error: "Please accept the privacy notice to continue" });
 /** Honeypot: hidden from people (and screen readers), irresistible to form-filling bots. */
 const honeypot = z.string().max(200).optional();
 const noLinkSpam = (message: string) => (message.match(/https?:\/\/|www\./gi) ?? []).length <= 3;
 
 const enquirySchema = z.object({
-  name: text(2, 100, "Name"), email, phone: phone(false).optional().transform((v) => (v ? v : null)), company: optionalText(120),
+  name: personName("Name"), email, phone: phone(false).optional().transform((v) => (v ? v : null)), company: optionalText(120),
   subject: text(3, 150, "Subject"), message: text(10, 4000, "Message").refine(noLinkSpam, "Please remove some of the links from your message"),
   source: z.enum(["contact_page", "footer_form", "product_page"]).default("contact_page"), consent, website: honeypot,
+  /** Set by the "Request a quote" form on a product page. The server looks the product up itself; nothing about it is taken from the visitor. */
+  productSlug: z.string().trim().max(160).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Unknown product").optional(),
+}).superRefine((v, ctx) => {
+  if (v.productSlug && !v.phone) ctx.addIssue({ code: "custom", path: ["phone"], message: "Phone number is required" });
 });
 
 export const RFQ_UNITS = ["MT", "DMT", "kg", "pcs"] as const;
 export const INCOTERMS = ["EXW", "FCA", "FOB", "CFR", "CIF", "CIP", "DAP", "DDP"] as const;
 const rfqSchema = z.object({
-  companyName: text(2, 150, "Company name"), contactName: text(2, 100, "Your name"), email, phone: phone(true), country: text(2, 80, "Country"),
+  companyName: text(2, 150, "Company name"), contactName: personName("Your name"), email, phone: phone(true), country: text(2, 80, "Country"),
   requirement: text(3, 300, "Mineral / product"), quantity: z.coerce.number({ error: "Enter a quantity" }).positive("Enter a quantity above zero").max(1_000_000_000, "Quantity is too large"),
   quantityUnit: z.enum(RFQ_UNITS, { error: "Choose a unit" }), targetPrice: optionalText(60), incoterm: z.enum(INCOTERMS, { error: "Choose an incoterm" }),
   deliveryPort: text(2, 120, "Delivery port"), message: z.string().transform(clean).pipe(z.string().max(4000).refine(noLinkSpam, "Please remove some of the links from your message")).default(""),
@@ -57,7 +64,7 @@ const rfqSchema = z.object({
 
 const applicationFields = z.object({
   careerSlug: z.string().trim().min(1).max(160).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Unknown position"),
-  applicantName: text(2, 100, "Your name"), email, phone: phone(true), currentCompany: optionalText(120),
+  applicantName: personName("Your name"), email, phone: phone(true), currentCompany: optionalText(120),
   experienceYears: z.coerce.number({ error: "Enter your years of experience" }).int("Use whole years").min(0).max(60),
   coverNote: z.string().transform(clean).pipe(z.string().max(4000).refine(noLinkSpam, "Please remove some of the links from your note")).default(""), consent, website: honeypot,
 });
@@ -78,8 +85,28 @@ export async function createEnquiry(request: Request) {
   const v = await parseBody(request, enquirySchema);
   if (isBot(v)) return OK; // pretend success, store nothing
   await throttle("enquiry", request, v.email);
-  await getDb().contactEnquiry.create({ data: { name: v.name, email: v.email, phone: v.phone, company: v.company, subject: v.subject, message: v.message, source: v.source, consentAt: new Date() } });
-  await sendFormConfirmation("enquiry_received", v.email, enquiryReceivedEmail(v.name, v.subject));
+  const db = getDb();
+  // A quote request names a product. It must be a published one; its name and link come from the database, not from the visitor.
+  let product: { name: string; slug: string } | null = null;
+  if (v.productSlug) {
+    product = await db.product.findFirst({ where: { slug: v.productSlug, status: "published", category: { status: "published" } }, select: { name: true, slug: true } });
+    if (!product) throw errors.notFound("Product");
+  }
+  const link = product ? `${visitorSiteUrl(request)}/products/${product.slug}` : null;
+  const subject = product ? `Quote request: ${product.name}`.slice(0, 150) : v.subject;
+  const message = product ? `${v.message}\n\nRequested product: ${product.name}\nProduct link: ${link}` : v.message;
+  await db.contactEnquiry.create({ data: { name: v.name, email: v.email, phone: v.phone, company: v.company, subject, message, source: v.source, consentAt: new Date() } });
+  await sendFormConfirmation(product ? "quote_received" : "enquiry_received", v.email, product && link ? quoteReceivedEmail(v.name, product.name, link) : enquiryReceivedEmail(v.name, subject));
+  await sendStaffNotification(
+    product ? "staff_product_quote" : "staff_enquiry",
+    staffNotificationEmail({
+      title: product ? `New quote request: ${product.name}` : `New enquiry: ${subject}`,
+      rows: [["Name", v.name], ["Email", v.email], ["Phone", v.phone], ["Company", v.company], ["Product", product?.name]],
+      links: link ? [{ label: "Product page", url: link }] : [],
+      message: v.message,
+    }, v.name),
+    v.email,
+  );
   return OK;
 }
 
@@ -99,6 +126,11 @@ export async function createRfq(request: Request) {
         data: { reference, companyName: v.companyName, contactName: v.contactName, email: v.email, phone: v.phone, country: v.country, requirement: v.requirement, quantity: v.quantity, quantityUnit: v.quantityUnit, targetPrice: v.targetPrice, incoterm: v.incoterm, deliveryPort: v.deliveryPort, message: v.message, consentAt: new Date() },
       });
       await sendFormConfirmation("rfq_received", v.email, rfqReceivedEmail(v.contactName, { reference, requirement: v.requirement, quantity: `${v.quantity.toLocaleString("en-US")} ${v.quantityUnit}`, incoterm: v.incoterm, deliveryPort: v.deliveryPort }));
+      await sendStaffNotification("staff_rfq", staffNotificationEmail({
+        title: `New quotation request ${reference}`,
+        rows: [["Reference", reference], ["Company", v.companyName], ["Contact", v.contactName], ["Email", v.email], ["Phone", v.phone], ["Country", v.country], ["Material", v.requirement], ["Quantity", `${v.quantity.toLocaleString("en-US")} ${v.quantityUnit}`], ["Target price", v.targetPrice], ["Incoterm", v.incoterm], ["Delivery port", v.deliveryPort]],
+        message: v.message || undefined,
+      }, v.contactName), v.email);
       return { ...OK, reference };
     } catch (e) {
       if ((e as { code?: string }).code !== "P2002") throw e; // only a reference collision is retried
@@ -143,6 +175,7 @@ export async function createApplication(request: Request) {
   if (!(file instanceof File) || file.size === 0) {
     await db.jobApplication.create({ data });
     await sendFormConfirmation("application_received", v.email, applicationReceivedEmail(v.applicantName, career.title));
+    await notifyStaffOfApplication(v, career.title, false);
     return OK;
   }
   if (file.size > MAX_RESUME_BYTES) throw new ApiError(413, "file_too_large", "The resume is too large (maximum 5 MB).");
@@ -166,5 +199,15 @@ export async function createApplication(request: Request) {
     throw e;
   }
   await sendFormConfirmation("application_received", v.email, applicationReceivedEmail(v.applicantName, career.title));
+  await notifyStaffOfApplication(v, career.title, true);
   return OK;
+}
+
+/** The company mailbox gets the applicant's details; the resume itself is opened in the admin (it is stored privately, never e-mailed). */
+function notifyStaffOfApplication(v: { applicantName: string; email: string; phone: string; currentCompany: string | null; experienceYears: number; coverNote: string }, position: string, hasResume: boolean) {
+  return sendStaffNotification("staff_application", staffNotificationEmail({
+    title: `New job application: ${position}`,
+    rows: [["Position", position], ["Name", v.applicantName], ["Email", v.email], ["Phone", v.phone], ["Current company", v.currentCompany], ["Experience", `${v.experienceYears} years`], ["Resume", hasResume ? "Uploaded (open it in the admin, under Applications)" : "Not attached"]],
+    message: v.coverNote || undefined,
+  }, v.applicantName), v.email);
 }

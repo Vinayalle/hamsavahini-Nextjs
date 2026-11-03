@@ -1,15 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { LuPlus as Plus, LuTrash2 as Trash2 } from "react-icons/lu";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import { Input, Select, Switch, Textarea } from "@/components/ui/fields";
-import { DocumentUploader, ImageUploader } from "@/components/forms/uploaders";
-import { Field, FormActions, FormSection } from "@/components/forms/form-parts";
+import { Input, Textarea } from "@/components/ui/fields";
+import { ImageUploader } from "@/components/forms/uploaders";
+import { CategoryPicker } from "@/components/forms/category-picker";
+import { useAuth } from "@/lib/auth";
+import { Field, FormActions, FormSection, TagInput } from "@/components/forms/form-parts";
 import { useUnsavedChangesGuard } from "@/components/admin/dialogs";
 import { useAll } from "@/hooks/use-resource";
 import { categoryService, productService } from "@/lib/services";
@@ -17,82 +20,80 @@ import { slugify, uid } from "@/lib/utils";
 import { ApiClientError, isApiMode } from "@/lib/api/client";
 import type { Product } from "@/types/entities";
 
+/**
+ * The product form is deliberately short: the name, the category, what it is used for, where it comes from, a few specifications, the full details and the pictures.
+ * The code, the web address and the short summary are made automatically, and a new product is shown on the website straight away
+ * (it can be hidden or shown again with the switch on the products list).
+ */
 const schema = z.object({
   name: z.string().trim().min(2, "Product name is required").max(120),
-  code: z.string().trim().min(3, "Product code is required").regex(/^[A-Za-z0-9-]+$/, "Letters, numbers and hyphens only"),
-  slug: z.string().trim().min(2, "Slug is required").regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers and hyphens"),
-  categoryId: z.string().min(1, "Choose a category"),
-  shortDescription: z.string().trim().min(10, "Add a short summary (min 10 characters)").max(200, "Keep it under 200 characters"),
-  description: z.string().trim().min(20, "Add a full description (min 20 characters)"),
+  category: z.string().trim().min(2, "Choose a category or type a new one").max(120),
+  applications: z.array(z.string()),
+  origin: z.string().trim().max(120),
+  specifications: z.array(z.object({ id: z.string(), label: z.string().trim().min(1, "Required").max(80), value: z.string().trim().min(1, "Required").max(120) })).max(8),
+  description: z.string().trim().min(20, "Add the product details (min 20 characters)"),
   images: z.array(z.object({ id: z.string(), fileId: z.string().optional(), url: z.string(), alt: z.string(), isPrimary: z.boolean() })),
-  specifications: z.array(z.object({
-    id: z.string(),
-    label: z.string().trim().min(1, "Required"),
-    value: z.string().trim().min(1, "Required"),
-    unit: z.string().optional(),
-  })),
-  documents: z.array(z.object({
-    id: z.string(), fileId: z.string().optional(), url: z.string().optional(), name: z.string(), sizeBytes: z.number(),
-    type: z.enum(["datasheet", "coa", "msds", "brochure", "other"]),
-  })),
-  status: z.enum(["draft", "published", "archived"]),
-  featured: z.boolean(),
 });
 type Values = z.infer<typeof schema>;
 
-const EMPTY: Values = {
-  name: "", code: "", slug: "", categoryId: "", shortDescription: "", description: "",
-  images: [], specifications: [], documents: [],
-  status: "draft", featured: false,
-};
+const EMPTY: Values = { name: "", category: "", applications: [], origin: "", specifications: [], description: "", images: [] };
 
 export function ProductForm({ product }: { product?: Product }) {
   const router = useRouter();
   const categories = useAll(categoryService);
-  const products = useAll(productService);
+  const { can } = useAuth();
 
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: product
-      ? {
-          name: product.name, code: product.code, slug: product.slug, categoryId: product.categoryId,
-          shortDescription: product.shortDescription, description: product.description,
-          images: product.images, specifications: product.specifications, documents: product.documents,
-          status: product.status, featured: product.featured,
-        }
+      ? { name: product.name, category: "", applications: product.applications ?? [], origin: product.origin ?? "", specifications: product.specifications.map((x) => ({ id: x.id, label: x.label, value: x.unit ? `${x.value} ${x.unit}` : x.value })), description: product.description, images: product.images }
       : EMPTY,
   });
   const { register, control, handleSubmit, setValue, setError, formState: { errors, isDirty, isSubmitting } } = form;
   const specs = useFieldArray({ control, name: "specifications" });
   const { navigate, dialog } = useUnsavedChangesGuard(isDirty && !isSubmitting);
-  const slugTouched = !!product;
+  // Editing: show the product's current category as soon as the categories have loaded.
+  const currentCategory = product ? categories.find((c) => c.id === product.categoryId)?.name : undefined;
+  useEffect(() => {
+    if (currentCategory && !form.getValues("category")) form.reset({ ...form.getValues(), category: currentCategory });
+  }, [currentCategory, form]);
 
   const onSubmit = async (v: Values) => {
-    if (products.some((p) => p.id !== product?.id && p.code.toLowerCase() === v.code.toLowerCase())) {
-      setError("code", { message: "Another product already uses this code" });
-      return;
-    }
-    if (products.some((p) => p.id !== product?.id && p.slug === v.slug)) {
-      setError("slug", { message: "Another product already uses this slug" });
-      return;
-    }
-    const payload = {
-      ...v,
-      publishedAt: v.status === "published" ? product?.publishedAt ?? new Date().toISOString() : product?.publishedAt ?? null,
-    };
     try {
-      const saved = product ? await productService.update(product.id, payload) : await productService.create(payload);
-      toast.success(product ? "Product updated" : "Product created", {
-        description: isApiMode ? "Saved to the database." : "Saved to mock data — not persisted to a server.",
+      // The category is a name: an existing one is used as it is, a new one is created now (on the website it appears with its first product).
+      const typed = v.category.trim();
+      let target = categories.find((c) => c.name.trim().toLowerCase() === typed.toLowerCase());
+      if (!target) {
+        if (!can("categories", "create")) return void setError("category", { message: "You can only choose an existing category." });
+        const taken = new Set(categories.map((c) => c.slug));
+        let slug = slugify(typed) || "category";
+        for (let n = 2; taken.has(slug); n++) slug = `${slugify(typed) || "category"}-${n}`;
+        target = await categoryService.create({ name: typed, slug, description: "", parentId: null, sortOrder: 0, status: "published" } as unknown as Parameters<typeof categoryService.create>[0]);
+      }
+      const { category: _category, ...rest } = v;
+      void _category;
+      const base = { ...rest, specifications: rest.specifications.map(({ label, value }) => ({ label, value, unit: null })), origin: rest.origin || null, categoryId: target.id };
+      let saved: Product;
+      if (product) {
+        saved = await productService.update(product.id, base as unknown as Parameters<typeof productService.update>[1]); // the code, web address and status stay as they were
+      } else {
+        // Database mode: the server makes the code, address and summary and publishes the product. The preview mode has no server, so it fills them in here.
+        const flat = v.description.replace(/\s+/g, " ").trim();
+        const preview = isApiMode ? {} : { code: `P-${uid("p").slice(-8).toUpperCase()}`, slug: slugify(v.name), shortDescription: flat.slice(0, 200), documents: [], status: "published", featured: false, publishedAt: new Date().toISOString() };
+        saved = await productService.create({ ...base, ...preview } as unknown as Parameters<typeof productService.create>[0]);
+      }
+      toast.success(product ? "Product updated" : "Product added", {
+        description: product ? (isApiMode ? "Saved to the database." : "Saved to mock data, not persisted to a server.") : isApiMode ? "It is shown on the website. Use the switch on the products list to hide it." : "Saved to mock data, not persisted to a server.",
       });
       form.reset(v);
       router.push(`/admin/products/${saved.id}`);
     } catch (e) {
-      // Surface the server's per-field validation (duplicate code/slug, bad category…) next to the inputs.
       if (e instanceof ApiClientError && e.fields) {
-        const known = ["name", "code", "slug", "categoryId", "shortDescription", "description"] as const;
         let mapped = false;
-        for (const k of known) if (e.fields[k]) { setError(k, { message: e.fields[k] }); mapped = true; }
+        for (const k of ["name", "description"] as const) if (e.fields[k]) { setError(k, { message: e.fields[k] }); mapped = true; }
+        if (e.fields.categoryId) { setError("category", { message: e.fields.categoryId }); mapped = true; }
+        if (e.fields.applications) { toast.error(e.fields.applications); return; }
+        if (e.fields.images) { toast.error(e.fields.images); return; }
         if (mapped) return void toast.error("Please fix the highlighted fields before saving.");
       }
       toast.error(e instanceof Error ? e.message : "Could not save product");
@@ -103,100 +104,60 @@ export function ProductForm({ product }: { product?: Product }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit, onInvalid)} noValidate className="space-y-6">
-      <FormSection title="1. Basic Information" description="Core product details shown on the catalogue.">
+      <FormSection title="1. Product" description="What visitors see on the product card and the product page.">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Product name" htmlFor="name" required error={errors.name?.message}>
-            <Input
-              id="name" aria-invalid={!!errors.name}
-              {...register("name", {
-                onChange: (e) => { if (!slugTouched && !form.getFieldState("slug").isDirty) setValue("slug", slugify(e.target.value), { shouldDirty: false }); },
-              })}
-            />
+            <Input id="name" aria-invalid={!!errors.name} {...register("name")} />
           </Field>
-          <Field label="Product code" htmlFor="code" required error={errors.code?.message} hint="Unique SKU, e.g. HMV-MET-1005">
-            <Input id="code" aria-invalid={!!errors.code} {...register("code")} />
-          </Field>
-          <Field label="URL slug" htmlFor="slug" required error={errors.slug?.message}>
-            <Input id="slug" aria-invalid={!!errors.slug} {...register("slug")} />
-          </Field>
-          <Field label="Category" htmlFor="categoryId" required error={errors.categoryId?.message}>
-            <Select id="categoryId" aria-invalid={!!errors.categoryId} {...register("categoryId")}>
-              <option value="">Select category…</option>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </Select>
+          <Field label="Category" htmlFor="category" required error={errors.category?.message} hint="Pick one, or type a new name to add it.">
+            <Controller control={control} name="category" render={({ field }) => (
+              <CategoryPicker id="category" value={field.value} onChange={(v) => setValue("category", v, { shouldDirty: true, shouldValidate: !!errors.category })} options={categories.map((c) => c.name)} canCreate={can("categories", "create")} invalid={!!errors.category} />
+            )} />
           </Field>
         </div>
-        <Field label="Short description" htmlFor="shortDescription" required error={errors.shortDescription?.message} hint="Shown on product cards. Max 200 characters.">
-          <Textarea id="shortDescription" rows={2} aria-invalid={!!errors.shortDescription} {...register("shortDescription")} />
+        <Field label="Used for" htmlFor="applications" hint="The industries and uses, for example Steel making. Press Enter after each one. Shown on the product card.">
+          <Controller control={control} name="applications" render={({ field }) => (
+            <TagInput id="applications" value={field.value} onChange={(v) => setValue("applications", v, { shouldDirty: true })} placeholder="Steel making, Construction…" />
+          )} />
         </Field>
-        <Field label="Full description" htmlFor="description" required error={errors.description?.message}>
-          <Textarea id="description" rows={6} aria-invalid={!!errors.description} {...register("description")} />
+        <Field label="Location" htmlFor="origin" hint="Where it comes from, for example India / Brazil. Shown with a pin on the product card.">
+          <Input id="origin" maxLength={120} {...register("origin")} />
+        </Field>
+        <Field label="Product details" htmlFor="description" required error={errors.description?.message} hint="The full description shown on the product page.">
+          <Textarea id="description" rows={9} aria-invalid={!!errors.description} {...register("description")} />
         </Field>
       </FormSection>
 
-      <FormSection title="2. Product Images & Gallery" description="The primary image is used in lists and cards.">
+      <FormSection title="2. Specifications" description="Optional. A few facts shown on the product card (the first four) and the product page, for example Purity, Grade, MOQ.">
+        <div className="space-y-3">
+          {specs.fields.map((f, i) => (
+            <div key={f.id} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1.4fr_auto]">
+              <Field label="Name" htmlFor={`spec-l-${i}`} error={errors.specifications?.[i]?.label?.message}>
+                <Input id={`spec-l-${i}`} placeholder="Purity" aria-invalid={!!errors.specifications?.[i]?.label} {...register(`specifications.${i}.label`)} />
+              </Field>
+              <Field label="Value" htmlFor={`spec-v-${i}`} error={errors.specifications?.[i]?.value?.message}>
+                <Input id={`spec-v-${i}`} placeholder="Fe 57-65%" aria-invalid={!!errors.specifications?.[i]?.value} {...register(`specifications.${i}.value`)} />
+              </Field>
+              <div className="flex items-end">
+                <Button variant="ghost" size="icon" aria-label={`Remove specification ${i + 1}`} onClick={() => specs.remove(i)}><Trash2 className="size-4 text-danger-600" /></Button>
+              </div>
+            </div>
+          ))}
+        </div>
+        {specs.fields.length < 8 && (
+          <Button variant="secondary" size="sm" onClick={() => specs.append({ id: uid("spec"), label: "", value: "" })}><Plus className="size-4" /> Add specification</Button>
+        )}
+      </FormSection>
+
+      <FormSection title="3. Pictures" description="The first picture is used on the product card.">
         <Controller control={control} name="images" render={({ field }) => (
           <ImageUploader images={field.value} onChange={(v) => setValue("images", v, { shouldDirty: true })} />
         )} />
       </FormSection>
 
-      <FormSection title="3. Specifications" description="Technical attributes buyers compare on.">
-        {specs.fields.length === 0 && <p className="text-sm text-muted">No specifications yet.</p>}
-        <div className="space-y-3">
-          {specs.fields.map((f, i) => (
-            <div key={f.id} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_8rem_auto]">
-              <Field label="Attribute" htmlFor={`spec-l-${i}`} error={errors.specifications?.[i]?.label?.message}>
-                <Input id={`spec-l-${i}`} placeholder="Purity" aria-invalid={!!errors.specifications?.[i]?.label} {...register(`specifications.${i}.label`)} />
-              </Field>
-              <Field label="Value" htmlFor={`spec-v-${i}`} error={errors.specifications?.[i]?.value?.message}>
-                <Input id={`spec-v-${i}`} placeholder="99.7" aria-invalid={!!errors.specifications?.[i]?.value} {...register(`specifications.${i}.value`)} />
-              </Field>
-              <Field label="Unit" htmlFor={`spec-u-${i}`}>
-                <Input id={`spec-u-${i}`} placeholder="%" {...register(`specifications.${i}.unit`)} />
-              </Field>
-              <div className="flex items-end">
-                <Button variant="ghost" size="icon" aria-label={`Remove specification ${i + 1}`} onClick={() => specs.remove(i)}>
-                  <Trash2 className="size-4 text-danger-600" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-        <Button variant="secondary" size="sm" onClick={() => specs.append({ id: uid("spec"), label: "", value: "", unit: "" })}>
-          <Plus className="size-4" /> Add specification
-        </Button>
-      </FormSection>
-
-      <FormSection title="4. Product Documents" description="Datasheets, certificates of analysis and brochures.">
-        <Controller control={control} name="documents" render={({ field }) => (
-          <DocumentUploader documents={field.value} onChange={(v) => setValue("documents", v, { shouldDirty: true })} />
-        )} />
-      </FormSection>
-
-      <FormSection title="5. Publishing Settings" description="Control visibility on the public website.">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Status" htmlFor="status" hint="Only published products appear on the website.">
-            <Select id="status" {...register("status")}>
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="archived">Archived</option>
-            </Select>
-          </Field>
-          <div>
-            <p className="mb-1.5 text-[13px] font-medium text-ink">Featured product</p>
-            <Controller control={control} name="featured" render={({ field }) => (
-              <div className="flex items-center gap-3 pt-1.5">
-                <Switch checked={field.value} onChange={(v) => setValue("featured", v, { shouldDirty: true })} label="Featured product" />
-                <span className="text-sm text-muted">{field.value ? "Highlighted on the homepage" : "Not featured"}</span>
-              </div>
-            )} />
-          </div>
-        </div>
-      </FormSection>
-
       <FormActions>
         <Button variant="secondary" onClick={() => navigate(product ? `/admin/products/${product.id}` : "/admin/products")}>Cancel</Button>
-        <Button type="submit" loading={isSubmitting}>{product ? "Save changes" : "Create product"}</Button>
+        <Button type="submit" loading={isSubmitting}>{product ? "Save changes" : "Add product"}</Button>
       </FormActions>
       {dialog}
     </form>

@@ -31,7 +31,7 @@ A reset token cannot be used as an activation grant and vice-versa (distinct `Us
 After a correct password the server emails a 6-digit code (nodemailer) and sets only a 10-minute `hv_mfa` proof cookie; no session exists yet. The response is `{status:"mfa_required", maskedEmail}`. `POST /api/auth/mfa/verify {code}` consumes the code (single use, 5 attempts, atomic) and only then creates the session; `POST /api/auth/mfa/resend` sends a new one after the cooldown. If the email cannot be sent the user is told (503) and nothing is half-issued.
 
 `POST /api/auth/login` answers a generic `401 invalid_credentials` for wrong password, unknown, deactivated, not-yet-activated and locked accounts (a dummy Argon2id verification equalises timing).
-- Lockout: 5 consecutive failures → 1 min, doubling to a 30-min ceiling, self-healing. Plus per-account (8 / 15 min) and per-source (60 / 15 min) rate limits.
+- There is no rate limit and no lockout on the admin sign-in: a wrong password is always the same generic `401`, however many times it is tried. (Each emailed code still stops working after its own 5 wrong tries.)
 
 ### Tokens
 | Cookie | Content | Path | SameSite | Lifetime |
@@ -66,7 +66,7 @@ Verification pins `HS256`, and requires issuer, audience, expiry, `sub`, `sid`, 
 ## Configuration
 See `.env.example`. Required in api mode: `AUTH_JWT_SECRET` and `AUTH_OTP_PEPPER` (two **different** random 256-bit base64url values). `npm run auth:secrets` writes missing ones to the git-ignored `.env` without printing them; `npm run auth:secrets -- --print` prints fresh values for a secret manager. Startup validation (`src/server/config.ts`) rejects missing, short, placeholder, low-entropy or duplicated values and never echoes them. There is **no development fallback**; production additionally forces Secure cookies and never permits Argon2id parameters below 64 MiB / t=3.
 
-Email (nodemailer): only `SMTP_USER` and `SMTP_PASSWORD` are required (Gmail: use an app password). Defaults: `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=465`, `MAIL_FROM=SMTP_USER`; set `SMTP_HOST`/`SMTP_PORT`/`MAIL_FROM` only for another provider or sender. `APP_BASE_URL` (public HTTPS origin) is needed in production for email links. Without credentials the app honestly reports "not delivered"; OTP activation cannot complete, and an administrator who invites someone sees the (secret-free) activation link to pass on.
+Email (nodemailer) uses the mailbox your hosting provider gives you (Hostinger, cPanel ...): `SMTP_HOST` (Hostinger: `smtp.hostinger.com`; cPanel: usually `mail.yourdomain.com`), `SMTP_USER` (the full mailbox address) and `SMTP_PASSWORD` are required. Defaults: `SMTP_PORT=465` (SSL/TLS; use 587 for STARTTLS), `MAIL_FROM=SMTP_USER`; hosting providers only accept the logged-in mailbox as the sender, so keep `MAIL_FROM` equal to `SMTP_USER` (a display name is fine: `Hamsavahin <no-reply@yourdomain.com>`). `APP_BASE_URL` (public HTTPS origin) is needed in production for email links. Without credentials the app honestly reports "not delivered"; OTP activation cannot complete, and an administrator who invites someone sees the (secret-free) activation link to pass on.
 
 `AUTH_TRUST_PROXY=true` only behind a reverse proxy that **overwrites** `X-Forwarded-For`; otherwise the header is ignored (source limits then share one generous bucket and per-account limits do the real work).
 

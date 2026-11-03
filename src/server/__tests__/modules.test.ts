@@ -46,7 +46,7 @@ const one = (method: string, resource: string, id: string, cookie?: string, body
 
 describe("every generic CMS module is protected on the server", () => {
   it("registers the expected modules, each with a catalogued permission", () => {
-    expect(keys.sort()).toEqual(["activity-logs", "applications", "banners", "careers", "commodities", "commodity-prices", "documents", "enquiries", "locations", "media", "notifications", "posts", "projects", "rfqs", "trade-opportunities"]);
+    expect(keys.sort()).toEqual(["activity-logs", "applications", "careers", "commodities", "commodity-prices", "documents", "enquiries", "locations", "media", "notifications", "posts", "projects", "rfqs", "trade-opportunities"]);
     for (const r of Object.values(RESOURCES)) expect(getResourceDef(r.permission), r.key).toBeTruthy();
   });
 

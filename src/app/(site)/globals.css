@@ -4,7 +4,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #1c1710;
+  --foreground: #2a1a0e;
   /* Total height of the sticky navbar (88px bar + 1px border). The hero is exactly 100svh minus this. */
   --site-header-h: 89px;
 }
@@ -124,9 +124,42 @@ body {
   animation: about-sheen 7s ease-in-out infinite;
   pointer-events: none;
 }
+/* ─────────────── Home page motion ─────────────── */
+html { scroll-behavior: smooth; }
+/* Names that drift across the page; pauses while the pointer is over it. The list is repeated once, so moving half its width loops without a jump. */
+.marquee { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
+.marquee-track { display: flex; width: max-content; animation: marquee 42s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+/* A light that sweeps across a button when the pointer arrives. */
+.btn-sheen { position: relative; overflow: hidden; isolation: isolate; }
+.btn-sheen::after { content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 45%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.5), transparent); transform: skewX(-20deg); transition: left 0.7s ease; pointer-events: none; z-index: -1; }
+.btn-sheen:hover::after { left: 125%; }
+/* Cards that lean towards the pointer (see Tilt) with a soft light that follows it. */
+.tilt { position: relative; transition: transform 0.25s ease-out; will-change: transform; }
+.tilt::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 1; background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.16), transparent 60%); }
+.tilt:hover::before { opacity: 1; }
+/* Gold gradient text with a slow shimmer. */
+.shimmer-text { background: linear-gradient(100deg, #d8b574 20%, #fff3d6 45%, #d8b574 70%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 6s ease-in-out infinite; }
+@keyframes shimmer { 0%, 100% { background-position: 100% 0; } 50% { background-position: 0 0; } }
+/* The slim bar of the page loader: a gold light that glides along it. */
+.loader-bar { animation: loader-bar 1.4s ease-in-out infinite; }
+@keyframes loader-bar { from { left: -50%; } to { left: 100%; } }
+/* A soft pulse behind the numbers of the "by the numbers" band. */
+@keyframes soft-pulse { 0%, 100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.08); } }
+.soft-pulse { animation: soft-pulse 5s ease-in-out infinite; }
+/* Elements that glide a little as the page scrolls (browsers that support scroll-driven animations; others simply keep them still). */
+@supports (animation-timeline: view()) {
+  .drift { animation: drift linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+  @keyframes drift { from { transform: translateY(40px); } to { transform: translateY(-40px); } }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   [data-reveal] { opacity: 1; transform: none; transition: none; }
   .about-float, .about-float-slow, .about-spin-slow, .about-spin-slow-reverse, .about-bob, .about-ring, .about-sheen::after { animation: none; }
+  .marquee-track, .shimmer-text, .soft-pulse, .drift, .loader-bar { animation: none; }
+  .btn-sheen::after, .tilt, .tilt::before { transition: none; }
 }
 
 /* ─────────────── Icons (react-icons) ───────────────

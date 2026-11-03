@@ -40,6 +40,10 @@ export interface Product extends BaseEntity {
   categoryId: ID;
   shortDescription: string;
   description: string;
+  /** What the product is used for / the industries it serves. */
+  applications: string[];
+  /** Where it comes from (shown on the product card). */
+  origin?: string | null;
   images: ProductImage[];
   specifications: ProductSpec[];
   documents: ProductDocument[];
@@ -114,21 +118,6 @@ export interface Location extends BaseEntity {
   phone: string;
   email: string;
   active: boolean;
-}
-
-export interface Banner extends BaseEntity {
-  title: string;
-  subtitle: string;
-  section: "hero" | "promo" | "feature_strip" | "cta";
-  imageUrl?: string;
-  /** Database mode: id of the uploaded banner picture (the form uploads it and sends only this id). */
-  imageFileId?: string | null;
-  ctaLabel: string;
-  ctaUrl: string;
-  sortOrder: number;
-  status: PublishStatus;
-  startsAt?: string | null;
-  endsAt?: string | null;
 }
 
 export interface Commodity extends BaseEntity {
@@ -245,7 +234,6 @@ export const PERMISSION_MODULES = [
   "projects",
   "careers",
   "locations",
-  "banners",
   "commodities",
   "trade",
   "enquiries",

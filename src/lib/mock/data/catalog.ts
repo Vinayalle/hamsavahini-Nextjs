@@ -53,6 +53,7 @@ export const productsSeed: Product[] = rows.map((r, i) => ({
     { id: `${r.id}_i1`, url: placeholderImage(r.name, r.hue), alt: `${r.name} main view`, isPrimary: true },
     { id: `${r.id}_i2`, url: placeholderImage(`${r.name} - detail`, r.hue + 15), alt: `${r.name} detail`, isPrimary: false },
   ],
+  applications: [],
   specifications: r.specs,
   documents: r.status === "draft" ? [] : [
     { id: `${r.id}_d1`, name: `${r.code}-datasheet.pdf`, type: "datasheet", sizeBytes: 240_000 + i * 17_000 },

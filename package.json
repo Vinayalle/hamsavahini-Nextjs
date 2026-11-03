@@ -17,7 +17,9 @@
     "auth:secrets": "node scripts/gen-secrets.mjs",
     "mutation:check": "node scripts/mutation-check.mjs",
     "postinstall": "prisma generate",
-    "brand:build": "node scripts/build-brand.mjs"
+    "brand:build": "node scripts/build-brand.mjs",
+    "uploads:cleanup": "tsx scripts/cleanup-uploads.ts",
+    "locations:sample": "tsx scripts/sample-locations.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.0",
@@ -27,6 +29,7 @@
     "@radix-ui/react-dialog": "^1.1.0",
     "@radix-ui/react-dropdown-menu": "^2.1.0",
     "clsx": "^2.1.1",
+    "globe.gl": "^2.46.2",
     "jose": "^6.2.12",
     "next": "16.4.2",
     "nodemailer": "^10.1.0",

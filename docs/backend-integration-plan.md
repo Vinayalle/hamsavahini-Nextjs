@@ -20,7 +20,7 @@ Scope reviewed: 56 routes, ~100 source files, 20 mock entities, one service inte
 | 2 | Commodities could be deleted while prices/opportunities used them | Foreign key would reject, mock silently orphaned rows | `deleteGuard` in the UI mirrors `ON DELETE RESTRICT` |
 | 3 | Careers could be deleted while applications referenced them | Would destroy or orphan applicants' personal data | Guard in UI; `ON DELETE RESTRICT` in schema |
 | 4 | Duplicate commodity prices (same commodity, market, date) were allowed | Violates the new unique constraint | Validation in UI; `UNIQUE(commodityId, market, effectiveDate)` |
-| 5 | Breadcrumb linked to `/admin/<module>/<id>` where no detail page exists (commodities, banners, locations, opportunities) | Clicking it produced a 404 | Record crumb only links where a detail page exists |
+| 5 | Breadcrumb linked to `/admin/<module>/<id>` where no detail page exists (commodities, locations, opportunities) | Clicking it produced a 404 | Record crumb only links where a detail page exists |
 | 6 | **API handlers validated the body before checking permission** (found by the new tests) | A user without permission got field-level validation errors instead of 403 | Authorization now runs first in every handler; regression test added |
 
 **Inconsistencies in the mock data model (resolved in the schema, mapped in each module's migration step)**
@@ -48,7 +48,7 @@ notes), `SetNull` for optional attribution (assignee, author, uploader).
 |---|---|---|
 | Admin users, RBAC | `AdminUser`, `Role`, `Permission`, `RolePermission`, `Session`, `UserToken` | `email` UNIQUE + lowercase CHECK; `Role.name` UNIQUE; `(module, action)` UNIQUE; session `tokenHash` UNIQUE (hash only), index on `expiresAt`; users indexed by role/status |
 | Catalogue | `Category`, `Product`, `ProductSpecification`, `ProductImage`, `ProductDocument` | `Category.slug`, `Product.code`, `Product.slug` UNIQUE; code uppercase CHECK; `(productId,label)` UNIQUE; partial unique index = exactly one primary image per product; self-parent CHECK; indexes `(status, updatedAt desc)`, `categoryId`, `(featured,status)` |
-| Content | `Post`, `Project`, `Career`, `Location`, `Banner` | slugs UNIQUE; `(status, publishedAt desc)`; `(status, deadline)`; `(name, city)` UNIQUE; schedule/date-order CHECKs |
+| Content | `Post`, `Project`, `Career`, `Location` | slugs UNIQUE; `(status, publishedAt desc)`; `(status, deadline)`; `(name, city)` UNIQUE; schedule/date-order CHECKs |
 | Applications | `JobApplication`, `ApplicationNote` | `careerId` RESTRICT; `(careerId,status)`, `email`, `(status,createdAt desc)`; `consentAt`, `anonymizedAt` for retention; resume = private `StoredFile` |
 | Trade | `Commodity`, `CommodityPrice`, `TradeOpportunity`, `Rfq`, `RfqNote`, `ContactEnquiry`, `EnquiryNote` | `Commodity.code/slug` UNIQUE; `(commodityId, market, effectiveDate)` UNIQUE; price > 0 CHECK; `Rfq.reference` + `seq` UNIQUE; `(status, createdAt desc)`, `assignedToId`, `email` |
 | Files | `StoredFile`, `MediaAsset`, `DocumentFile` | `storageKey` UNIQUE; `visibility` (public/private) and `scanStatus` on every object |
@@ -69,7 +69,7 @@ Module-by-module status of the screens: [cms-modules.md](cms-modules.md). Steps 
 | 2 | **Products + Categories** API, seed, HTTP-backed `CrudService`, UI wiring behind `NEXT_PUBLIC_DATA_SOURCE` | Done, tested |
 | 3 | Storage module: S3-compatible pre-signed uploads, `StoredFile`, product images/documents, Media + Document library | Next. Product images/documents cannot persist until this exists |
 | 4 | Users, Roles & Permissions, Activity Logs (reads), Settings | |
-| 5 | Posts, Projects, Careers, Locations, Banners (sanitise HTML on write) | |
+| 5 | Posts, Projects, Careers, Locations (sanitise HTML on write) | |
 | 6 | Commodities, Prices, Opportunities | |
 | 7 | RFQs, Enquiries, Job Applications (+ protected resume download), Email templates / notification history | |
 | 8 | Remove each mock service only after its API replacement is tested; keep mock mode available for UI development | |

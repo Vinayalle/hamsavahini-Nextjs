@@ -1,4 +1,4 @@
-import { LuActivity as Activity, LuBadgeDollarSign as BadgeDollarSign, LuChartColumn as BarChart3, LuBoxes as Boxes, LuBriefcase as Briefcase, LuFileText as FileText, LuFolderKanban as FolderKanban, LuEarth as Globe2, LuImage as ImageIcon, LuImagePlus as ImagePlus, LuKeyRound as KeyRound, LuLayoutDashboard as LayoutDashboard, LuLibrary as Library, LuListTree as ListTree, LuLogOut as LogOut, LuMegaphone as Megaphone, LuMessageSquare as MessageSquare, LuNewspaper as Newspaper, LuPackage as Package, LuShieldCheck as ShieldCheck, LuHandshake as Handshake, LuClipboardList as ClipboardList, LuCircleUser as UserCircle, LuUsers as Users, LuBell as Bell } from "react-icons/lu";
+import { LuActivity as Activity, LuBadgeDollarSign as BadgeDollarSign, LuChartColumn as BarChart3, LuBoxes as Boxes, LuBriefcase as Briefcase, LuFileText as FileText, LuFolderKanban as FolderKanban, LuEarth as Globe2, LuImage as ImageIcon, LuImagePlus as ImagePlus, LuKeyRound as KeyRound, LuLayoutDashboard as LayoutDashboard, LuLibrary as Library, LuLogOut as LogOut, LuMessageSquare as MessageSquare, LuNewspaper as Newspaper, LuPackage as Package, LuShieldCheck as ShieldCheck, LuHandshake as Handshake, LuClipboardList as ClipboardList, LuCircleUser as UserCircle, LuUsers as Users, LuBell as Bell } from "react-icons/lu";
 import type { IconType } from "react-icons";
 
 export interface NavItem {
@@ -21,7 +21,6 @@ export const NAV_GROUPS: NavGroup[] = [
   ] },
   { title: "Product Catalogue", items: [
     { label: "All Products", href: "/admin/products", icon: Package },
-    { label: "Categories", href: "/admin/categories", icon: ListTree },
     { label: "Product Specifications", href: "/admin/specifications", icon: ClipboardList },
     { label: "Product Images", href: "/admin/product-images", icon: ImageIcon },
     { label: "Product Documents", href: "/admin/product-documents", icon: FileText },
@@ -31,7 +30,6 @@ export const NAV_GROUPS: NavGroup[] = [
     { label: "Projects / Trade Stories", href: "/admin/projects", icon: FolderKanban },
     { label: "Careers & Job Openings", href: "/admin/careers", icon: Briefcase },
     { label: "Global Operations / Locations", href: "/admin/locations", icon: Globe2 },
-    { label: "Banners", href: "/admin/banners", icon: Megaphone },
   ] },
   { title: "Trade Management", items: [
     { label: "Commodities", href: "/admin/commodities", icon: Boxes },

@@ -76,7 +76,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen">
       <section className="relative hidden w-1/2 flex-col justify-between bg-bark-900 p-12 text-white lg:flex">
-        <Logo variant="lockup" priority className="h-12" />
+        <Logo variant="lockup" onDark priority className="h-[72px]" />
         <div>
           <h1 className="max-w-md text-3xl font-semibold leading-tight tracking-tight">
             Manage your global trade presence from one place.
