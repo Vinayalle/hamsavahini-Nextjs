@@ -97,7 +97,7 @@ export default function AboutPage() {
         style={{ height: "calc(100svh - var(--site-header-h))", minHeight: 440 }}
       >
         <div aria-hidden className="absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-[radial-gradient(60%_90%_at_82%_18%,rgba(185,134,38,0.5),transparent_62%),radial-gradient(45%_60%_at_8%_95%,rgba(185,134,38,0.22),transparent_62%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(60%_90%_at_82%_18%,rgba(176,128,64,0.5),transparent_62%),radial-gradient(45%_60%_at_8%_95%,rgba(176,128,64,0.22),transparent_62%)]" />
           <div className="about-grid absolute inset-0 opacity-[0.1]" />
           <div className="about-float absolute -right-24 top-6 size-[26rem] rounded-full bg-gold-500/30 blur-3xl" />
           <div className="about-float-slow absolute -left-28 bottom-[-6rem] size-[22rem] rounded-full bg-gold-500/20 blur-3xl" />
@@ -271,7 +271,7 @@ export default function AboutPage() {
       {/* ───────── Why partner with us (dark, glass cards) ───────── */}
       <section id="why" aria-labelledby="why-title" className="relative isolate scroll-mt-[var(--site-header-h)] overflow-hidden bg-neutral-950 text-white">
         <div aria-hidden className="absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-[radial-gradient(55%_80%_at_85%_0%,rgba(185,134,38,0.35),transparent_62%),radial-gradient(40%_60%_at_5%_100%,rgba(185,134,38,0.18),transparent_62%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(55%_80%_at_85%_0%,rgba(176,128,64,0.35),transparent_62%),radial-gradient(40%_60%_at_5%_100%,rgba(176,128,64,0.18),transparent_62%)]" />
           <div className="about-grid absolute inset-0 opacity-[0.07]" />
         </div>
         <div className={`${container} py-9 md:py-14`}>

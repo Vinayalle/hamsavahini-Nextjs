@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { LuArchive as Archive, LuCircleCheck as CheckCircle2, LuFilePen as FileEdit, LuPackage as Package, LuPlus as Plus, LuStar as Star } from "react-icons/lu";
+import { LuCircleCheck as CheckCircle2, LuEyeOff as EyeOff, LuPackage as Package, LuPlus as Plus } from "react-icons/lu";
 import { LinkButton } from "@/components/ui/button";
+import { Switch } from "@/components/ui/fields";
+import { toast } from "@/lib/toast";
 import { PageHeader, StatCard } from "@/components/admin/page-parts";
 import { ResourceList } from "@/components/admin/resource-list";
-import { StatusBadge } from "@/components/admin/status-badge";
 import type { Column } from "@/components/admin/data-table";
 import { useAll } from "@/hooks/use-resource";
 import { categoryService, productService } from "@/lib/services";
@@ -33,10 +34,25 @@ export default function ProductsPage() {
     },
     { key: "code", header: "Code", sortKey: "code", hideBelow: "sm", cell: (p) => <span className="font-mono text-xs text-muted">{p.code}</span> },
     { key: "category", header: "Category", hideBelow: "md", cell: (p) => catName(p.categoryId) },
-    { key: "status", header: "Status", sortKey: "status", cell: (p) => <StatusBadge status={p.status} /> },
     {
-      key: "featured", header: "Featured", sortKey: "featured", hideBelow: "lg",
-      cell: (p) => p.featured ? <Star className="size-4 fill-amber-400 text-amber-400" aria-label="Featured" /> : <span className="text-faint">—</span>,
+      key: "onWebsite", header: "On website", sortKey: "status",
+      cell: (p) => (
+        <div className="flex items-center gap-2.5">
+          <Switch
+            checked={p.status === "published"}
+            label={`Show ${p.name} on the website`}
+            onChange={async (on) => {
+              try {
+                await productService.update(p.id, { status: on ? "published" : "draft" });
+                toast.success(on ? `${p.name} is now on the website` : `${p.name} is hidden from the website`);
+              } catch (e) {
+                toast.error("Could not change it", { description: e instanceof Error ? e.message : "Something went wrong" });
+              }
+            }}
+          />
+          <span className="hidden text-xs text-muted sm:inline">{p.status === "published" ? "Shown" : "Hidden"}</span>
+        </div>
+      ),
     },
     { key: "updated", header: "Updated", sortKey: "updatedAt", hideBelow: "lg", cell: (p) => <span className="text-muted">{formatDate(p.updatedAt)}</span> },
   ];
@@ -47,14 +63,12 @@ export default function ProductsPage() {
 
   return (
     <>
-      <PageHeader title="All Products" description="Manage the product catalogue shown on the public website." actions={addButton} />
+      <PageHeader title="All Products" description="Use the switch to show a product on the website or hide it. New products are shown straight away." actions={addButton} />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard label="Total products" value={products.length} icon={Package} />
-        <StatCard label="Published" value={products.filter((p) => p.status === "published").length} icon={CheckCircle2} tone="success" />
-        <StatCard label="Draft" value={products.filter((p) => p.status === "draft").length} icon={FileEdit} tone="warn" />
-        <StatCard label="Featured" value={products.filter((p) => p.featured).length} icon={Star} tone="info" />
-        <StatCard label="Archived" value={products.filter((p) => p.status === "archived").length} icon={Archive} tone="neutral" />
+        <StatCard label="On the website" value={products.filter((p) => p.status === "published").length} icon={CheckCircle2} tone="success" />
+        <StatCard label="Hidden" value={products.filter((p) => p.status !== "published").length} icon={EyeOff} tone="warn" />
       </div>
 
       <ResourceList
@@ -73,8 +87,7 @@ export default function ProductsPage() {
         emptyAction={addButton}
         filters={[
           { key: "categoryId", label: "Category", options: categories.map((c) => ({ value: c.id, label: c.name })) },
-          { key: "status", label: "Status", options: [{ value: "published", label: "Published" }, { value: "draft", label: "Draft" }, { value: "archived", label: "Archived" }] },
-          { key: "featured", label: "Featured", options: [{ value: "true", label: "Featured" }, { value: "false", label: "Not featured" }] },
+          { key: "status", label: "On website", options: [{ value: "published", label: "Shown" }, { value: "draft", label: "Hidden" }] },
         ]}
       />
     </>

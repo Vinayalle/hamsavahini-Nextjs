@@ -1,6 +1,6 @@
 "use client";
 
-import { createElement, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { createElement, useEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 
 type RevealVariant = "up" | "left" | "right" | "scale" | "bar";
 type RevealTag = "div" | "li" | "section" | "article" | "p" | "span";
@@ -95,4 +95,52 @@ export function TimelineRail({ children, className }: { children: ReactNode; cla
       {children}
     </div>
   );
+}
+
+/**
+ * A number that counts up from 0 the first time it scrolls into view. The final number is in the page HTML (search engines, no JavaScript,
+ * and visitors who prefer reduced motion all see it at once); the counting is only decoration.
+ */
+export function CountUp({ to, suffix = "", duration = 1600 }: { to: number; suffix?: string; duration?: number }) {
+  const [node, setNode] = useState<HTMLElement | null>(null);
+  const [value, setValue] = useState(to);
+  useEffect(() => {
+    if (!node || typeof IntersectionObserver === "undefined" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let frame = 0;
+    const io = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      io.disconnect();
+      const start = performance.now();
+      const step = (now: number) => {
+        const k = Math.min(1, (now - start) / duration);
+        setValue(Math.round(to * (1 - Math.pow(1 - k, 3))));
+        if (k < 1) frame = requestAnimationFrame(step);
+      };
+      frame = requestAnimationFrame(step);
+    }, { threshold: 0.4 });
+    io.observe(node);
+    return () => { io.disconnect(); cancelAnimationFrame(frame); };
+  }, [node, to, duration]);
+  return <span ref={setNode}><span aria-hidden>{value.toLocaleString("en-US")}{suffix}</span><span className="sr-only">{to.toLocaleString("en-US")}{suffix}</span></span>;
+}
+
+/**
+ * Leans a card towards the pointer and lets a soft light follow it. Only for devices with a real mouse and visitors who have not asked for
+ * less motion; everywhere else it is a plain box.
+ */
+export function Tilt({ children, className = "", max = 6 }: { children: ReactNode; className?: string; max?: number }) {
+  const box = useRef<HTMLDivElement>(null);
+  const allowed = () => window.matchMedia("(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)").matches;
+  const move = (e: PointerEvent<HTMLDivElement>) => {
+    const el = box.current;
+    if (!el || !allowed()) return;
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    el.style.transform = `perspective(900px) rotateX(${(-y * max).toFixed(2)}deg) rotateY(${(x * max).toFixed(2)}deg)`;
+    el.style.setProperty("--mx", `${((x + 0.5) * 100).toFixed(1)}%`);
+    el.style.setProperty("--my", `${((y + 0.5) * 100).toFixed(1)}%`);
+  };
+  const leave = () => { if (box.current) box.current.style.transform = ""; };
+  return <div ref={box} onPointerMove={move} onPointerLeave={leave} className={`tilt ${className}`}>{children}</div>;
 }

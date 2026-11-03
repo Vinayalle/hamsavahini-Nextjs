@@ -1,5 +1,6 @@
 import { LuBadgeCheck, LuFileText, LuSearch, LuShieldCheck } from "react-icons/lu";
 import { Reveal } from "@/components/web/motion";
+import { PHOTOS } from "@/content/photos";
 import { SplitFeature, Steps } from "@/components/web/sections";
 import { ButtonLink, CtaBand, PageHero, PointCard, SectionHeading, bodyFont, container } from "@/components/web/ui";
 import { PILLARS, QUALITY_STEPS } from "@/content/site";
@@ -21,7 +22,7 @@ export default function QualityPage() {
 
       <section aria-label="Our approach" className="bg-white">
         <div className={`${container} py-10 md:py-14`}>
-          <SplitFeature eyebrow="Our approach" title="Quality is agreed before it is shipped" icon={LuBadgeCheck} action={<ButtonLink href="/request-a-quote">Share your specification</ButtonLink>}>
+          <SplitFeature eyebrow="Our approach" title="Quality is agreed before it is shipped" icon={LuBadgeCheck} photo={PHOTOS.quality} action={<ButtonLink href="/request-a-quote">Share your specification</ButtonLink>}>
             <p>Quality is not something we check at the end. We write the specification down with you first, source against it, test against it and document the result, so there are no surprises when the material arrives.</p>
             <p>Where your destination or customer requires an independent inspection, we arrange it.</p>
           </SplitFeature>

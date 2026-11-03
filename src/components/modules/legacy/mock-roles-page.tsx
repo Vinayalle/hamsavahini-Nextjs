@@ -18,7 +18,7 @@ import {
 
 const MODULE_LABEL: Record<PermissionModule, string> = {
   products: "Products", categories: "Categories", posts: "Posts / Insights", projects: "Projects", careers: "Careers",
-  locations: "Locations", banners: "Banners & Homepage", commodities: "Commodities & Prices", trade: "Opportunities & RFQs",
+  locations: "Locations", commodities: "Commodities & Prices", trade: "Opportunities & RFQs",
   enquiries: "Contact Enquiries", applications: "Job Applications", media: "Media & Documents", users: "Admin Users & Roles", settings: "Website Settings",
 };
 

@@ -2,7 +2,7 @@ import { createCollection, registerActivityRecorder, type CollectionOptions, typ
 import { isApiMode } from "@/lib/api/client";
 import { createApiCollection } from "@/lib/api/collection";
 import { categoriesSeed, productsSeed } from "@/lib/mock/data/catalog";
-import { bannersSeed, careersSeed, locationsSeed, postsSeed, projectsSeed } from "@/lib/mock/data/content";
+import { careersSeed, locationsSeed, postsSeed, projectsSeed } from "@/lib/mock/data/content";
 import {
   applicationsSeed, commoditiesSeed, commodityPricesSeed, enquiriesSeed, opportunitiesSeed, rfqsSeed,
 } from "@/lib/mock/data/trade";
@@ -11,7 +11,7 @@ import {
 } from "@/lib/mock/data/admin";
 import type { BaseEntity } from "@/types/common";
 import type {
-  ActivityLog, AdminUser, Banner, Career, Category, Commodity, CommodityPrice, ContactEnquiry,
+  ActivityLog, AdminUser, Career, Category, Commodity, CommodityPrice, ContactEnquiry,
   DocumentFile, JobApplication, Location, MediaAsset, NotificationLog, Post, Product,
   Project, Rfq, Role, TradeOpportunity,
 } from "@/types/entities";
@@ -26,7 +26,7 @@ const productFilters = {
 };
 
 /** Fields the products API accepts. Pictures and documents go as file ids (the files were uploaded and saved inside the project). */
-const PRODUCT_WRITE_FIELDS = ["name", "code", "slug", "categoryId", "shortDescription", "description", "specifications", "status", "featured", "images", "documents"];
+const PRODUCT_WRITE_FIELDS = ["name", "code", "slug", "categoryId", "shortDescription", "description", "specifications", "applications", "origin", "status", "featured", "images", "documents"];
 function toProductPayload(v: Record<string, unknown>): Record<string, unknown> {
   const out = Object.fromEntries(Object.entries(v).filter(([k]) => PRODUCT_WRITE_FIELDS.includes(k)));
   if (Array.isArray(out.specifications)) out.specifications = (out.specifications as { label: string; value: string; unit?: string }[]).map(({ label, value, unit }) => ({ label, value, unit: unit || null }));
@@ -60,7 +60,6 @@ const ALLOWED: Record<string, string[]> = {
   "/api/projects": ["title", "slug", "client", "commodity", "region", "summary", "content", "startDate", "endDate", "projectStatus", "status", "featured"],
   "/api/careers": ["title", "slug", "department", "location", "employmentType", "experience", "description", "requirements", "deadline", "openings", "status"],
   "/api/locations": ["name", "type", "country", "city", "address", "description", "operations", "capacity", "latitude", "longitude", "phone", "email", "active"],
-  "/api/banners": ["title", "subtitle", "section", "ctaLabel", "ctaUrl", "sortOrder", "imageFileId", "status", "startsAt", "endsAt"],
   "/api/commodities": ["name", "slug", "code", "group", "unit", "description", "status"],
   "/api/commodity-prices": ["commodityId", "price", "currency", "unit", "market", "effectiveDate", "status"],
   "/api/trade-opportunities": ["title", "commodityId", "type", "category", "quantity", "originRegion", "destinationRegion", "incoterm", "validUntil", "description", "status"],
@@ -108,12 +107,6 @@ export const locationService = mk<Location>("/api/locations", locationsSeed, {
   name: "locations", entityType: "Location", labelOf: (l) => l.name,
   searchFields: ["name", "country", "city", "address"],
   filters: { active: (l, v) => String(l.active) === v },
-});
-
-export const bannerService = mk<Banner>("/api/banners", bannersSeed, {
-  name: "banners", entityType: "Banner", labelOf: (b) => b.title,
-  searchFields: ["title", "subtitle"], statusField: "status",
-  defaultSort: { by: "sortOrder", dir: "asc" },
 });
 
 export const commodityService = mk<Commodity>("/api/commodities", commoditiesSeed, {

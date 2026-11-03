@@ -1,6 +1,6 @@
 /*
  * BRAND COLOURS, shared by the public website and the admin.
- * Everything is derived from the logo (assets/brand/logo-original.png): its antique gold is #B98626 (gold-500).
+ * Everything is derived from the logo (assets/brand/logo-original.jpeg): its golds run from #D0A060 (highlights) to #805020 (shadows) over deep browns (#402010 to #503020); #B08040 is the mid gold (gold-500).
  *
  *   gold-500  the logo's own gold: fills, icons, large graphics. Too light for small text on white (3.2:1).
  *   gold-700  gold for TEXT on light backgrounds (6.4:1 on white).
@@ -12,50 +12,50 @@
  * Error, success and warning colours stay red, green and amber on purpose: they carry meaning.
  */
 @theme {
-  --color-gold-50: #fbf6e9;
-  --color-gold-100: #f5eacb;
-  --color-gold-200: #ebd59a;
-  --color-gold-300: #debb66;
-  --color-gold-400: #cda044;
-  --color-gold-500: #b98626;
-  --color-gold-600: #9d6f1d;
-  --color-gold-700: #7e5818;
-  --color-gold-800: #634517;
-  --color-gold-900: #4a3413;
-  --color-gold-950: #2a1d09;
+  --color-gold-50: #fbf5ea;
+  --color-gold-100: #f4e7cc;
+  --color-gold-200: #e8cf9b;
+  --color-gold-300: #d8b574;
+  --color-gold-400: #c9a05a;
+  --color-gold-500: #b08040;
+  --color-gold-600: #946530;
+  --color-gold-700: #7a5026;
+  --color-gold-800: #5f3d1f;
+  --color-gold-900: #4a2f19;
+  --color-gold-950: #2e1b0d;
 
-  --color-ink: #1c1710;
+  --color-ink: #2a1a0e;
 
-  --color-neutral-50: #faf8f3;
-  --color-neutral-100: #f3efe6;
-  --color-neutral-200: #e6dfd0;
-  --color-neutral-300: #d3cab7;
-  --color-neutral-400: #a89e8a;
-  --color-neutral-500: #7c7362;
-  --color-neutral-600: #5c5546;
-  --color-neutral-700: #463f33;
-  --color-neutral-800: #2f2a21;
-  --color-neutral-900: #1f1b14;
-  --color-neutral-950: #14100a;
+  --color-neutral-50: #faf7f0;
+  --color-neutral-100: #f4eee2;
+  --color-neutral-200: #e8dfcd;
+  --color-neutral-300: #d6c9b0;
+  --color-neutral-400: #ab9d84;
+  --color-neutral-500: #7d6f58;
+  --color-neutral-600: #5e5240;
+  --color-neutral-700: #483c2c;
+  --color-neutral-800: #34281b;
+  --color-neutral-900: #2a1c0f;
+  --color-neutral-950: #1f130a;
 
-  --color-slate-50: #faf8f3;
-  --color-slate-100: #f3efe6;
-  --color-slate-200: #e6dfd0;
-  --color-slate-300: #d3cab7;
-  --color-slate-400: #a89e8a;
-  --color-slate-500: #7c7362;
-  --color-slate-600: #5c5546;
-  --color-slate-700: #463f33;
-  --color-slate-800: #2f2a21;
-  --color-slate-900: #1f1b14;
-  --color-slate-950: #14100a;
+  --color-slate-50: #faf7f0;
+  --color-slate-100: #f4eee2;
+  --color-slate-200: #e8dfcd;
+  --color-slate-300: #d6c9b0;
+  --color-slate-400: #ab9d84;
+  --color-slate-500: #7d6f58;
+  --color-slate-600: #5e5240;
+  --color-slate-700: #483c2c;
+  --color-slate-800: #34281b;
+  --color-slate-900: #2a1c0f;
+  --color-slate-950: #1f130a;
 }
 
 :root {
   /** Brand colours as plain CSS variables, for inline styles, gradients and canvas drawing. */
-  --brand: #b98626;
-  --brand-text: #7e5818;
-  --brand-deep: #6b4810;
-  --brand-soft: #fbf6e9;
-  --brand-rgb: 185, 134, 38;
+  --brand: #b08040;
+  --brand-text: #7a5026;
+  --brand-deep: #503020;
+  --brand-soft: #fbf5ea;
+  --brand-rgb: 176, 128, 64;
 }

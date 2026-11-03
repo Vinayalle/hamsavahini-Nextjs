@@ -2,14 +2,13 @@
 
 import { RecordFormPage, type RecordFormConfig } from "./record-form-page";
 import type { FieldDef, SectionDef, Values } from "@/components/forms/entity-form";
-import type { BaseEntity } from "@/types/common";
 import { useAll } from "@/hooks/use-resource";
 import { isApiMode } from "@/lib/api/client";
 import {
-  bannerService, careerService, commodityService, locationService, opportunityService, postService, projectService,
+  careerService, commodityService, locationService, opportunityService, postService, projectService,
 } from "@/lib/services";
 import type {
-  Banner, Career, Commodity, Location, Post, Project, TradeOpportunity,
+  Career, Commodity, Location, Post, Project, TradeOpportunity,
 } from "@/types/entities";
 
 /** File uploads need object storage. Until it is configured, database mode does not offer image fields (it would pretend to save them). */
@@ -137,6 +136,8 @@ export const careerConfig: RecordFormConfig<Career> = {
 export const CareerFormPage = ({ id }: { id?: string }) => <RecordFormPage id={id} config={careerConfig} />;
 
 /* ─────────────────────────── Locations ─────────────────────────── */
+/** A coordinate typed in the form: a finite number, or nothing (the pin then goes to the country). */
+const coord = (v: unknown) => (v === "" || v == null || !Number.isFinite(Number(v)) ? null : Number(v));
 export const locationConfig: RecordFormConfig<Location> = {
   service: locationService, entityLabel: "location", listHref: "/admin/locations", listLabel: "locations",
   nameOf: (l) => l.name,
@@ -150,45 +151,17 @@ export const locationConfig: RecordFormConfig<Location> = {
       { name: "description", label: "Description", type: "textarea", maxLength: 2000, wide: true },
       { name: "operations", label: "Operations", type: "textarea", maxLength: 1000, rows: 2, wide: true },
       { name: "capacity", label: "Capacity", type: "text", maxLength: 200 },
+      { name: "latitude", label: "Latitude", type: "number", min: -90, max: 90, placeholder: "20.5937", hint: "Optional. Decimal degrees (north is positive). Where the pin goes on the website globe; leave both empty to place it at the country." },
+      { name: "longitude", label: "Longitude", type: "number", min: -180, max: 180, placeholder: "78.9629", hint: "Optional. Decimal degrees (east is positive)." },
       { name: "phone", label: "Phone", type: "tel", required: true },
       { name: "email", label: "Email", type: "email", required: true },
       { name: "active", label: "Shown on website", type: "switch", switchText: ["Active", "Hidden"] },
     ] },
   ],
-  toValues: (l) => ({ ...l, description: l.description ?? "", operations: l.operations ?? "", capacity: l.capacity ?? "" }),
-  toPayload: (v) => ({ name: str(v.name), type: str(v.type) as Location["type"], country: str(v.country), city: str(v.city), address: str(v.address), description: str(v.description), operations: str(v.operations) || null, capacity: str(v.capacity) || null, phone: str(v.phone), email: str(v.email), active: !!v.active } as never),
+  toValues: (l) => ({ ...l, description: l.description ?? "", operations: l.operations ?? "", capacity: l.capacity ?? "", latitude: l.latitude ?? NaN, longitude: l.longitude ?? NaN }),
+  toPayload: (v) => ({ latitude: coord(v.latitude), longitude: coord(v.longitude), name: str(v.name), type: str(v.type) as Location["type"], country: str(v.country), city: str(v.city), address: str(v.address), description: str(v.description), operations: str(v.operations) || null, capacity: str(v.capacity) || null, phone: str(v.phone), email: str(v.email), active: !!v.active } as never),
 };
 export const LocationFormPage = ({ id }: { id?: string }) => <RecordFormPage id={id} config={locationConfig} />;
-
-/* ─────────────────────────── Banners ─────────────────────────── */
-/** Database mode uploads the picture to the server (saved inside the project) and keeps its file id; mock mode keeps a local preview URL. */
-const bannerImageField: FieldDef = isApiMode
-  ? { name: "imageFileId", label: "Banner image", type: "media-image", uploadPath: "/api/banners/image", previewPath: "/api/banners/image", hint: "JPEG, PNG or WebP up to 3 MB. Wide photos (1920×1080) look best on the home page." }
-  : { name: "imageUrl", label: "Banner image", type: "image" };
-export const bannerConfig: RecordFormConfig<Banner> = {
-  service: bannerService, entityLabel: "banner", listHref: "/admin/banners", listLabel: "banners",
-  nameOf: (b) => b.title,
-  createDescription: "Saved banners appear as slides in the website home-page hero. Unpublish one from the banners list.",
-  sections: [
-    { title: "Banner Content", description: "Shown on the website home page.", fields: [
-      { name: "title", label: "Banner title", type: "text", required: true, maxLength: 100, wide: true, hint: "The large heading, e.g. Enhancing Value Ensuring Quality." },
-      { name: "subtitle", label: "Description", type: "textarea", maxLength: 200, rows: 2, hint: "One or two short sentences under the title. Max 200 characters." },
-      bannerImageField,
-      { name: "ctaUrl", label: "Link", type: "url", required: true, placeholder: "/about", hint: "Where the button goes: /page-on-this-site or https://…" },
-      { name: "ctaLabel", label: "Button text", type: "text", required: true, maxLength: 60, defaultValue: "Know more" },
-    ] },
-  ],
-  toValues: (b) => ({ ...b, imageUrl: b.imageUrl ?? "", imageFileId: b.imageFileId ?? "" }),
-  // The form only edits content. A new banner is a published hero slide placed after the existing ones (the server picks the order);
-  // editing keeps the banner's current placement, status and schedule. Publish / unpublish happens from the list.
-  toPayload: (v, ex) => ({
-    title: str(v.title), subtitle: str(v.subtitle), ctaLabel: str(v.ctaLabel), ctaUrl: str(v.ctaUrl),
-    ...(isApiMode ? { imageFileId: str(v.imageFileId) || null } : { imageUrl: str(v.imageUrl) || undefined }),
-    section: ex?.section ?? "hero", status: ex?.status ?? "published", startsAt: ex?.startsAt ?? null, endsAt: ex?.endsAt ?? null,
-    sortOrder: ex?.sortOrder ?? (isApiMode ? undefined : bannerService.snapshot().reduce((m, x) => Math.max(m, x.sortOrder), 0) + 1),
-  }) as Omit<Banner, keyof BaseEntity>,
-};
-export const BannerFormPage = ({ id }: { id?: string }) => <RecordFormPage id={id} config={bannerConfig} />;
 
 /* ─────────────────────────── Commodities ─────────────────────────── */
 export const commodityConfig: RecordFormConfig<Commodity> = {

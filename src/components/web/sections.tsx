@@ -5,7 +5,8 @@ import type { IconType } from "react-icons";
 import { LuCalendar, LuCircleCheck, LuClock, LuMapPin, LuPackage, LuTag } from "react-icons/lu";
 import type { Industry, Mineral, Point } from "@/content/site";
 import type { CareerCard, PostCard, ProductCard, ProjectCard } from "@/server/services/public";
-import { Reveal } from "./motion";
+import type { Photo } from "@/content/photos";
+import { Reveal, Tilt } from "./motion";
 import { ButtonLink, Tag, badge, card, cardHover, formatDate, headingFont } from "./ui";
 
 /** Reusable page sections of the public website. */
@@ -37,7 +38,9 @@ export function IndustryCard({ industry, index = 0, href }: { industry: Industry
   const cls = `${card} ${cardHover} group flex h-full flex-col items-center gap-4 bg-gradient-to-b from-white to-neutral-50 px-4 py-8 text-center`;
   return (
     <Reveal as="li" delay={index * 90}>
-      {href ? <Link href={href} className={cls}>{body}</Link> : <div className={cls}>{body}</div>}
+      <Tilt className="h-full rounded-3xl">
+        {href ? <Link href={href} className={cls}>{body}</Link> : <div className={cls}>{body}</div>}
+      </Tilt>
     </Reveal>
   );
 }
@@ -87,26 +90,80 @@ export function ProjectGridCard({ project, icon, index = 0 }: { project: Project
   );
 }
 
-export function ProductGridCard({ product, icon, index = 0 }: { product: ProductCard; icon: IconType; index?: number }) {
+/**
+ * Product card: the picture, the category, the name, a short line (two lines at most), the first specifications, what it is used for,
+ * where it comes from, and two buttons. Anything more is asked for with "Request quote", which opens the quote form on the product page.
+ */
+export function ProductGridCard({ product, icon: Icon, index = 0 }: { product: ProductCard; icon: IconType; index?: number }) {
+  const href = `/products/${product.slug}`;
   return (
     <Reveal as="li" delay={(index % 3) * 90}>
-      <Link href={`/products/${product.slug}`} className={`${card} ${cardHover} group flex h-full flex-col overflow-hidden`}>
-        {product.image ? (
-          <div className="relative aspect-[16/10] overflow-hidden bg-neutral-100">
-            <img src={product.image} alt={product.name} loading="lazy" decoding="async" className="size-full object-cover transition-transform duration-500 group-hover:scale-105" />
-          </div>
-        ) : <CardArt icon={icon} label={product.category} />}
+      <Tilt className="h-full rounded-3xl" max={4}>
+      <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-neutral-900 text-white shadow-xl shadow-neutral-900/20 transition duration-300 hover:-translate-y-1.5 hover:border-gold-400/50 hover:shadow-2xl hover:shadow-gold-500/20">
+        <Link href={href} aria-label={`${product.name}: view details`} className="relative block aspect-[16/10] overflow-hidden bg-neutral-800">
+          {product.image ? (
+            <img src={product.image} alt="" loading="lazy" decoding="async" className="size-full object-cover transition-transform duration-700 group-hover:scale-110" />
+          ) : (
+            <span aria-hidden className="flex size-full items-center justify-center bg-gradient-to-br from-neutral-800 via-neutral-900 to-gold-700/70">
+              <span className="about-grid absolute inset-0 opacity-[0.12]" />
+              <Icon className="relative size-14 text-white/90 transition-transform duration-500 group-hover:scale-110" strokeWidth={1.4} />
+            </span>
+          )}
+          <span aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-neutral-900/70 via-transparent to-transparent" />
+        </Link>
         <div className="flex flex-1 flex-col p-6">
-          <h3 className="mb-2 text-xl font-bold leading-snug text-neutral-900 group-hover:text-gold-700">{product.name}</h3>
-          <p className="flex-1 text-base leading-7 text-neutral-600">{product.shortDescription}</p>
-          <ul className="mt-4 flex flex-wrap gap-2" aria-label="Product details">
-            <li><Tag tone={product.availability === "Available" ? "green" : "amber"}>{product.availability}</Tag></li>
-            {product.grade && <li><Tag>Grade {product.grade}</Tag></li>}
-            {product.origin && <li><Tag><LuMapPin className="mr-1 size-3.5" aria-hidden />{product.origin}</Tag></li>}
-          </ul>
+          <span className="mb-4 inline-flex w-fit rounded-lg border border-white/20 bg-white/5 px-3 py-1 text-xs font-bold text-white/90">{product.category}</span>
+          <h3 className="text-2xl font-bold leading-snug"><Link href={href} className="transition-colors hover:text-gold-300">{product.name}</Link></h3>
+          {product.shortDescription && <p className="mt-2 line-clamp-2 text-base leading-7 text-white/65">{product.shortDescription}</p>}
+          {(product.specs.length > 0 || product.usedFor.length > 0) && (
+            <dl className="mt-5 space-y-2.5 text-sm">
+              {product.specs.map((x) => (
+                <div key={x.label} className="flex items-start justify-between gap-4">
+                  <dt className="shrink-0 text-white/60">{x.label}:</dt>
+                  <dd className="text-right font-bold text-white">{x.value}</dd>
+                </div>
+              ))}
+              {product.usedFor.length > 0 && (
+                <div className="flex items-start justify-between gap-4">
+                  <dt className="shrink-0 text-white/60">Application:</dt>
+                  <dd className="line-clamp-2 text-right font-bold text-white">{product.usedFor.join(", ")}</dd>
+                </div>
+              )}
+            </dl>
+          )}
+          {product.origin && (
+            <p className="mt-4 flex items-center gap-2 border-t border-white/10 pt-4 text-sm text-white/65"><LuMapPin className="size-4 shrink-0 text-gold-300" aria-hidden /><span className="line-clamp-1">{product.origin}</span></p>
+          )}
+          <div className="mt-auto grid grid-cols-2 gap-3 pt-6">
+            <Link href={href} className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-[15px] font-bold transition hover:border-gold-300 hover:bg-white/10">View details</Link>
+            <Link href={`${href}#quote`} className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-gold-400 to-gold-500 px-4 py-3 text-[15px] font-bold text-ink shadow-lg shadow-gold-500/25 transition hover:from-gold-300 hover:to-gold-400">Request quote</Link>
+          </div>
         </div>
-      </Link>
+      </article>
+      </Tilt>
     </Reveal>
+  );
+}
+
+/**
+ * A band of names that drifts slowly across the page (pure CSS, pauses under the pointer, still when the visitor prefers reduced motion).
+ * The list is written twice so the loop has no gap; the second copy is hidden from screen readers.
+ */
+export function Marquee({ items, label }: { items: string[]; label: string }) {
+  const row = (hidden: boolean) => (
+    <ul className="flex shrink-0 items-center" aria-hidden={hidden || undefined}>
+      {items.map((t) => (
+        <li key={t} className="flex items-center gap-8 pr-8 text-sm font-bold uppercase tracking-[0.22em] text-gold-200/90 md:gap-12 md:pr-12 md:text-base">
+          {t}
+          <span aria-hidden className="size-1.5 rotate-45 bg-gold-400" />
+        </li>
+      ))}
+    </ul>
+  );
+  return (
+    <div className="marquee" role="region" aria-label={label}>
+      <div className="marquee-track">{row(false)}{row(true)}</div>
+    </div>
   );
 }
 
@@ -130,7 +187,7 @@ export function CareerRow({ career, index = 0 }: { career: CareerCard; index?: n
 }
 
 /** Two-column feature: text on one side, a gradient "art" panel with an icon on the other. */
-export function SplitFeature({ eyebrow, title, children, icon: Icon, action, flip, dark }: { eyebrow?: string; title: string; children: ReactNode; icon: IconType; action?: ReactNode; flip?: boolean; dark?: boolean }) {
+export function SplitFeature({ eyebrow, title, children, icon: Icon, action, flip, dark, photo }: { eyebrow?: string; title: string; children: ReactNode; icon: IconType; action?: ReactNode; flip?: boolean; dark?: boolean; photo?: Photo }) {
   return (
     <div className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
       <Reveal variant={flip ? "right" : "left"} className={flip ? "md:order-2" : ""}>
@@ -140,6 +197,13 @@ export function SplitFeature({ eyebrow, title, children, icon: Icon, action, fli
         {action && <div className="mt-8">{action}</div>}
       </Reveal>
       <Reveal variant={flip ? "left" : "right"} delay={120} className={flip ? "md:order-1" : ""}>
+        {photo ? (
+          <figure className="group relative isolate aspect-[4/3] overflow-hidden rounded-[2rem] bg-neutral-900 shadow-2xl shadow-gold-900/20">
+            <img src={photo.src} alt={photo.alt} width={1400} height={1050} loading="lazy" decoding="async" className="size-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-neutral-950/55 via-transparent to-transparent" />
+            <span aria-hidden className={`${badge} absolute bottom-5 left-5 size-14 shadow-xl`}><Icon className="size-7" strokeWidth={1.6} /></span>
+          </figure>
+        ) : (
         <div aria-hidden className="relative isolate flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[2rem] bg-gradient-to-br from-neutral-900 via-neutral-800 to-gold-500 shadow-2xl shadow-gold-900/20">
           <div className="about-grid absolute inset-0 opacity-[0.12]" />
           <div className="about-float absolute -right-10 -top-10 size-56 rounded-full bg-gold-500/40 blur-3xl" />
@@ -147,6 +211,7 @@ export function SplitFeature({ eyebrow, title, children, icon: Icon, action, fli
           <div className="about-spin-slow-reverse absolute size-[48%] rounded-full border border-white/20" />
           <div className={`${badge} about-float size-24 md:size-28`}><Icon className="size-12 md:size-14" strokeWidth={1.4} /></div>
         </div>
+        )}
       </Reveal>
     </div>
   );

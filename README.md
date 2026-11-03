@@ -6,7 +6,7 @@ Two data modes, chosen at build time with `NEXT_PUBLIC_DATA_SOURCE`:
 
 - `mock` (default): all data is mock, in browser memory. Changes survive client-side navigation but reset on reload.
 - `api`: every CMS module is stored in PostgreSQL via Prisma, behind real authentication and server-side RBAC (status per module in
-  [docs/cms-modules.md](docs/cms-modules.md)). Uploaded files (media, documents, resumes, banners, product pictures and documents) are saved
+  [docs/cms-modules.md](docs/cms-modules.md)). Uploaded files (media, documents, resumes, product pictures and documents) are saved
   on disk inside the project, in the `uploads/` folder: no bucket or cloud account needed.
 
 ## Run

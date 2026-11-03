@@ -5,26 +5,26 @@
   --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
 
   /* Sidebar and dark surfaces: a warm near-black brown (named "bark"). */
-  --color-bark-950: #100b05;
-  --color-bark-900: #1a130a;
-  --color-bark-800: #251c10;
-  --color-bark-700: #33261a;
-  --color-bark-600: #46371f;
+  --color-bark-950: #1d1008;
+  --color-bark-900: #2a180c;
+  --color-bark-800: #38220f;
+  --color-bark-700: #4a2f19;
+  --color-bark-600: #5c3d22;
 
   /* The accent is the logo's gold. brand-600 is the button colour: white text on it passes (5.2:1). */
-  --color-brand-50: #fbf6e9;
-  --color-brand-100: #f5eacb;
-  --color-brand-200: #ebd59a;
-  --color-brand-500: #b98626;
-  --color-brand-600: #8f6418;
-  --color-brand-700: #765014;
+  --color-brand-50: #fbf5ea;
+  --color-brand-100: #f4e7cc;
+  --color-brand-200: #e8cf9b;
+  --color-brand-500: #b08040;
+  --color-brand-600: #8a5c2c;
+  --color-brand-700: #6e4724;
 
   --color-surface: #ffffff;
-  --color-canvas: #f7f3ea;
-  --color-line: #e7e0d0;
-  --color-ink: #1c1710;
-  --color-muted: #665d4e;
-  --color-faint: #8f8573;
+  --color-canvas: #f8f2e6;
+  --color-line: #e8dcc6;
+  --color-ink: #2a1a0e;
+  --color-muted: #6a5a44;
+  --color-faint: #91826a;
 
   --color-success-50: #ecfdf3;
   --color-success-600: #15803d;

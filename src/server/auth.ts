@@ -3,11 +3,10 @@ import type { Prisma, PrismaClient } from "@/generated/prisma/client";
 import type { EffectiveAccess } from "@/lib/authz/resolve";
 import { getAuthConfig } from "./config";
 import { clearAll, clearCookie, setCookie } from "./cookies";
-import { keyedDigest, randomToken } from "./crypto";
+import { randomToken } from "./crypto";
 import { getDb } from "./db";
 import { ApiError, errors } from "./errors";
 import { clientIp, recordActivity } from "./audit";
-import { enforce, LIMITS, sourceKey } from "./ratelimit";
 import { dummyPasswordHash, hashPassword, hashToken, passwordNeedsRehash, readCookie, verifyPassword } from "./security";
 import { signAccessToken, signPendingMfaToken, verifyAccessToken, verifyPendingMfaToken } from "./tokens";
 import { COOKIES } from "./cookies";
@@ -28,7 +27,6 @@ export interface AuthSession {
 }
 
 const GENERIC_FAILURE = () => new ApiError(401, "invalid_credentials", "Incorrect email or password");
-const emailKey = (email: string) => keyedDigest("rl-email", email).slice(0, 32);
 
 /* ───────────────────────── session creation ───────────────────────── */
 
@@ -79,18 +77,10 @@ export async function createSession(
 export type LoginResult =
   | { kind: "mfa"; maskedEmail: string; cookies: string[] };
 
-/** Progressive, self-healing lockout: 5 failures -> 1 min, then doubling to a 30 min ceiling. Never permanent. */
-export function lockDurationMs(failures: number): number {
-  if (failures < 5) return 0;
-  return Math.min(30 * 60_000, 60_000 * 2 ** (failures - 5));
-}
-
 export async function login(request: Request, emailInput: string, password: string): Promise<LoginResult> {
   const db = getDb();
   const email = emailInput.trim().toLowerCase();
   const ip = clientIp(request);
-  await enforce(`login:src:${sourceKey(request)}`, LIMITS.loginSource);
-  await enforce(`login:acct:${emailKey(email)}`, LIMITS.loginAccount);
 
   const user = await db.adminUser.findUnique({ where: { email } });
 
@@ -101,15 +91,8 @@ export async function login(request: Request, emailInput: string, password: stri
     await recordActivity(db, { actorName: "Unknown", action: "login_failed", entityType: "Session", entityLabel: "sign-in attempt", detail: user ? `status=${user.status}` : "unknown account", ip });
     throw GENERIC_FAILURE();
   }
-  if (user.lockedUntil && user.lockedUntil > new Date()) {
-    await recordActivity(db, { actorName: user.name, action: "login_failed", entityType: "Session", entityId: user.id, entityLabel: user.email, detail: "temporarily locked", ip });
-    throw GENERIC_FAILURE(); // same message and status: do not confirm the account exists
-  }
   if (!ok) {
-    const updated = await db.adminUser.update({ where: { id: user.id }, data: { failedLoginCount: { increment: 1 } }, select: { failedLoginCount: true } });
-    const lockMs = lockDurationMs(updated.failedLoginCount);
-    if (lockMs > 0) await db.adminUser.update({ where: { id: user.id }, data: { lockedUntil: new Date(Date.now() + lockMs) } });
-    await recordActivity(db, { actorName: user.name, action: "login_failed", entityType: "Session", entityId: user.id, entityLabel: user.email, detail: lockMs > 0 ? `bad password; locked ${Math.round(lockMs / 1000)}s` : "bad password", ip });
+    await recordActivity(db, { actorName: user.name, action: "login_failed", entityType: "Session", entityId: user.id, entityLabel: user.email, detail: "bad password", ip });
     throw GENERIC_FAILURE();
   }
 
@@ -117,7 +100,7 @@ export async function login(request: Request, emailInput: string, password: stri
   const rehash = passwordNeedsRehash(user.passwordHash) ? await hashPassword(password) : null;
 
   // Every employee takes a second step on every sign-in: a 6-digit code is emailed after the correct password.
-  await db.adminUser.update({ where: { id: user.id }, data: { failedLoginCount: 0, lockedUntil: null, ...(rehash ? { passwordHash: rehash } : {}) } });
+  await db.adminUser.update({ where: { id: user.id }, data: { ...(rehash ? { passwordHash: rehash } : {}) } });
   const pending = signPendingMfaToken({ sub: user.id });
   await recordActivity(db, { actorName: user.name, action: "login", entityType: "Session", entityId: user.id, entityLabel: `${user.name} passed password check; emailed code required`, ip });
   // The password was correct, so the account is already confirmed to the caller; we can say if the email could not be sent.
@@ -174,7 +157,6 @@ export function requireRecentAuth(session: AuthSession) {
 
 export async function refresh(request: Request): Promise<IssuedSession> {
   const cfg = getAuthConfig();
-  await enforce(`refresh:src:${sourceKey(request)}`, LIMITS.refreshSource);
   const raw = readCookie(request.headers.get("cookie"), COOKIES.refresh.name);
   const reject = () => new ApiError(401, "unauthenticated", "Sign in required");
   if (!raw) throw reject();
@@ -259,7 +241,6 @@ export async function revokeUserSessions(db: Db, userId: string, exceptSessionId
 /** Step-up: re-verify the password (and second factor, if enrolled) and stamp the session. */
 export async function reauthenticate(request: Request, session: AuthSession, password: string) {
   const db = getDb();
-  await enforce(`reauth:acct:${session.user.id}`, LIMITS.reauthAccount);
   const user = await db.adminUser.findUniqueOrThrow({ where: { id: session.user.id } });
   if (!user.passwordHash || !(await verifyPassword(user.passwordHash, password))) {
     await recordActivity(db, { session, action: "login_failed", entityType: "Session", entityId: user.id, entityLabel: "re-authentication failed", ip: clientIp(request) });

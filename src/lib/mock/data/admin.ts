@@ -29,7 +29,7 @@ export const usersSeed: AdminUser[] = [
 ];
 
 const mediaRows: [string, MediaAsset["kind"], string, number, number, number, string][] = [
-  ["hero-port-sunrise.jpg", "image", "image/jpeg", 1_840_000, 2400, 1200, "Banners"],
+  ["hero-port-sunrise.jpg", "image", "image/jpeg", 1_840_000, 2400, 1200, "Brand"],
   ["terminal-aerial.jpg", "image", "image/jpeg", 2_210_000, 2400, 1600, "Locations"],
   ["aluminium-ingots.png", "image", "image/png", 960_000, 1600, 1200, "Products"],
   ["copper-cathode.png", "image", "image/png", 880_000, 1600, 1200, "Products"],
@@ -37,7 +37,7 @@ const mediaRows: [string, MediaAsset["kind"], string, number, number, number, st
   ["urea-granules.jpg", "image", "image/jpeg", 740_000, 1500, 1000, "Products"],
   ["sunflower-oil.jpg", "image", "image/jpeg", 690_000, 1500, 1000, "Products"],
   ["coal-stockyard.jpg", "image", "image/jpeg", 1_120_000, 2000, 1333, "Projects"],
-  ["company-intro.mp4", "video", "video/mp4", 18_400_000, 1920, 1080, "Banners"],
+  ["company-intro.mp4", "video", "video/mp4", 18_400_000, 1920, 1080, "Brand"],
   ["logo-primary.png", "image", "image/png", 48_000, 800, 240, "Brand"],
   ["wheat-harvest.jpg", "image", "image/jpeg", 1_020_000, 1800, 1200, "Products"],
   ["iron-ore-pile.jpg", "image", "image/jpeg", 1_330_000, 2000, 1333, "Products"],
@@ -116,10 +116,10 @@ const actRows: [string, ActivityLog["action"], string, string, string?][] = [
   ["Rahul Varma", "status_changed", "Career", "Trade Finance Intern", "Status → closed"],
   ["Rahul Varma", "created", "Admin user", "Meera Nair", "Invitation sent"],
   ["Priya Menon", "updated", "Project", "Coal Logistics for a South Asian Power Utility"],
-  ["Anita Das", "archived", "Banner", "Festive Season Notice"],
+  ["Anita Das", "archived", "Post", "Festive Season Notice"],
   ["Karthik Rao", "status_changed", "RFQ", "RFQ-2026-1042", "Status → quoted"],
   ["Rahul Varma", "updated", "Role", "Trade Desk", "Permissions changed"],
-  ["Anita Das", "deleted", "Media asset", "old-banner-draft.jpg"],
+  ["Anita Das", "deleted", "Media asset", "old-cover-draft.jpg"],
 ];
 
 export const activitySeed: ActivityLog[] = actRows.map(([actor, action, entityType, entityLabel, detail], i) => ({

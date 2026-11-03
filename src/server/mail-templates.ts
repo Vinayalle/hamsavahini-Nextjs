@@ -6,10 +6,10 @@ const BRAND = "Hamsavahin Aarth Mines LLP";
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 function layout(title: string, bodyHtml: string, footer = "If you did not expect this email, you can ignore it. No one at Hamsavahin will ever ask for your password or a code by phone or email."): string {
-  return `<!doctype html><html><body style="margin:0;background:#f4f1ea;font-family:Segoe UI,Arial,sans-serif;color:#1c1710">
+  return `<!doctype html><html><body style="margin:0;background:#f4f1ea;font-family:Segoe UI,Arial,sans-serif;color:#2a1a0e">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px">
 <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:10px;overflow:hidden;border:1px solid #e7e0d0">
-<tr><td style="background:#1a130a;color:#debb66;padding:18px 24px;font-size:18px;font-weight:600">${esc(BRAND)}</td></tr>
+<tr><td style="background:#2a180c;color:#d8b574;padding:18px 24px;font-size:18px;font-weight:600">${esc(BRAND)}</td></tr>
 <tr><td style="padding:28px 24px"><h1 style="margin:0 0 14px;font-size:20px">${esc(title)}</h1>${bodyHtml}</td></tr>
 <tr><td style="padding:16px 24px;background:#faf8f3;color:#665d4e;font-size:12px;line-height:1.5">${esc(footer)}</td></tr>
 </table></td></tr></table></body></html>`;
@@ -17,7 +17,7 @@ function layout(title: string, bodyHtml: string, footer = "If you did not expect
 
 const p = (s: string) => `<p style="margin:0 0 14px;line-height:1.55;font-size:15px">${s}</p>`;
 const button = (url: string, label: string) =>
-  `<p style="margin:22px 0"><a href="${esc(url)}" style="background:#8f6418;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:6px;font-weight:600;display:inline-block">${esc(label)}</a></p>
+  `<p style="margin:22px 0"><a href="${esc(url)}" style="background:#8a5c2c;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:6px;font-weight:600;display:inline-block">${esc(label)}</a></p>
 <p style="margin:0 0 14px;font-size:12px;color:#665d4e;word-break:break-all">Or paste this link into your browser: ${esc(url)}</p>`;
 
 export interface Rendered {
@@ -116,5 +116,39 @@ export function applicationReceivedEmail(name: string, position: string): Render
     subject: `We received your application | ${BRAND}`,
     text: `Hello ${name},\n\nThank you for applying to ${BRAND}. We have received your application and will contact you if your profile matches the role.\n\n${textRows(rows)}\n\n${FORM_FOOTER}\n`,
     html: layout("We received your application", p(`Hello ${esc(name)},`) + p(`Thank you for applying to ${esc(BRAND)}. We have received your application and will contact you if your profile matches the role.`) + summary(rows), FORM_FOOTER),
+  };
+}
+
+/**
+ * The message the company mailbox receives when a visitor submits a form: who they are, what they asked, and (for a product) the product
+ * and its link. Everything the visitor typed is escaped; line breaks are removed from anything that ends up in the subject.
+ */
+export interface StaffNotice {
+  title: string;
+  rows: [string, string | null | undefined][];
+  message?: string;
+  links?: { label: string; url: string }[];
+}
+const oneLine = (v: string) => v.replace(/[\r\n]+/g, " ").trim();
+export function staffNotificationEmail(n: StaffNotice, subjectName: string): Rendered {
+  const rows = n.rows.filter((r): r is [string, string] => !!r[1]);
+  const links = n.links ?? [];
+  const text = [n.title, "", ...rows.map(([l, v]) => `${l}: ${v}`), ...links.map((k) => `${k.label}: ${k.url}`), ...(n.message ? ["", "Message:", n.message] : []), "", "Reply to this email to answer the visitor directly."].join("\n");
+  const table = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px">${rows.map(([l, v]) => row(l, v)).join("")}${links.map((k) => `<tr><td style="padding:6px 12px 6px 0;color:#665d4e;font-size:14px;vertical-align:top">${esc(k.label)}</td><td style="padding:6px 0;font-size:14px"><a href="${esc(k.url)}" style="color:#7a5026;font-weight:700">${esc(k.url)}</a></td></tr>`).join("")}</table>`;
+  const message = n.message ? `<p style="margin:0 0 6px;font-size:13px;color:#665d4e">Message</p><p style="margin:0 0 16px;padding:12px 14px;background:#faf8f3;border-radius:8px;font-size:15px;line-height:1.55;white-space:pre-wrap">${esc(n.message)}</p>` : "";
+  return {
+    subject: oneLine(`${n.title}${subjectName ? ` (from ${subjectName})` : ""}`).slice(0, 200),
+    text,
+    html: layout(n.title, table + message + p("Reply to this email to answer the visitor directly."), "This message was sent by the contact forms of your website."),
+  };
+}
+
+/** Thank-you for a quote request about one product: names the product, links to it, and says the team will make contact. */
+export function quoteReceivedEmail(name: string, productName: string, productUrl: string): Rendered {
+  const rows: [string, string][] = [["Product", productName]];
+  return {
+    subject: `Thank you for your quote request: ${productName} | ${BRAND}`.replace(/[\r\n]+/g, " ").slice(0, 200),
+    text: `Hello ${name},\n\nThank you for filling in the form for ${productName}. We have received your requirements and our team will contact you shortly.\n\n${textRows(rows)}\nProduct page: ${productUrl}\n\n${FORM_FOOTER}\n`,
+    html: layout("Thank you for your quote request", p(`Hello ${esc(name)},`) + p(`Thank you for filling in the form for <strong>${esc(productName)}</strong>. We have received your requirements and our team will contact you shortly.`) + summary(rows) + button(productUrl, "View the product"), FORM_FOOTER),
   };
 }

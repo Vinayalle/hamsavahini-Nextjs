@@ -17,7 +17,7 @@ import { IMAGE_RULES, fileStorage, validateFile } from "@/lib/storage";
 import { formatBytes, formatDate } from "@/lib/utils";
 import { ImageGridSkeleton } from "@/components/admin/skeletons";
 
-const FOLDERS = ["Banners", "Locations", "Posts", "Products", "Projects", "Brand", "Uploads"];
+const FOLDERS = ["Locations", "Posts", "Products", "Projects", "Brand", "Uploads"];
 
 export default function MediaLibraryPage() {
   const confirm = useConfirm();

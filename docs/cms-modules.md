@@ -15,7 +15,6 @@ In `NEXT_PUBLIC_DATA_SOURCE=api` mode every module below is served by PostgreSQL
 | Projects / Trade stories | DB | DB | DB | DB | |
 | Careers | DB | DB | DB | DB (guarded when applications exist) | |
 | Locations | DB | DB | DB + visibility switch | DB | |
-| Banners | DB | DB | DB | DB | title, description, image (saved inside the project), link; drives the website hero (below) |
 | Commodities | DB | DB | DB | DB (guarded by prices/opportunities) | |
 | Commodity prices | DB | DB | DB | DB | manual entry only |
 | Trade opportunities | DB | DB | DB | DB | quantity text parsed to value + unit |
@@ -42,11 +41,6 @@ In `NEXT_PUBLIC_DATA_SOURCE=api` mode every module below is served by PostgreSQL
 - A database trigger/REVOKE to make `ActivityLog` physically append-only for the app role is recommended before production.
 - The browser downloads each module list once per session (fine for admin volumes); move a module to `ServerPagedList` if it grows large.
 
-## Banners and the website hero (`/`)
-Sidebar **Banners** (`/admin/banners`). Fields: **title**, **description** (`subtitle`, max 200), **image**, **link** (`ctaUrl`, `/path` or `https://…`; `//host` and `javascript:` are refused) and the button text (default "Know more").
-- The image is uploaded from the form to `POST /api/banners/image` (needs `banners:create` or `banners:edit`; real JPEG/PNG/WebP only, max 5 MB) and saved as a file **inside the project**: `uploads/banners/<random>.<ext>` (override the folder with `BANNER_UPLOAD_DIR`). No S3 bucket is involved. The database keeps only a record of it (`StoredFile`); the file is read back only through our routes, never as a static file.
-- **Deleting a banner (single or bulk) deletes its picture file and record**, unless another banner still uses the same picture. Pictures that were uploaded but never saved, or replaced by another picture, are swept up after one hour (checked on the next upload or banner delete).
-- The `uploads/` folder is ordinary project data: commit it if the pictures must travel with the repository, or add it to `.gitignore` if not. A host with a temporary disk (some serverless platforms) would lose the files on redeploy; point `BANNER_UPLOAD_DIR` at a persistent folder there.
-- The home page (`src/app/(site)/page.tsx`) reads **published** banners with section *Hero* whose *Show from / until* window includes today (`src/server/services/site.ts`, max 8, ordered by *Slide order*). Drafts, archived, expired and other sections never reach the public.
-- The picture is served by `/api/public/banner-image/<banner id>`, which answers only for a live published hero banner, with `nosniff`, a sandboxing CSP and public caching; the bucket and the private media route stay closed.
-- `src/components/web/Hero.tsx`: height = `100svh − navbar height` (`--site-header-h` in `(site)/globals.css`; 440px floor on very short screens), split picture/red panel on desktop, picture over a red text sheet on phones, autoplay with pause button, swipe, arrow keys, reduced-motion respected. With no published banner a default hero is shown.
+## The website hero (`/`)
+The home-page banner is fixed in the code (`src/components/web/Hero.tsx`): a background video (`public/videos/hero.webm`), the heading, two buttons and a full-page loader that shows until the video is ready. There is no Banners page in the admin and no banner table in the database (removed by migration `20261103120000_remove_banners`).
+

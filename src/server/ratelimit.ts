@@ -61,20 +61,4 @@ export function sourceKey(request: Request): string {
 
 /** Policy table: every limit in one reviewable place. */
 export const LIMITS = {
-  loginAccount: { max: 8, windowSeconds: 15 * 60 },
-  loginSource: { max: 60, windowSeconds: 15 * 60 },
-  otpRequestAccount: { max: 5, windowSeconds: 60 * 60 },
-  otpRequestSource: { max: 30, windowSeconds: 60 * 60 },
-  otpVerifyAccount: { max: 10, windowSeconds: 30 * 60 },
-  otpVerifySource: { max: 60, windowSeconds: 30 * 60 },
-  grantSource: { max: 30, windowSeconds: 30 * 60 },
-  forgotAccount: { max: 3, windowSeconds: 60 * 60 },
-  forgotSource: { max: 20, windowSeconds: 60 * 60 },
-  resetSource: { max: 20, windowSeconds: 30 * 60 },
-  mfaAccount: { max: 10, windowSeconds: 15 * 60 },
-  loginCodeAccount: { max: 10, windowSeconds: 60 * 60 },
-  mfaSource: { max: 60, windowSeconds: 15 * 60 },
-  refreshSource: { max: 120, windowSeconds: 5 * 60 },
-  reauthAccount: { max: 8, windowSeconds: 15 * 60 },
-  changePasswordAccount: { max: 8, windowSeconds: 15 * 60 },
 } as const satisfies Record<string, Limit>;

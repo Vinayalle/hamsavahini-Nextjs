@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { siteBaseUrl } from "@/lib/site-url";
 import { STATIC_PATHS } from "@/content/site";
 import { listSitemapEntries, loadPublic } from "@/server/services/public";
 
@@ -6,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 /** Every public page: the fixed pages plus the published products, articles, projects and open positions from the CMS. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = (process.env.APP_BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const base = siteBaseUrl();
   const { data } = await loadPublic(() => listSitemapEntries(), []);
   const now = new Date();
   return [

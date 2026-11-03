@@ -112,13 +112,6 @@ enum LocationType {
   representative
 }
 
-enum BannerSection {
-  hero
-  promo
-  feature_strip
-  cta
-}
-
 enum CommodityGroup {
   Energy
   Metals
@@ -332,8 +325,6 @@ model AdminUser {
   passwordHash       String?
   /// invited = pending invitation, active, suspended = deactivated. Only `active` accounts can sign in.
   status             UserStatus  @default(invited)
-  failedLoginCount   Int         @default(0)
-  lockedUntil        DateTime?   @db.Timestamptz
   lastLoginAt        DateTime?   @db.Timestamptz
   passwordChangedAt  DateTime?   @db.Timestamptz
   /// Set when the employee proved ownership of the registered mailbox (email OTP).
@@ -534,7 +525,6 @@ model StoredFile {
   productImages    ProductImage[]
   productDocuments ProductDocument[]
   postCovers       Post[]
-  banners          Banner[]
   applications     JobApplication[]
 
   @@index([kind, createdAt])
@@ -802,25 +792,6 @@ model Location {
   @@unique([name, city])
   @@index([country])
   @@index([active, sortOrder])
-}
-
-model Banner {
-  id          String        @id @default(uuid(7)) @db.Uuid
-  title       String
-  subtitle    String        @default("")
-  section     BannerSection
-  imageFileId String?       @db.Uuid
-  imageFile   StoredFile?   @relation(fields: [imageFileId], references: [id], onDelete: SetNull)
-  ctaLabel    String
-  ctaUrl      String
-  sortOrder   Int           @default(0)
-  status      PublishStatus @default(draft)
-  startsAt    DateTime?     @db.Timestamptz
-  endsAt      DateTime?     @db.Timestamptz
-  createdAt   DateTime      @default(now()) @db.Timestamptz
-  updatedAt   DateTime      @updatedAt @db.Timestamptz
-
-  @@index([section, status, sortOrder])
 }
 
 // ───────────────────────── Trade ─────────────────────────

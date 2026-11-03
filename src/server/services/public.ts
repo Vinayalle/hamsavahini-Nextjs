@@ -86,7 +86,7 @@ export async function getProject(slug: string): Promise<ProjectFull | null> {
 /* ───────────── Products ───────────── */
 export const AVAILABILITY_LABEL: Record<string, string> = { available: "Available", limited_availability: "Limited availability", under_negotiation: "Under negotiation", sold: "Sold", out_of_stock: "Out of stock" };
 export interface CategoryCard { slug: string; name: string; description: string; count: number }
-export interface ProductCard { slug: string; code: string; name: string; category: string; categorySlug: string; shortDescription: string; availability: string; grade: string | null; origin: string | null; featured: boolean; /** Primary picture (public image route), or null when the product has none. */ image: string | null }
+export interface ProductCard { slug: string; code: string; name: string; category: string; categorySlug: string; shortDescription: string; availability: string; grade: string | null; origin: string | null; featured: boolean; /** What it is used for (the industries and uses the admin entered). */ usedFor: string[]; /** The first specifications the admin entered (label and value), for the product card. */ specs: { label: string; value: string }[]; /** Primary picture (public image route), or null when the product has none. */ image: string | null }
 export interface ProductFull extends ProductCard {
   description: string; applications: string[]; packaging: string | null; loadingPort: string | null; targetMarket: string | null; quantity: string | null;
   specifications: { label: string; value: string; unit: string | null }[];
@@ -94,20 +94,21 @@ export interface ProductFull extends ProductCard {
   gallery: { url: string; alt: string }[];
 }
 const productSelect = {
-  slug: true, code: true, name: true, shortDescription: true, availability: true, grade: true, origin: true, featured: true, category: { select: { name: true, slug: true } },
+  slug: true, code: true, name: true, shortDescription: true, availability: true, grade: true, origin: true, featured: true, applications: true, specifications: { orderBy: { sortOrder: "asc" }, take: 4, select: { label: true, value: true, unit: true } }, category: { select: { name: true, slug: true } },
   images: { where: { file: { visibility: "public", scanStatus: { not: "quarantined" } } }, orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }], take: 1, select: { fileId: true } },
 } satisfies Prisma.ProductSelect;
-type ProductRow = { slug: string; code: string; name: string; shortDescription: string; availability: string; grade: string | null; origin: string | null; featured: boolean; category: { name: string; slug: string }; images: { fileId: string }[] };
+type ProductRow = { slug: string; code: string; name: string; shortDescription: string; availability: string; grade: string | null; origin: string | null; featured: boolean; applications: string[]; specifications: { label: string; value: string; unit: string | null }[]; category: { name: string; slug: string }; images: { fileId: string }[] };
 const toProductCard = (p: ProductRow): ProductCard => ({
   slug: p.slug, code: p.code, name: p.name, category: p.category.name, categorySlug: p.category.slug, shortDescription: p.shortDescription,
-  availability: AVAILABILITY_LABEL[p.availability] ?? p.availability, grade: p.grade, origin: p.origin, featured: p.featured,
+  availability: AVAILABILITY_LABEL[p.availability] ?? p.availability, grade: p.grade, origin: p.origin, featured: p.featured, usedFor: p.applications,
+  specs: p.specifications.map((x) => ({ label: x.label, value: x.unit ? `${x.value} ${x.unit}` : x.value })),
   image: p.images[0] ? `/api/public/product-image/${p.images[0].fileId}` : null,
 });
 const productWhere = { status: "published" as const, category: { status: "published" as const } };
 
 export async function listCategories(): Promise<CategoryCard[]> {
   const rows = await db().category.findMany({ where: { status: "published" }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { slug: true, name: true, description: true, _count: { select: { products: { where: { status: "published" } } } } } });
-  return rows.map((c) => ({ slug: c.slug, name: c.name, description: c.description, count: c._count.products }));
+  return rows.map((c) => ({ slug: c.slug, name: c.name, description: c.description, count: c._count.products })).filter((c) => c.count > 0);
 }
 export async function listProducts(opts: { category?: string; search?: string; take?: number; skip?: number } = {}) {
   const where = {
@@ -167,10 +168,10 @@ export const LOCATION_TYPE_LABEL: Record<string, string> = {
   headquarters: "Headquarters", regional_office: "Regional office", mine: "Mine", sourcing_location: "Sourcing location", supplier: "Supplier", processing_facility: "Processing facility",
   warehouse: "Warehouse", port_terminal: "Port terminal", market: "Market", trading_destination: "Trading destination", representative: "Representative",
 };
-export interface LocationCard { id: string; name: string; type: string; typeKey: string; country: string; city: string; description: string; operations: string | null; capacity: string | null }
+export interface LocationCard { id: string; name: string; type: string; typeKey: string; country: string; city: string; description: string; operations: string | null; capacity: string | null; latitude: number | null; longitude: number | null }
 export async function listLocations(): Promise<LocationCard[]> {
-  const rows = await db().location.findMany({ where: { active: true }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, name: true, type: true, country: true, city: true, description: true, operations: true, capacity: true } });
-  return rows.map((l) => ({ ...l, type: LOCATION_TYPE_LABEL[l.type] ?? l.type, typeKey: l.type }));
+  const rows = await db().location.findMany({ where: { active: true }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, name: true, type: true, country: true, city: true, description: true, operations: true, capacity: true, latitude: true, longitude: true } });
+  return rows.map((l) => ({ ...l, latitude: num(l.latitude), longitude: num(l.longitude), type: LOCATION_TYPE_LABEL[l.type] ?? l.type, typeKey: l.type }));
 }
 
 /* ───────────── Commodity desk ───────────── */

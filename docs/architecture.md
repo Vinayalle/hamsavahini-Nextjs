@@ -63,7 +63,7 @@ Rules that keep the structure clean: `components/web` and `components/admin` do 
   re-checked in the API (`src/server`), never trusted from the page.
 - **Headers on every response** (`next.config.ts`): Content-Security-Policy (same-origin scripts only, no framing, no plugins, forms post only
   to this origin), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`.
-  HSTS and `upgrade-insecure-requests` are added only when `APP_BASE_URL` starts with `https://`. `X-Powered-By` is removed.
+  HSTS and `upgrade-insecure-requests` are added only when the site address (`src/lib/site-url.ts`; production uses `https://hamsavahin.in` without any setting, `APP_BASE_URL` overrides it) starts with `https://`. `X-Powered-By` is removed.
 - **Admin and API are never indexed or cached**: `X-Robots-Tag: noindex` and `Cache-Control: no-store`; `robots.txt` disallows `/admin` and `/api`.
 - **User-uploaded files** (`/api/media/:id/file`) keep their own stricter sandboxing CSP and private caching; the global headers deliberately skip that route.
 - **Website is indexable** and carries no admin text, cookies or API calls (verified by a browser test).

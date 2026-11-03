@@ -9,19 +9,23 @@ import { getStorage } from "../storage";
  * Media Library and Document Library. Records are created ONLY by the upload routes (which store the bytes first); these
  * resource configs provide list / read / edit-metadata / delete, with the same authorization as every other module.
  */
-export const MEDIA_FOLDERS = ["Banners", "Locations", "Posts", "Products", "Projects", "Brand", "Uploads"] as const;
+export const MEDIA_FOLDERS = ["Locations", "Posts", "Products", "Projects", "Brand", "Uploads"] as const;
 const DOC_CATEGORY = { Certificate: "certificate", Policy: "policy", Brochure: "brochure", Datasheet: "datasheet", Legal: "legal", Report: "report" } as const;
 const DOC_CATEGORY_LABEL = Object.fromEntries(Object.entries(DOC_CATEGORY).map(([k, v]) => [v, k])) as Record<string, string>;
 export const DOC_VISIBILITY = { public: "public", internal: "private" } as const;
 
 const fileInclude = { file: { include: { uploadedBy: { select: { name: true } } } } } as const;
 
-/** Removes the stored object and its metadata row once the library record is gone. */
-async function removeStoredFile(fileId: string, db: ReturnType<typeof getDb>) {
+/**
+ * Removes the stored object and its metadata row once the owning record (media item, document, job application ...) is gone.
+ * The file on disk goes first; if that fails for a real reason the row is kept, so nothing is left behind unseen.
+ */
+export async function removeStoredFile(fileId: string | null | undefined, db: ReturnType<typeof getDb>) {
+  if (!fileId) return;
   const file = await db.storedFile.findUnique({ where: { id: fileId } });
   if (!file) return;
-  await db.storedFile.delete({ where: { id: fileId } });
   await getStorage()?.delete(file.storageKey);
+  await db.storedFile.delete({ where: { id: fileId } });
 }
 
 export const media: ResourceConfig = {

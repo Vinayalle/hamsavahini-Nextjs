@@ -369,4 +369,27 @@ describe("resume downloads are protected and real", () => {
     await d.jobApplication.update({ where: { id: app.id }, data: { anonymizedAt: new Date() } });
     expect((await get(ck.downloader)).status).toBe(404); // erased applicants have nothing to download
   });
+
+  it("deleting a job application deletes the resume file from the uploads folder (record and disk), and nothing else", async () => {
+    const d = db();
+    const keep = "resumes/0e2e0000-0000-4000-8000-0000000000aa.pdf";
+    const gone = "resumes/0e2e0000-0000-4000-8000-0000000000bb.pdf";
+    for (const key of [keep, gone]) await storage.put(key, pdf(), { contentType: "application/pdf" });
+    const career = await d.career.create({ data: { title: "Clerk", slug: "clerk-s", department: "Trade", location: "Mumbai", employmentType: "full_time", experience: "1", descriptionHtml: "<p>d</p>", requirementsHtml: "<p>r</p>", deadline: new Date("2099-01-01"), status: "open" } });
+    const mk = async (key: string, name: string) => {
+      const f = await d.storedFile.create({ data: { storageKey: key, originalName: `${name}.pdf`, mimeType: "application/pdf", sizeBytes: BigInt(10), kind: "resume", visibility: "private" } });
+      return d.jobApplication.create({ data: { careerId: career.id, applicantName: name, email: `${name}@x.dev`, phone: "1", experienceYears: 1, resumeFileId: f.id } });
+    };
+    const a = await mk(gone, "gone");
+    const b = await mk(keep, "keep");
+    const del = await call(itemRoute.DELETE as H, { method: "DELETE", url: `/api/applications/${a.id}`, cookie: ck.sa, params: { resource: "applications", id: a.id } });
+    expect(del.status).toBe(200);
+    await expect(storage.get(gone)).rejects.toMatchObject({ name: "NoSuchKey" });
+    expect(await d.storedFile.count({ where: { storageKey: gone } })).toBe(0);
+    expect((await storage.get(keep)).contentLength).toBeGreaterThan(0); // the other applicant's resume is untouched
+    expect(await d.storedFile.count({ where: { id: b.resumeFileId! } })).toBe(1);
+    await d.jobApplication.delete({ where: { id: b.id } }); // leave nothing behind for the other suites
+    await d.storedFile.deleteMany({ where: { id: b.resumeFileId! } });
+    await d.career.delete({ where: { id: career.id } });
+  });
 });

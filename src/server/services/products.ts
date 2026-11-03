@@ -1,4 +1,5 @@
 import "server-only";
+import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import type { Prisma } from "@/generated/prisma/client";
 import { getDb } from "../db";
@@ -8,7 +9,7 @@ import { errors } from "../errors";
 import { patchOf } from "../resources/shared";
 import { authorize, authorizeBulkStatus, authorizeStatusChange } from "../rbac";
 import { publishStatus } from "./categories";
-import { isProductKey, purgeOrphanProductFiles } from "../product-files";
+import { filesOfProducts, isProductKey, purgeOrphanProductFiles, removeUnusedProductFiles } from "../product-files";
 
 const slug = z.string().trim().min(2, "Slug is required").max(160).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers and hyphens");
 
@@ -26,15 +27,23 @@ const imageInput = z.object({ fileId: z.uuid(), alt: z.string().trim().max(160).
 const documentInput = z.object({ fileId: z.uuid(), type: z.enum(["datasheet", "coa", "msds", "brochure", "other"]).default("other") });
 export const productInput = z.object({
   name: z.string().trim().min(2, "Product name is required").max(160),
-  code: z.string().trim().min(3, "Product code is required").max(40).regex(/^[A-Za-z0-9-]+$/, "Letters, numbers and hyphens only").transform((v) => v.toUpperCase()),
-  slug,
+  /** Optional: made automatically (P-XXXXXXXX) when a product is added without one. */
+  code: z.string().trim().min(3, "Product code is required").max(40).regex(/^[A-Za-z0-9-]+$/, "Letters, numbers and hyphens only").transform((v) => v.toUpperCase()).optional(),
+  /** Optional: made from the name (and kept unique) when a product is added without one. */
+  slug: slug.optional(),
   categoryId: z.uuid("Choose a category"),
-  shortDescription: z.string().trim().min(10, "Add a short summary (min 10 characters)").max(200, "Keep it under 200 characters"),
-  description: z.string().trim().min(20, "Add a full description (min 20 characters)").max(20000),
+  /** Optional: taken from the start of the full description. */
+  shortDescription: z.string().trim().min(10, "Add a short summary (min 10 characters)").max(200, "Keep it under 200 characters").optional(),
+  description: z.string().trim().min(20, "Add the product details (min 20 characters)").max(20000),
+  /** What the product is used for, or the industries it serves. Shown on the product card and the product page. */
+  applications: z.array(z.string().trim().min(1).max(80)).max(12, "Up to 12 entries").optional(),
+  /** Where it comes from, for example India / Brazil. Shown with a pin on the product card. */
+  origin: z.string().trim().max(120).nullish().transform((v) => (v ? v : null)),
   specifications: z.array(specInput).max(60).default([]),
   images: z.array(imageInput).max(8, "Up to 8 images").optional(),
   documents: z.array(documentInput).max(20, "Up to 20 documents").optional(),
-  status: publishStatus.default("draft"),
+  /** Optional: a new product is shown on the website (published) unless the caller cannot publish, then it starts hidden (draft). */
+  status: publishStatus.optional(),
   featured: z.boolean().default(false),
 });
 export const productPatch = patchOf(productInput);
@@ -61,7 +70,7 @@ type ProductRow = Prisma.ProductGetPayload<{ include: typeof include }>;
 export function toProductDto(p: ProductRow) {
   return {
     id: p.id, name: p.name, slug: p.slug, code: p.code, categoryId: p.categoryId,
-    shortDescription: p.shortDescription, description: p.description,
+    shortDescription: p.shortDescription, description: p.description, applications: p.applications, origin: p.origin,
     // The admin previews files through the permission-checked route; fileId is what a save sends back.
     images: p.images.filter((i) => i.file.scanStatus !== "quarantined").map((i) => ({ id: i.id, fileId: i.fileId, url: `/api/products/files/${i.fileId}`, alt: i.alt, isPrimary: i.isPrimary })),
     specifications: p.specifications.map((s) => ({ id: s.id, label: s.label, value: s.value, unit: s.unit ?? undefined })),
@@ -89,6 +98,30 @@ async function assertFiles(images?: { fileId: string }[], documents?: { fileId: 
 function normaliseImages<T extends { isPrimary: boolean }>(images: T[]): T[] {
   const primary = Math.max(0, images.findIndex((i) => i.isPrimary));
   return images.map((i, idx) => ({ ...i, isPrimary: idx === primary }));
+}
+
+/** URL piece made from a product name: lowercase letters, numbers and single hyphens. */
+const slugBase = (name: string) => name.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80).replace(/-+$/, "") || "product";
+async function uniqueSlug(base: string): Promise<string> {
+  const db = getDb();
+  for (let n = 1; ; n++) {
+    const candidate = n === 1 ? base : `${base}-${n}`;
+    if (!(await db.product.findUnique({ where: { slug: candidate }, select: { id: true } }))) return candidate;
+  }
+}
+async function newCode(): Promise<string> {
+  const db = getDb();
+  for (;;) {
+    const code = `P-${randomBytes(4).toString("hex").toUpperCase()}`;
+    if (!(await db.product.findUnique({ where: { code }, select: { id: true } }))) return code;
+  }
+}
+/** The first part of the details, cut at a word, for page descriptions and search results. */
+export function summarise(description: string): string {
+  const flat = description.replace(/\s+/g, " ").trim();
+  if (flat.length <= 200) return flat;
+  const cut = flat.slice(0, 197);
+  return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), 120))}…`;
 }
 
 function assertUniqueSpecs(specs: { label: string }[]) {
@@ -140,16 +173,33 @@ export async function getProduct(session: AuthSession, id: string) {
 
 export async function createProduct(session: AuthSession, input: ProductInput, ip: string | null) {
   authorize(session, "products", "create");
-  authorizeStatusChange(session, "products", null, input.status);
-  assertUniqueSpecs(input.specifications);
-  await assertRefs(input);
+  // Shown on the website straight away, unless this person is not allowed to publish: then it starts hidden and someone who can publish switches it on.
+  let status = input.status;
+  if (!status) {
+    try {
+      authorizeStatusChange(session, "products", null, "published");
+      status = "published";
+    } catch {
+      status = "draft";
+    }
+  }
+  authorizeStatusChange(session, "products", null, status);
+  const specs = input.specifications;
+  assertUniqueSpecs(specs);
+  const resolved = {
+    ...input, status,
+    code: input.code ?? (await newCode()),
+    slug: input.slug ?? (await uniqueSlug(slugBase(input.name))),
+    shortDescription: input.shortDescription ?? summarise(input.description),
+  };
+  await assertRefs(resolved);
   await assertFiles(input.images, input.documents);
-  const { specifications, images, documents, ...rest } = input;
+  const { specifications, images, documents, ...rest } = resolved;
   return getDb().$transaction(async (tx) => {
     const row = await tx.product.create({
       data: {
         ...rest,
-        publishedAt: input.status === "published" ? new Date() : null,
+        publishedAt: status === "published" ? new Date() : null,
         specifications: { create: specifications.map((s, i) => ({ label: s.label, value: s.value, unit: s.unit || null, sortOrder: i })) },
         images: { create: normaliseImages(images ?? []).map((i, n) => ({ fileId: i.fileId, alt: i.alt, isPrimary: i.isPrimary, sortOrder: n })) },
         documents: { create: (documents ?? []).map((d) => ({ fileId: d.fileId, type: d.type })) },
@@ -171,7 +221,9 @@ export async function updateProduct(session: AuthSession, id: string, patch: Par
   await assertRefs(patch, id);
   await assertFiles(patch.images, patch.documents);
   const { specifications, images, documents, ...rest } = patch;
+  if (patch.description !== undefined && patch.shortDescription === undefined) rest.shortDescription = summarise(patch.description);
   const statusChanged = patch.status !== undefined && patch.status !== current.status;
+  const previousFiles = images || documents ? await filesOfProducts(db, [id]) : [];
 
   return db.$transaction(async (tx) => {
     if (specifications) {
@@ -201,7 +253,10 @@ export async function updateProduct(session: AuthSession, id: string, patch: Par
     });
     return toProductDto(row);
   }).then((dto) => {
-    if (images || documents) void purgeOrphanProductFiles(db).catch(() => undefined); // files taken off the product are cleaned up after the grace period
+    if (images || documents) {
+      void removeUnusedProductFiles(db, previousFiles).catch(() => undefined); // files taken off the product leave the uploads folder
+      void purgeOrphanProductFiles(db).catch(() => undefined); // uploads that were never saved are cleaned up after the grace period
+    }
     return dto;
   });
 }
@@ -211,10 +266,12 @@ export async function deleteProduct(session: AuthSession, id: string, ip: string
   const db = getDb();
   const current = await db.product.findUnique({ where: { id } });
   if (!current) throw errors.notFound("Product");
+  const fileIds = await filesOfProducts(db, [id]);
   await db.$transaction(async (tx) => {
     await tx.product.delete({ where: { id } });
     await recordActivity(tx, { session, action: "deleted", entityType: "Product", entityId: id, entityLabel: current.name, ip });
   });
+  await removeUnusedProductFiles(db, fileIds); // its pictures and documents leave the uploads folder too
 }
 
 export const productBulkInput = z.discriminatedUnion("action", [
@@ -238,10 +295,12 @@ export async function bulkProducts(session: AuthSession, input: z.infer<typeof p
     return { count: r.count };
   }
   authorize(session, "products", "delete");
+  const fileIds = await filesOfProducts(db, input.ids);
   const r = await db.$transaction(async (tx) => {
     const res = await tx.product.deleteMany({ where: { id: { in: input.ids } } });
     await recordActivity(tx, { session, action: "deleted", entityType: "Product", entityLabel: `${res.count} products`, ip });
     return res;
   });
+  await removeUnusedProductFiles(db, fileIds);
   return { count: r.count };
 }

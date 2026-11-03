@@ -1,4 +1,4 @@
-import type { Banner, Career, Location, Post, Project } from "@/types/entities";
+import type { Career, Location, Post, Project } from "@/types/entities";
 import { placeholderImage } from "./catalog";
 
 const D = (d: string) => `2026-${d}T10:00:00.000Z`;
@@ -109,10 +109,3 @@ export const locationsSeed: Location[] = locRows.map(([name, type, country, city
   updatedAt: D(`0${(i % 5) + 4}-1${i}`),
 }));
 
-export const bannersSeed: Banner[] = [
-  { id: "ban_001", title: "Trusted Partner in Global Commodity Trade", subtitle: "Metals, energy, agriculture and chemicals — sourced responsibly, delivered reliably.", section: "hero", imageUrl: placeholderImage("Hero banner", 215), ctaLabel: "Explore Products", ctaUrl: "/products", sortOrder: 1, status: "published", startsAt: null, endsAt: null, createdAt: D("01-30"), updatedAt: D("09-01") },
-  { id: "ban_002", title: "Request a Quote in 24 Hours", subtitle: "Share your requirement and our trade desk will respond within one business day.", section: "cta", imageUrl: placeholderImage("CTA banner", 150), ctaLabel: "Request a Quote", ctaUrl: "/rfq", sortOrder: 2, status: "published", startsAt: null, endsAt: null, createdAt: D("02-10"), updatedAt: D("08-15") },
-  { id: "ban_003", title: "Now in Dubai", subtitle: "Our new Middle East office is open.", section: "promo", imageUrl: placeholderImage("Dubai office", 30), ctaLabel: "See Locations", ctaUrl: "/locations", sortOrder: 3, status: "published", startsAt: "2026-09-12", endsAt: "2026-12-31", createdAt: D("09-10"), updatedAt: D("09-12") },
-  { id: "ban_004", title: "Sustainability Report 2026", subtitle: "Read how we are reducing the footprint of global trade.", section: "feature_strip", imageUrl: placeholderImage("Sustainability", 120), ctaLabel: "Read Report", ctaUrl: "/insights", sortOrder: 4, status: "draft", startsAt: null, endsAt: null, createdAt: D("10-01"), updatedAt: D("10-06") },
-  { id: "ban_005", title: "Festive Season Notice", subtitle: "Trade desk hours during the holiday period.", section: "promo", ctaLabel: "Learn More", ctaUrl: "/contact", sortOrder: 5, status: "archived", startsAt: "2025-12-15", endsAt: "2026-01-05", createdAt: D("01-02"), updatedAt: D("01-06") },
-];

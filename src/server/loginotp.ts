@@ -7,7 +7,6 @@ import { ApiError } from "./errors";
 import { clientIp, recordActivity } from "./audit";
 import { loginCodeEmail } from "./mail-templates";
 import { deliver } from "./notify";
-import { enforce, LIMITS, sourceKey } from "./ratelimit";
 
 /**
  * EMAIL CODE AS THE SECOND SIGN-IN STEP (every employee, every sign-in; there is no authenticator app).
@@ -30,7 +29,6 @@ export const maskEmail = (email: string) => {
  */
 export async function sendLoginCode(request: Request, user: { id: string; name: string; email: string }): Promise<{ sent: boolean; retryAfterSeconds?: number }> {
   const cfg = getAuthConfig();
-  await enforce(`login-code:acct:${user.id}`, LIMITS.loginCodeAccount);
   const code = randomDigits(6);
   const id = randomUUID();
   const db = getDb();
@@ -57,8 +55,6 @@ export async function sendLoginCode(request: Request, user: { id: string; name: 
 
 /** Checks the emailed code. Throws a generic 401 on any failure; consumes the code on success. */
 export async function verifyLoginCode(request: Request, userId: string, code: string): Promise<void> {
-  await enforce(`mfa:src:${sourceKey(request)}`, LIMITS.mfaSource);
-  await enforce(`mfa:acct:${userId}`, LIMITS.mfaAccount);
   const db = getDb();
   const user = await db.adminUser.findUnique({ where: { id: userId }, select: { name: true, status: true } });
   const fail = async (why: string) => {

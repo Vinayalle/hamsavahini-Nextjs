@@ -7,7 +7,7 @@ import { resourceFor } from "@/server/resources";
 
 export const dynamic = "force-dynamic";
 
-/** Generic CMS modules (posts, projects, careers, locations, banners, commodities, prices, opportunities, rfqs, ...). */
+/** Generic CMS modules (posts, projects, careers, locations, commodities, prices, opportunities, rfqs, ...). */
 export const GET = route<{ resource: string }>(async (request, { resource }) => {
   const session = await requireSession(request);
   const cfg = resourceFor(resource);
