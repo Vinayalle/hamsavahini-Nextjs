@@ -16,7 +16,7 @@ export async function loadPublic<T>(task: () => Promise<T>, fallback: T): Promis
   try {
     return { data: await task(), failed: false };
   } catch (e) {
-    console.error("[site] public data unavailable", (e as { code?: string }).code ?? (e instanceof Error ? e.name : "unknown"));
+    console.error("[site] public data unavailable:", e instanceof Error ? e.message : e);
     return { data: fallback, failed: true };
   }
 }
