@@ -19,14 +19,28 @@ function create(): PrismaClient {
 }
 
 /**
- * Connections this process may hold open. Hosted poolers allow few clients in total (Supabase's session pooler: 15 on small plans), and
- * `next dev` runs several server processes (pages, API routes, proxy), each with its own pool, so development uses a small pool.
- * Override with DATABASE_POOL_MAX.
+ * Connections this process may hold open.
+ *
+ * IMPORTANT — connection budget:
+ *   Supabase transaction pooler (port 6543): many concurrent clients allowed — use this for all deployments.
+ *   Supabase session pooler   (port 5432):  hard limit of 15 connections on the free plan — do NOT use in production.
+ *
+ *   On Vercel/serverless every function invocation is a separate process with its OWN pool.
+ *   Old behaviour: max=10 → 2 concurrent Vercel functions × 10 = 20 connections → "EMAXCONNSESSION".
+ *   Fix: pool=1 on serverless so each short-lived invocation holds at most one connection at a time.
+ *
+ *   Local dev (next dev) also spawns several worker processes, so keep the pool small there too.
+ *   Override any of this with DATABASE_POOL_MAX (number, 1–50) in the environment.
  */
 function poolMax(): number {
   const configured = Number(process.env.DATABASE_POOL_MAX);
   if (Number.isInteger(configured) && configured >= 1 && configured <= 50) return configured;
-  return process.env.NODE_ENV === "development" ? 4 : 10;
+  // Vercel and AWS Lambda are serverless: each invocation is isolated — a pool of 1 is correct and safe.
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) return 1;
+  // Local development: next dev spawns several Node processes; keep total low to avoid hitting limits.
+  if (process.env.NODE_ENV === "development") return 2;
+  // Always-on Node server (e.g. VPS / Docker): a small pool is fine; tune up with DATABASE_POOL_MAX if needed.
+  return 5;
 }
 
 export function getDb(): PrismaClient {
