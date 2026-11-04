@@ -41,6 +41,9 @@ const baseHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false, // do not advertise the framework
+  outputFileTracingIncludes: {
+    "/**": ["./uploads/**/*"],
+  },
   async headers() {
     // The file routes set their own, stricter headers (sandboxing CSP, caching) because they serve user-uploaded files,
     // so the generic site-wide headers must not overwrite them.
