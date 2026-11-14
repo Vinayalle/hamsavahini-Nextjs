@@ -19,3 +19,32 @@ export const MINERAL_PHOTO: Record<string, Photo> = {
   "granite-dimension-stones": PHOTOS.granite,
   "quartz-silica-minerals": PHOTOS.quartz,
 };
+
+/** More commodities we trade: pictures supplied by the company (public/images/commodities), shown on the home and Minerals pages. */
+export const COMMODITY_PHOTOS: { name: string; src: string; alt: string; wide?: boolean }[] = [
+  { name: "Thermal Coal", src: "/images/commodities/thermal-coal.jpg", alt: "Lumps and fine pieces of thermal coal" },
+  { name: "Petroleum Coke", src: "/images/commodities/petroleum-coke.jpg", alt: "Petroleum coke lumps and crushed coke" },
+  { name: "Bauxite", src: "/images/commodities/bauxite.jpg", alt: "Red bauxite aluminium ore" },
+  { name: "Silica Sand", src: "/images/commodities/silica-sand.jpg", alt: "High-purity white silica sand" },
+  { name: "Phosphate Rock", src: "/images/commodities/phosphate-rock.jpg", alt: "Phosphate rock and crushed phosphate" },
+  { name: "Rutile", src: "/images/commodities/rutile.jpg", alt: "Rutile crystals and rutile sand" },
+  { name: "Zircon", src: "/images/commodities/zircon.jpg", alt: "Zircon crystals and zircon sand" },
+  { name: "Silicomanganese", src: "/images/commodities/silicomanganese.jpg", alt: "Silicomanganese alloy lumps" },
+  { name: "Zinc Metal", src: "/images/commodities/zinc.jpg", alt: "Zinc ingots, coils and sheets" },
+  { name: "Rice", src: "/images/commodities/rice.jpg", alt: "A bowl of long-grain rice" },
+  { name: "Titanium-Bearing Minerals", src: "/images/commodities/titanium-minerals.jpg", alt: "Ilmenite, rutile, leucoxene, anatase and sphene", wide: true },
+];
+
+/** Pictures for each mineral's own page (the first is the large one). Minerals with no entry simply show no picture. */
+export const MINERAL_GALLERY: Record<string, { src: string; alt: string }[]> = {
+  "iron-ore-fines": [PHOTOS["iron-ore"]],
+  "granite-dimension-stones": [PHOTOS.granite],
+  "quartz-silica-minerals": [{ src: "/images/commodities/silica-sand.jpg", alt: "High-purity white silica sand" }, PHOTOS.quartz],
+  "bauxite-laterite": [{ src: "/images/commodities/bauxite.jpg", alt: "Red bauxite aluminium ore" }],
+  "manganese-ore": [{ src: "/images/commodities/silicomanganese.jpg", alt: "Silicomanganese alloy lumps, a manganese product" }],
+  "industrial-specialty-minerals": [
+    { src: "/images/commodities/zircon.jpg", alt: "Zircon crystals and zircon sand" },
+    { src: "/images/commodities/rutile.jpg", alt: "Rutile crystals and rutile sand" },
+    { src: "/images/commodities/phosphate-rock.jpg", alt: "Phosphate rock and crushed phosphate" },
+  ],
+};

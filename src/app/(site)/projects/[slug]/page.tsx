@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { LuArrowLeft, LuCalendar, LuMapPin, LuPackage, LuTag } from "react-icons/lu";
+import { FaArrowLeft } from "react-icons/fa";
+import { LuCalendar, LuMapPin, LuPackage, LuTag } from "react-icons/lu";
 import { Reveal } from "@/components/web/motion";
 import { CtaBand, PageHero, Prose, Tag, bodyFont, card, container, formatDate } from "@/components/web/ui";
 import { pageMeta } from "@/content/seo";
@@ -34,7 +35,7 @@ export default async function ProjectPage({ params }: Params) {
         <div className={`${container} grid items-start gap-12 py-9 md:py-12 lg:grid-cols-[1.4fr_0.6fr]`}>
           <Reveal variant="left">
             <Prose html={project.html} />
-            <Link href="/projects" className="mt-10 inline-flex items-center gap-2 text-sm font-bold text-gold-700 hover:underline"><LuArrowLeft className="size-4" aria-hidden />All projects</Link>
+            <Link href="/projects" className="mt-10 inline-flex items-center gap-2 text-sm font-bold text-gold-700 hover:underline"><FaArrowLeft className="size-3.5" aria-hidden />All projects</Link>
           </Reveal>
           <Reveal variant="right" delay={120}>
             <aside aria-label="Project facts" className={`${card} bg-neutral-50 p-7`}>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
-import { LuBuilding2, LuFactory, LuGlobe, LuMapPin, LuPickaxe, LuShip, LuX } from "react-icons/lu";
+import { LuGlobe, LuMapPin, LuPickaxe, LuShip, LuX } from "react-icons/lu";
 import type { IconType } from "react-icons";
 import { GlobeMap, type GlobePin } from "./GlobeMap";
 
@@ -13,24 +13,26 @@ import { GlobeMap, type GlobePin } from "./GlobeMap";
 export interface OperationsLocation {
   id: string; name: string; type: string; typeKey: string; country: string; city: string; description: string; operations: string | null; capacity: string | null;
   latitude: number | null; longitude: number | null; color: string; abroad: boolean;
+  /** What is sourced here (empty for markets and for places added in the admin). */
+  commodities: string[];
 }
 
 const FILTERS: { key: string; label: string; icon: IconType; test: (l: OperationsLocation) => boolean }[] = [
   { key: "all", label: "All", icon: LuGlobe, test: () => true },
-  { key: "mines", label: "Mines", icon: LuPickaxe, test: (l) => l.typeKey === "mine" },
-  { key: "processing", label: "Processing", icon: LuFactory, test: (l) => l.typeKey === "processing_facility" },
-  { key: "logistics", label: "Ports & warehouses", icon: LuShip, test: (l) => l.typeKey === "port_terminal" || l.typeKey === "warehouse" },
-  { key: "offices", label: "Offices", icon: LuBuilding2, test: (l) => ["headquarters", "regional_office", "representative"].includes(l.typeKey) },
-  { key: "international", label: "International", icon: LuMapPin, test: (l) => l.abroad },
+  { key: "india", label: "India", icon: LuPickaxe, test: (l) => !l.abroad && l.typeKey !== "market" },
+  { key: "international", label: "International sourcing", icon: LuMapPin, test: (l) => l.abroad && l.typeKey !== "market" },
+  { key: "markets", label: "Supply markets", icon: LuShip, test: (l) => l.typeKey === "market" },
 ];
 
 export function OperationsExplorer({ locations, legend }: { locations: OperationsLocation[]; legend: { label: string; color: string }[] }) {
   const [filter, setFilter] = useState("all");
+  const [commodity, setCommodity] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const globeCard = useRef<HTMLDivElement>(null);
 
   const counts = useMemo(() => Object.fromEntries(FILTERS.map((f) => [f.key, locations.filter(f.test).length])), [locations]);
-  const shown = useMemo(() => locations.filter((FILTERS.find((f) => f.key === filter) ?? FILTERS[0]).test), [locations, filter]);
+  const commodities = useMemo(() => [...new Set(locations.flatMap((l) => l.commodities))].sort(), [locations]);
+  const shown = useMemo(() => locations.filter((FILTERS.find((f) => f.key === filter) ?? FILTERS[0]).test).filter((l) => !commodity || l.commodities.includes(commodity)), [locations, filter, commodity]);
   const pins: GlobePin[] = useMemo(() => shown.map((l) => ({ id: l.id, name: l.name, place: [l.city, l.country].filter(Boolean).join(", "), kind: l.type, color: l.color, country: l.country, lat: l.latitude, lng: l.longitude })), [shown]);
   const selected = shown.find((l) => l.id === selectedId) ?? null;
 
@@ -54,6 +56,20 @@ export function OperationsExplorer({ locations, legend }: { locations: Operation
           );
         })}
       </div>
+
+      {commodities.length > 0 && (
+        <div role="group" aria-label="Filter by commodity" className="mt-3 flex flex-wrap justify-center gap-2">
+          {commodities.map((c) => {
+            const on = commodity === c;
+            return (
+              <button key={c} type="button" aria-pressed={on} onClick={() => { setCommodity(on ? null : c); setSelectedId(null); }}
+                className={`cursor-pointer rounded-full border px-3 py-1 text-xs font-semibold transition ${on ? "border-gold-300 bg-gold-300 text-ink" : "border-white/15 bg-white/5 text-white/75 hover:border-gold-400/60 hover:text-white"}`}>
+                {c}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Globe and details */}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-stretch">
@@ -80,8 +96,14 @@ export function OperationsExplorer({ locations, legend }: { locations: Operation
                 <button type="button" onClick={() => choose(null)} aria-label="Close details" className="cursor-pointer rounded-full border border-white/15 p-2 text-white/70 transition hover:bg-white/10 hover:text-white"><LuX className="size-4" aria-hidden /></button>
               </div>
               <h3 className="mt-5 text-2xl font-bold leading-tight text-white md:text-3xl">{selected.name}</h3>
-              <p className="mt-2 flex items-center gap-2 text-white/70"><LuMapPin className="size-4 shrink-0 text-gold-300" aria-hidden />{[selected.city, selected.country].filter(Boolean).join(", ")}</p>
+              <p className="mt-2 flex items-center gap-2 text-white/70"><LuMapPin className="size-4 shrink-0 text-gold-300" aria-hidden />{selected.city && selected.city !== selected.name ? `${selected.city}, ` : ""}{selected.country}</p>
               {selected.description && <p className="mt-5 text-base leading-7 text-white/75">{selected.description}</p>}
+              {selected.commodities.length > 0 && (
+                <div className="mt-6 border-t border-white/10 pt-6">
+                  <p className="text-xs font-bold uppercase tracking-wider text-gold-300">Commodities</p>
+                  <ul className="mt-3 flex flex-wrap gap-2">{selected.commodities.map((c) => <li key={c} className="rounded-lg bg-white/10 px-3 py-1 text-sm font-semibold text-white/90">{c}</li>)}</ul>
+                </div>
+              )}
               {(selected.operations || selected.capacity) && (
                 <dl className="mt-6 grid gap-4 border-t border-white/10 pt-6 sm:grid-cols-2">
                   {selected.operations && <div><dt className="text-xs font-bold uppercase tracking-wider text-gold-300">Operations</dt><dd className="mt-1 text-white/85">{selected.operations}</dd></div>}
@@ -93,8 +115,8 @@ export function OperationsExplorer({ locations, legend }: { locations: Operation
           ) : (
             <div className="flex h-full flex-col items-center justify-center py-10 text-center">
               <span aria-hidden className="mb-5 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-gold-400 to-gold-700 text-white shadow-xl shadow-gold-500/25"><LuMapPin className="size-8" /></span>
-              <h3 className="text-xl font-bold text-white">{locations.length ? "Select a location" : "Locations coming soon"}</h3>
-              <p className="mt-2 max-w-xs text-white/65">{locations.length ? "Click a pin on the globe, or a place in the list below, to see what we do there." : "Our mines, processing centres and ports will appear on the globe as soon as they are added. To discuss a region, get in touch with our team."}</p>
+              <h3 className="text-xl font-bold text-white">{locations.length ? "Select a place" : "Locations coming soon"}</h3>
+              <p className="mt-2 max-w-xs text-white/65">{locations.length ? "Click a pin on the globe, or a place in the list below, to see what we source or supply there." : "Our mines, processing centres and ports will appear on the globe as soon as they are added. To discuss a region, get in touch with our team."}</p>
               {locations.length === 0 && <Link href="/contact-us" className="btn-sheen mt-6 inline-flex rounded-xl bg-gradient-to-b from-gold-400 to-gold-500 px-5 py-3 font-bold text-ink shadow-lg shadow-gold-500/25">Contact us</Link>}
             </div>
           )}
@@ -113,8 +135,12 @@ export function OperationsExplorer({ locations, legend }: { locations: Operation
                   <span aria-hidden className="mt-1 flex size-11 shrink-0 items-center justify-center rounded-xl text-white" style={{ background: `${l.color}33`, color: l.color }}><LuMapPin className="size-5" /></span>
                   <span className="min-w-0">
                     <span className="block font-bold text-white">{l.name}</span>
-                    <span className="block text-sm text-white/65">{[l.city, l.country].filter(Boolean).join(", ")}</span>
-                    <span className="mt-2 inline-block rounded-md bg-white/10 px-2 py-0.5 text-xs font-semibold text-white/80">{l.type}</span>
+                    <span className="block text-sm text-white/65">{l.city && l.city !== l.name ? `${l.city}, ` : ""}{l.country}</span>
+                    <span className="mt-2 flex flex-wrap gap-1.5">
+                      <span className="rounded-md bg-white/10 px-2 py-0.5 text-xs font-semibold text-white/80">{l.type}</span>
+                      {l.commodities.slice(0, 3).map((c) => <span key={c} className="rounded-md border border-white/10 px-2 py-0.5 text-xs text-white/70">{c}</span>)}
+                      {l.commodities.length > 3 && <span className="px-1 py-0.5 text-xs text-white/55">+{l.commodities.length - 3}</span>}
+                    </span>
                   </span>
                 </button>
               </li>

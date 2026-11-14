@@ -1,5 +1,5 @@
 import { LuLayers } from "react-icons/lu";
-import { MineralCard, SeeAll } from "@/components/web/sections";
+import { CommodityShowcase, MineralCard, SeeAll } from "@/components/web/sections";
 import { CtaBand, PageHero, SectionHeading, bodyFont, container } from "@/components/web/ui";
 import { MINERALS } from "@/content/site";
 import { pageMeta } from "@/content/seo";
@@ -17,6 +17,12 @@ export default function MineralsPage() {
             {MINERALS.map((m, i) => <MineralCard key={m.slug} mineral={m} index={i} />)}
           </ul>
           <SeeAll href="/products"><LuLayers className="size-4" aria-hidden /> Browse the product catalogue</SeeAll>
+        </div>
+      </section>
+      <section aria-labelledby="more-commodities" className="bg-neutral-50">
+        <div className={`${container} py-10 md:py-14`}>
+          <SectionHeading id="more-commodities" eyebrow="And more" title="More commodities we trade" description="Coal, petroleum coke, phosphate, titanium minerals, zinc, rice and more. Pick one to ask for a quote." center />
+          <CommodityShowcase />
         </div>
       </section>
       <CtaBand />

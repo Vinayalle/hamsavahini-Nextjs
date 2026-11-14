@@ -18,9 +18,6 @@ export default function PhotoCreditsPage() {
         </ul>
         <p>CC BY-SA and CC BY are Creative Commons licences; the links above lead to each picture and its licence.</p>
       </Section>
-      <Section title="Video">
-        <p>The video on the home page shows a bulk carrier at sea, from the clip <a href="https://commons.wikimedia.org/wiki/File:Launch_of_Conti-line_bulk_carrier_made_in_port_of_Hakatajima.webm" target="_blank" rel="noopener noreferrer" className="font-bold text-gold-700 underline">Launch of Conti-line bulk carrier made in port of Hakatajima</a> on Wikimedia Commons (CC0, public domain dedication), shortened and colour-adjusted.</p>
-      </Section>
     </LegalPage>
   );
 }

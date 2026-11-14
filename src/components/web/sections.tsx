@@ -5,21 +5,30 @@ import type { IconType } from "react-icons";
 import { LuCalendar, LuCircleCheck, LuClock, LuMapPin, LuPackage, LuTag } from "react-icons/lu";
 import type { Industry, Mineral, Point } from "@/content/site";
 import type { CareerCard, PostCard, ProductCard, ProjectCard } from "@/server/services/public";
-import type { Photo } from "@/content/photos";
+import { COMMODITY_PHOTOS, MINERAL_GALLERY, type Photo } from "@/content/photos";
 import { Reveal, Tilt } from "./motion";
 import { ButtonLink, Tag, badge, card, cardHover, formatDate, headingFont } from "./ui";
 
 /** Reusable page sections of the public website. */
 
 export function MineralCard({ mineral, index = 0 }: { mineral: Mineral; index?: number }) {
+  const photo = MINERAL_GALLERY[mineral.slug]?.[0];
   return (
     <Reveal as="li" delay={(index % 3) * 90} variant="scale">
-      <Link href={`/minerals/${mineral.slug}`} className={`${card} ${cardHover} group relative flex h-full flex-col overflow-hidden p-6 md:p-7`}>
-        <span aria-hidden className="absolute inset-x-0 bottom-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-gold-400 to-gold-300 transition-transform duration-500 group-hover:scale-x-100" />
-        <div aria-hidden className={`${badge} mb-5 size-14 transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110`}><mineral.icon className="size-7" /></div>
+      <Link href={`/minerals/${mineral.slug}`} className={`${card} ${cardHover} group relative flex h-full flex-col overflow-hidden`}>
+        <span aria-hidden className="absolute inset-x-0 bottom-0 z-10 h-1 origin-left scale-x-0 bg-gradient-to-r from-gold-400 to-gold-300 transition-transform duration-500 group-hover:scale-x-100" />
+        {photo && (
+          <span className="relative block aspect-[4/3] overflow-hidden bg-neutral-900">
+            <img src={photo.src} alt="" loading="lazy" decoding="async" className="size-full object-cover object-top transition-transform duration-700 group-hover:scale-105" />
+            <span aria-hidden className={`${badge} absolute bottom-3 left-3 size-11 !rounded-xl`}><mineral.icon className="size-5" /></span>
+          </span>
+        )}
+        <span className="flex flex-1 flex-col p-6 md:p-7">
+        {!photo && <div aria-hidden className={`${badge} mb-5 size-14 transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110`}><mineral.icon className="size-7" /></div>}
         <h3 className="mb-2 text-xl font-bold text-neutral-900">{mineral.name}</h3>
         <p className="flex-1 text-base leading-7 text-neutral-600">{mineral.short}</p>
         <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-gold-700">Learn more <FaArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden /></span>
+        </span>
       </Link>
     </Reveal>
   );
@@ -214,6 +223,54 @@ export function SplitFeature({ eyebrow, title, children, icon: Icon, action, fli
         )}
       </Reveal>
     </div>
+  );
+}
+
+/**
+ * A process flow: numbered steps joined by a line, side by side on a wide screen (with arrows between them) and one under another on a phone.
+ * Each step lights up a little as it scrolls into view, one after the other.
+ */
+export function ProcessFlow({ steps }: { steps: Point[] }) {
+  return (
+    <ol style={{ "--flow-edge": steps.length === 3 ? "16.6%" : "10%" } as React.CSSProperties} className={`relative grid gap-10 lg:gap-6 ${steps.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-5"}`}>
+      {/* The line: along the top of the circles on a wide screen, down the left side on a phone */}
+      <div aria-hidden className="absolute bottom-6 left-8 top-6 w-px bg-gradient-to-b from-gold-400 via-gold-300 to-gold-200 lg:bottom-auto lg:left-[var(--flow-edge)] lg:right-[var(--flow-edge)] lg:top-10 lg:h-px lg:w-auto lg:bg-gradient-to-r" />
+      {steps.map((s, i) => (
+        <Reveal key={s.title} as="li" delay={i * 130} className="relative flex gap-5 lg:flex-col lg:items-center lg:gap-0 lg:text-center">
+          <div className="relative shrink-0">
+            <span aria-hidden className={`${badge} relative z-10 size-16 shadow-xl shadow-gold-500/25 ring-8 ring-neutral-50 lg:size-20`}><s.icon className="size-7 lg:size-9" strokeWidth={1.6} /></span>
+            <span aria-hidden className="absolute -right-1 -top-1 z-20 flex size-7 items-center justify-center rounded-full bg-ink text-xs font-bold text-gold-200 ring-2 ring-neutral-50">{i + 1}</span>
+          </div>
+          <div className="min-w-0 lg:mt-6">
+            <h3 className="text-lg font-bold leading-snug text-neutral-900">{s.title}</h3>
+            <p className="mt-2 text-[15px] leading-7 text-neutral-600">{s.text}</p>
+          </div>
+          {i < steps.length - 1 && (
+            <span aria-hidden className="absolute left-[calc(100%+0.75rem)] top-10 z-10 hidden size-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-50 text-gold-600 ring-1 ring-gold-300 lg:flex"><FaArrowRight className="size-3" /></span>
+          )}
+        </Reveal>
+      ))}
+    </ol>
+  );
+}
+
+/** A grid of the other commodities we trade, each a picture that leads to a quote request. */
+export function CommodityShowcase() {
+  return (
+    <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
+      {COMMODITY_PHOTOS.map((c, i) => (
+        <Reveal key={c.name} as="li" delay={(i % 4) * 90} className={c.wide ? "col-span-2" : ""}>
+          <Link href={`/request-a-quote?mineral=${encodeURIComponent(c.name)}`} className="group relative block aspect-square overflow-hidden rounded-3xl bg-neutral-900 shadow-xl shadow-neutral-900/15 ring-1 ring-black/5 transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-gold-500/25 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/50" style={c.wide ? { aspectRatio: "auto", height: "100%" } : undefined}>
+            <img src={c.src} alt={c.alt} width={1000} height={c.wide ? 667 : 1000} loading="lazy" decoding="async" className={`size-full object-cover transition-transform duration-700 group-hover:scale-105 ${c.wide ? "object-top" : ""}`} />
+            <span aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/75 to-transparent" />
+            <span className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 p-4 text-white md:p-5">
+              <span className="text-[15px] font-bold leading-tight md:text-lg">{c.name}<span className="sr-only">: request a quote</span></span>
+              <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-gold-500 text-ink shadow-lg transition group-hover:bg-gold-300"><FaArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" /></span>
+            </span>
+          </Link>
+        </Reveal>
+      ))}
+    </ul>
   );
 }
 

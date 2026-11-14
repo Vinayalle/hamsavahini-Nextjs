@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { FaArrowRight } from "react-icons/fa6";
+import { FaArrowRight } from "react-icons/fa";
 import { Logo } from "@/components/brand/Logo";
 import { fontVars } from "./fonts";
 
@@ -14,7 +14,7 @@ const REDUCED = "(prefers-reduced-motion: reduce)";
 const subscribeReduced = (notify: () => void) => { const m = window.matchMedia(REDUCED); m.addEventListener("change", notify); return () => m.removeEventListener("change", notify); };
 
 /**
- * Home-page hero: a fixed message over a looping background video of a bulk carrier at sea (public/videos/hero.mp4, a CC0 clip, 3.8 MB). While the video loads, a full-page loader with the logo covers the whole page; it fades away as soon as the first frames can play,
+ * Home-page hero: a fixed message over a looping background video of the company's mining operations (public/videos/hero.mp4, 2.4 MB). While the video loads, a full-page loader with the logo covers the whole page; it fades away as soon as the first frames can play,
  * on any error, or after a few seconds, whichever comes first. Visitors who ask for less motion get the still picture and no loader.
  */
 export default function Hero() {
@@ -56,7 +56,7 @@ export default function Hero() {
         </video>
       )}
       {still && <img src="/images/hero-poster.jpg" alt="" aria-hidden decoding="async" className="absolute inset-0 -z-20 size-full object-cover" />}
-      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-black/60 via-black/45 to-black/70" />
+      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-black/65 via-black/55 to-black/75" />
       <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_50%_45%,transparent,rgba(0,0,0,0.45))]" />
 
       <div className="mx-auto w-full max-w-4xl px-6 text-center">
