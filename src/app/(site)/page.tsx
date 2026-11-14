@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { LuBadgeCheck, LuEarth, LuLeaf, LuMapPin, LuNewspaper, LuPackage } from "react-icons/lu";
 import Hero from "@/components/web/Hero";
 import { CountUp, Reveal } from "@/components/web/motion";
-import { CheckList, IndustryCard, Marquee, PostGridCard, ProductGridCard, SeeAll, SplitFeature } from "@/components/web/sections";
-import { ButtonLink, CtaBand, PointCard, SectionHeading, Tag, badge, bodyFont, card, container, headingFont } from "@/components/web/ui";
+import { CheckList, IndustryCard, Marquee, CommodityShowcase, PostGridCard, ProcessFlow, ProductGridCard, SeeAll, SplitFeature } from "@/components/web/sections";
+import { ButtonLink, CtaBand, SectionHeading, Tag, badge, bodyFont, card, container, headingFont } from "@/components/web/ui";
 import { MINERAL_PHOTO, PHOTOS } from "@/content/photos";
-import { CAPABILITIES, COMPANY, INDUSTRIES, MINERALS, WHY_US, mineralBySlug } from "@/content/site";
+import { CAPABILITIES, COMPANY, INDUSTRIES, MINERALS, mineralBySlug } from "@/content/site";
 import { listLocations, listPosts, listProducts, listRecentProducts, loadPublic } from "@/server/services/public";
 
 
@@ -45,39 +45,6 @@ export default async function HomePage() {
         <Marquee items={MINERALS.map((m) => m.name)} label="Minerals we supply" />
       </section>
 
-      {/* Introduction */}
-      <section aria-labelledby="intro-title" className="bg-white">
-        <div className={`${container} grid items-center gap-12 py-10 md:grid-cols-[1.15fr_0.85fr] md:gap-16 md:py-14`}>
-          <Reveal variant="left">
-            <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-gold-700">About {COMPANY.short}</p>
-            <h2 id="intro-title" className={`${headingFont} mb-6 text-[30px] leading-tight text-neutral-900 md:text-[46px]`}>Connecting trusted producers with industries that need them</h2>
-            <div className="space-y-4 text-base leading-7 text-neutral-600 md:text-lg md:leading-8">
-              <p>{COMPANY.description} Based in India, we specialize in high-grade mineral and ore supply, providing seamless trade and logistics solutions to clients worldwide.</p>
-              <p>We combine verified sourcing, tested quality and managed logistics, so the material you order arrives as agreed.</p>
-            </div>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <ButtonLink href="/about">Read more about us</ButtonLink>
-              <ButtonLink href="/request-a-quote" variant="outline" arrow={false}>Request a quote</ButtonLink>
-            </div>
-          </Reveal>
-          <Reveal variant="right" delay={120}>
-            <div className={`${card} relative overflow-hidden bg-gradient-to-br from-neutral-950 to-neutral-800 p-7 text-white shadow-2xl shadow-neutral-900/20 md:p-9`}>
-              <div aria-hidden className="about-float absolute -right-10 -top-10 size-44 rounded-full bg-gold-500/40 blur-3xl" />
-              <h3 className={`${headingFont} relative mb-5 text-2xl`}>Why partner with us</h3>
-              <ul className="relative space-y-4">
-                {WHY_US.map((w, i) => (
-                  <Reveal key={w.title} as="li" variant="left" delay={200 + i * 110} className="flex items-start gap-3.5">
-                    <span aria-hidden className={`${badge} mt-0.5 size-10 !rounded-xl`}><w.icon className="size-5" /></span>
-                    <span className="pt-1.5 text-[15px] font-bold leading-snug">{w.title}</span>
-                  </Reveal>
-                ))}
-              </ul>
-              <a href="/about#why" className="relative mt-6 inline-block text-sm font-bold text-gold-300 underline-offset-4 hover:underline">See what sets us apart</a>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
       {/* By the numbers: counts up when it scrolls into view */}
       {numbers.length > 0 && (
         <section aria-label="Our numbers" className="relative isolate overflow-hidden bg-gradient-to-br from-gold-800 via-gold-700 to-gold-600 text-white">
@@ -99,9 +66,7 @@ export default async function HomePage() {
       <section aria-labelledby="do-title" className="bg-neutral-50">
         <div className={`${container} py-10 md:py-14`}>
           <SectionHeading id="do-title" eyebrow="What we do" title="From the mine to your port" description="Five connected services that take a consignment from verified source to the destination you name." />
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {CAPABILITIES.map((c, i) => <PointCard key={c.title} icon={c.icon} title={c.title} text={c.text} index={i} />)}
-          </ul>
+          <div className="mt-12 md:mt-14"><ProcessFlow steps={CAPABILITIES} /></div>
         </div>
       </section>
 
@@ -118,6 +83,14 @@ export default async function HomePage() {
             ))}
           </div>
           <SeeAll href="/minerals">See all minerals</SeeAll>
+        </div>
+      </section>
+
+      {/* More commodities */}
+      <section aria-labelledby="more-commodities-title" className="bg-neutral-50">
+        <div className={`${container} py-10 md:py-14`}>
+          <SectionHeading id="more-commodities-title" eyebrow="And more" title="More commodities we trade" description="Coal, petroleum coke, phosphate, titanium minerals, zinc, rice and more. Pick one to ask for a quote." center />
+          <CommodityShowcase />
         </div>
       </section>
 

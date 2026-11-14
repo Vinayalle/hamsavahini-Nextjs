@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LuArrowUpRight, LuChevronDown, LuMenu, LuX } from "react-icons/lu";
+import { FaArrowRight } from "react-icons/fa";
+import { LuChevronDown, LuMenu, LuX } from "react-icons/lu";
 import { NAV, type NavItem } from "@/content/site";
 import { fontVars } from "./fonts";
 import { Logo } from "@/components/brand/Logo";
@@ -45,24 +46,24 @@ export default function Header() {
     <header ref={bar} className={`${fontVars} sticky top-0 z-50 w-full border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85`}>
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:shadow-lg">Skip to content</a>
       <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-10">
-        <div className="flex h-[calc(var(--site-header-h)-1px)] items-center justify-between gap-6">
+        <div className="flex h-[calc(var(--site-header-h)-1px)] items-center justify-between gap-4 2xl:gap-6">
           <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="Hamsavahin Aarth Mines, home">
-            <Logo variant="lockup" priority className="h-12 sm:h-16" />
+            <Logo variant="lockup" priority className="h-12 sm:h-14 2xl:h-16" />
           </Link>
 
           {/* desktop */}
-          <nav aria-label="Main" className="hidden items-center gap-1 lg:flex xl:gap-2">
+          <nav aria-label="Main" className="hidden min-w-0 items-center gap-0.5 lg:flex 2xl:gap-2">
             {NAV.map((item) => {
               const active = isActive(item);
               if (!item.children) {
                 return (
-                  <Link key={item.label} href={item.href ?? "/"} aria-current={active ? "page" : undefined} className={`${linkBase} rounded-lg px-3.5 py-2 xl:px-4 ${active ? "text-gold-700" : "text-neutral-800 hover:text-gold-700"}`}>{item.label}</Link>
+                  <Link key={item.label} href={item.href ?? "/"} aria-current={active ? "page" : undefined} className={`${linkBase} whitespace-nowrap rounded-lg px-2.5 py-2 2xl:px-4 ${active ? "text-gold-700" : "text-neutral-800 hover:text-gold-700"}`}>{item.label}</Link>
                 );
               }
               const expanded = open === item.label;
               return (
                 <div key={item.label} className="relative" onMouseEnter={() => setOpen(item.label)} onMouseLeave={() => setOpen(null)} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(null); }}>
-                  <button type="button" aria-expanded={expanded} aria-haspopup="menu" onClick={() => setOpen(expanded ? null : item.label)} className={`${linkBase} flex items-center gap-1.5 rounded-lg px-3.5 py-2 xl:px-4 ${active || expanded ? "text-gold-700" : "text-neutral-800 hover:text-gold-700"}`}>
+                  <button type="button" aria-expanded={expanded} aria-haspopup="menu" onClick={() => setOpen(expanded ? null : item.label)} className={`${linkBase} flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-2 2xl:px-4 ${active || expanded ? "text-gold-700" : "text-neutral-800 hover:text-gold-700"}`}>
                     {item.label}
                     <LuChevronDown className={`size-4 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`} aria-hidden />
                   </button>
@@ -75,7 +76,7 @@ export default function Header() {
                             <span className="block text-sm font-bold text-neutral-900 group-hover:text-gold-700">{child.label}</span>
                             {child.description && <span className="mt-0.5 block text-xs leading-5 text-neutral-500">{child.description}</span>}
                           </span>
-                          <LuArrowUpRight className="mt-1 size-4 shrink-0 text-neutral-300 transition-colors group-hover:text-gold-700" aria-hidden />
+                          <FaArrowRight className="mt-1.5 size-3 shrink-0 text-neutral-300 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-gold-700" aria-hidden />
                         </Link>
                       ))}
                     </div>
@@ -85,11 +86,10 @@ export default function Header() {
             })}
           </nav>
 
-          <div className="hidden items-center gap-3 lg:flex">
-            <Link href="/request-a-quote" className="hidden text-[15px] font-medium text-neutral-800 transition-colors hover:text-gold-700 xl:block">Request a quote</Link>
-            <Link href="/contact-us" className="group flex items-center gap-2 rounded-lg border border-gold-600 px-6 py-3 text-sm font-medium text-gold-700 transition-all duration-300 hover:bg-gold-500 hover:text-white">
+          <div className="hidden shrink-0 items-center gap-3 lg:flex">
+            <Link href="/contact-us" className="btn-sheen group flex h-11 items-center gap-2 whitespace-nowrap rounded-xl bg-gradient-to-b from-gold-400 to-gold-500 px-4 text-sm font-bold text-ink shadow-md shadow-gold-500/25 transition hover:-translate-y-0.5 hover:from-gold-300 hover:to-gold-400 hover:shadow-lg hover:shadow-gold-500/30 2xl:px-5">
               Contact us
-              <LuArrowUpRight className="size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden />
+              <FaArrowRight className="size-3 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
             </Link>
           </div>
 

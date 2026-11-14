@@ -11,14 +11,14 @@ export const headingFont = "font-[family-name:var(--font-hero-title)] font-norma
 export const bodyFont = "font-[family-name:var(--font-hero-text)]";
 export const container = "mx-auto w-full max-w-[1200px] px-5 sm:px-8 lg:px-10";
 /** Red gradient "logo" tile behind icons. */
-export const badge = "flex shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-gold-400 to-gold-700 text-white shadow-lg shadow-gold-500/25";
+export const badge = "flex shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-gold-300 via-gold-500 to-gold-700 text-white shadow-lg shadow-gold-500/30 ring-1 ring-inset ring-white/35 [&>svg]:drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]";
 export const card = "rounded-3xl border border-neutral-200 bg-white transition duration-300";
 export const cardHover = "hover:-translate-y-1 hover:border-gold-200 hover:shadow-2xl hover:shadow-gold-500/10";
 
 export interface Crumb { label: string; href?: string }
 
 /** Dark band at the top of every inner page: breadcrumb, title and a short description. */
-export function PageHero({ eyebrow, title, description, crumbs, children }: { eyebrow?: string; title: string; description?: string; crumbs?: Crumb[]; children?: ReactNode }) {
+export function PageHero({ eyebrow, title, description, crumbs, children, visual }: { eyebrow?: string; title: string; description?: string; crumbs?: Crumb[]; children?: ReactNode; visual?: ReactNode }) {
   return (
     <section aria-labelledby="page-title" className="relative isolate overflow-hidden bg-neutral-950 text-white">
       <div aria-hidden className="absolute inset-0 -z-10">
@@ -26,7 +26,8 @@ export function PageHero({ eyebrow, title, description, crumbs, children }: { ey
         <div className="about-grid absolute inset-0 opacity-[0.09]" />
         <div className="about-float absolute -right-20 top-0 size-80 rounded-full bg-gold-500/25 blur-3xl" />
       </div>
-      <div className={`${container} py-9 md:py-12`}>
+      <div className={`${container} py-9 md:py-12 ${visual ? "grid items-center gap-12 md:grid-cols-[1.1fr_0.9fr] md:gap-10 lg:gap-16" : ""}`}>
+        <div>
         {crumbs && (
           <nav aria-label="Breadcrumb" className="hero-rise mb-6 flex flex-wrap items-center gap-1.5 text-sm text-white/65">
             <Link href="/" className="hover:text-white">Home</Link>
@@ -43,6 +44,8 @@ export function PageHero({ eyebrow, title, description, crumbs, children }: { ey
         {description && <p className="hero-rise mt-5 max-w-2xl text-base leading-7 text-white/80 md:text-lg md:leading-8" style={{ animationDelay: "280ms" }}>{description}</p>}
         <div aria-hidden className="hero-rise mt-7 h-1 w-20 rounded-full bg-gradient-to-r from-gold-400 to-gold-300" style={{ animationDelay: "420ms" }} />
         {children && <div className="hero-rise mt-8" style={{ animationDelay: "520ms" }}>{children}</div>}
+        </div>
+        {visual && <div className="hero-rise" style={{ animationDelay: "300ms" }}>{visual}</div>}
       </div>
     </section>
   );

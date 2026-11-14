@@ -241,7 +241,6 @@ export const NAV: NavItem[] = [
       { label: "Quality & compliance", href: "/quality-compliance", description: "How we test and document" },
       { label: "Sustainability", href: "/sustainability", description: "Responsible sourcing" },
       { label: "Global operations", href: "/global-operations", description: "Where we work" },
-      { label: "Careers", href: "/careers", description: "Join the team" },
     ],
   },
   {
@@ -250,10 +249,10 @@ export const NAV: NavItem[] = [
     wide: true,
     children: [
       ...MINERALS.filter((m) => m.slug !== "granite-dimension-stones").map((m) => ({ label: m.name, href: `/minerals/${m.slug}`, description: m.short, icon: m.icon })),
-      { label: "Product catalogue", href: "/products", description: "Browse everything we supply", icon: LuLayers },
+      { label: "Granite", href: "/minerals/granite-dimension-stones", description: mineralBySlug("granite-dimension-stones")?.short ?? "Granite and dimension stones", icon: mineralBySlug("granite-dimension-stones")?.icon ?? LuLayers },
     ],
   },
-  { label: "Granite", href: "/minerals/granite-dimension-stones" },
+  { label: "Products", href: "/products" },
   { label: "Industries", href: "/industries" },
   {
     label: "Insights",
@@ -264,6 +263,7 @@ export const NAV: NavItem[] = [
       { label: "Live commodity desk", href: "/commodity-desk", description: "Prices and trade opportunities" },
     ],
   },
+  { label: "Careers", href: "/careers" },
 ];
 
 export const FOOTER_COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [

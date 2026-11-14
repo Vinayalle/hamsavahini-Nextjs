@@ -3,11 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { LuFlaskConical, LuPickaxe, LuShip } from "react-icons/lu";
-import { Reveal } from "@/components/web/motion";
-import { CheckList, MineralCard } from "@/components/web/sections";
-import { ButtonLink, CtaBand, PageHero, PointCard, SectionHeading, Tag, badge, bodyFont, card, container, headingFont } from "@/components/web/ui";
+import { CountUp, Reveal } from "@/components/web/motion";
+import { MineralGallery } from "@/components/web/MineralGallery";
+import { MineralVisual } from "@/components/web/MineralVisual";
+import { CheckList, MineralCard, ProcessFlow } from "@/components/web/sections";
+import { ButtonLink, CtaBand, PageHero, SectionHeading, Tag, badge, bodyFont, card, container, headingFont } from "@/components/web/ui";
 import { MINERALS, industryBySlug, mineralBySlug } from "@/content/site";
+import { MINERAL_GALLERY } from "@/content/photos";
 import { pageMeta } from "@/content/seo";
+
+const DOCUMENTS = ["Certificate of analysis", "Packing list", "Commercial invoice", "Bill of lading", "Certificate of origin on request"];
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -21,13 +26,37 @@ export default async function MineralPage({ params }: Params) {
   if (!mineral) notFound();
   const industries = mineral.industries.map((s) => industryBySlug(s)).filter((i) => !!i);
   const related = MINERALS.filter((m) => m.slug !== mineral.slug).slice(0, 3);
+  const gallery = MINERAL_GALLERY[mineral.slug] ?? [];
   const quote = `/request-a-quote?mineral=${encodeURIComponent(mineral.name)}`;
 
   return (
     <div className={`${bodyFont} text-neutral-800`}>
-      <PageHero eyebrow="Minerals" title={mineral.name} description={mineral.short} crumbs={[{ label: "Minerals", href: "/minerals" }, { label: mineral.name }]}>
+      <PageHero eyebrow="Minerals" title={mineral.name} description={mineral.short} crumbs={[{ label: "Minerals", href: "/minerals" }, { label: mineral.name }]} visual={gallery.length > 0 ? <MineralVisual gallery={gallery} /> : undefined}>
         <ButtonLink href={quote}>Request a quote for {mineral.name}</ButtonLink>
       </PageHero>
+
+      {/* At a glance: counts taken from this page's own content */}
+      <section aria-label="At a glance" className="relative isolate overflow-hidden bg-gradient-to-br from-gold-800 via-gold-700 to-gold-600 text-white">
+        <div aria-hidden className="about-grid absolute inset-0 -z-10 opacity-[0.1]" />
+        <div aria-hidden className="about-float absolute -left-16 top-0 -z-10 size-64 rounded-full bg-gold-300/25 blur-3xl" />
+        <dl className={`${container} grid grid-cols-3 gap-4 py-8 text-center md:py-10`}>
+          {[{ n: mineral.uses.length, l: "Common uses" }, { n: industries.length, l: "Industries served" }, { n: DOCUMENTS.length, l: "Documents with every shipment" }].map((f, i) => (
+            <Reveal key={f.l} variant="scale" delay={i * 120}>
+              <dd className={`${headingFont} order-1 text-[40px] leading-none text-gold-100 md:text-[60px]`}><CountUp to={f.n} /></dd>
+              <dt className="mt-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white/85 md:text-sm">{f.l}</dt>
+            </Reveal>
+          ))}
+        </dl>
+      </section>
+
+      {gallery.length > 0 && (
+        <section aria-labelledby="pictures" className="bg-neutral-50">
+          <div className={`${container} py-10 md:py-14`}>
+            <SectionHeading id="pictures" eyebrow="See the material" title={`${mineral.name} in pictures`} description="Tap a picture to see it full size." center />
+            <MineralGallery items={gallery} />
+          </div>
+        </section>
+      )}
 
       <section aria-labelledby="overview" className="bg-white">
         <div className={`${container} grid gap-12 py-10 md:grid-cols-[1.2fr_0.8fr] md:gap-16 md:py-14`}>
@@ -37,7 +66,7 @@ export default async function MineralPage({ params }: Params) {
             <h3 className="mb-4 mt-9 text-xl font-bold text-neutral-900">Common uses</h3>
             <CheckList items={mineral.uses} />
           </Reveal>
-          <Reveal variant="right" delay={120}>
+          <Reveal variant="right" delay={120} className="md:sticky md:top-[calc(var(--site-header-h)+1.5rem)] md:self-start">
             <aside aria-label="Request a quote" className={`${card} relative overflow-hidden bg-gradient-to-br from-neutral-950 to-neutral-800 p-7 text-white shadow-2xl shadow-neutral-900/20 md:p-9`}>
               <div aria-hidden className="about-float absolute -right-10 -top-10 size-44 rounded-full bg-gold-500/40 blur-3xl" />
               <div aria-hidden className={`${badge} relative mb-5 size-14`}><mineral.icon className="size-7" /></div>
@@ -65,16 +94,14 @@ export default async function MineralPage({ params }: Params) {
         </section>
       )}
 
-      <section aria-labelledby="handling" className="bg-white">
+      <section aria-labelledby="handling" className="bg-neutral-50">
         <div className={`${container} py-10 md:py-14`}>
           <SectionHeading id="handling" eyebrow="How we supply it" title="Sourced, tested and delivered" />
-          <ul className="grid gap-5 md:grid-cols-3">
-            {mineral.handling.map((h, i) => <PointCard key={h.title} icon={[LuPickaxe, LuFlaskConical, LuShip][i]} title={h.title} text={h.text} index={i} />)}
-          </ul>
+          <div className="mt-12 md:mt-14"><ProcessFlow steps={mineral.handling.map((h, i) => ({ title: h.title, text: h.text, icon: [LuPickaxe, LuFlaskConical, LuShip][i] ?? LuShip }))} /></div>
         </div>
       </section>
 
-      <section aria-labelledby="notes" className="bg-neutral-50">
+      <section aria-labelledby="notes" className="bg-white">
         <div className={`${container} grid gap-10 py-10 md:grid-cols-2 md:py-14`}>
           <Reveal variant="left">
             <h2 id="notes" className={`${headingFont} mb-5 text-[28px] leading-tight text-neutral-900 md:text-[38px]`}>What to tell us when you enquire</h2>
@@ -85,13 +112,13 @@ export default async function MineralPage({ params }: Params) {
             <div className={`${card} p-7 md:p-9`}>
               <h3 className="mb-3 text-xl font-bold text-neutral-900">Documents with every shipment</h3>
               <p className="mb-5 text-neutral-600">Each consignment travels with the paperwork you need to clear customs and verify quality.</p>
-              <ul className="flex flex-wrap gap-2">{["Certificate of analysis", "Packing list", "Commercial invoice", "Bill of lading", "Certificate of origin on request"].map((d) => <li key={d}><Tag tone="red">{d}</Tag></li>)}</ul>
+              <ul className="flex flex-wrap gap-2">{DOCUMENTS.map((d) => <li key={d}><Tag tone="red">{d}</Tag></li>)}</ul>
             </div>
           </Reveal>
         </div>
       </section>
 
-      <section aria-labelledby="related" className="bg-white">
+      <section aria-labelledby="related" className="bg-neutral-50">
         <div className={`${container} py-10 md:py-14`}>
           <SectionHeading id="related" title="Other minerals" />
           <ul className="grid gap-5 md:grid-cols-3">{related.map((m, i) => <MineralCard key={m.slug} mineral={m} index={i} />)}</ul>
