@@ -126,11 +126,6 @@ body {
 }
 /* ─────────────── Home page motion ─────────────── */
 html { scroll-behavior: smooth; }
-/* Names that drift across the page; pauses while the pointer is over it. The list is repeated once, so moving half its width loops without a jump. */
-.marquee { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
-.marquee-track { display: flex; width: max-content; animation: marquee 42s linear infinite; }
-.marquee:hover .marquee-track { animation-play-state: paused; }
-@keyframes marquee { to { transform: translateX(-50%); } }
 /* A light that sweeps across a button when the pointer arrives. */
 .btn-sheen { position: relative; overflow: hidden; isolation: isolate; }
 .btn-sheen::after { content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 45%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.5), transparent); transform: skewX(-20deg); transition: left 0.7s ease; pointer-events: none; z-index: -1; }
@@ -145,6 +140,9 @@ html { scroll-behavior: smooth; }
 /* The slim bar of the page loader: a gold light that glides along it. */
 .loader-bar { animation: loader-bar 1.4s ease-in-out infinite; }
 @keyframes loader-bar { from { left: -50%; } to { left: 100%; } }
+/* The gold light that travels along the process-flow line. */
+.flow-light { animation: flow-light 3.2s ease-in-out infinite; }
+@keyframes flow-light { from { left: -20%; } to { left: 100%; } }
 /* A soft pulse behind the numbers of the "by the numbers" band. */
 @keyframes soft-pulse { 0%, 100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.08); } }
 .soft-pulse { animation: soft-pulse 5s ease-in-out infinite; }
@@ -158,7 +156,7 @@ html { scroll-behavior: smooth; }
   html { scroll-behavior: auto; }
   [data-reveal] { opacity: 1; transform: none; transition: none; }
   .about-float, .about-float-slow, .about-spin-slow, .about-spin-slow-reverse, .about-bob, .about-ring, .about-sheen::after { animation: none; }
-  .marquee-track, .shimmer-text, .soft-pulse, .drift, .loader-bar { animation: none; }
+  .shimmer-text, .soft-pulse, .drift, .loader-bar, .flow-light { animation: none; }
   .btn-sheen::after, .tilt, .tilt::before { transition: none; }
 }
 
@@ -167,4 +165,22 @@ html { scroll-behavior: smooth; }
    explicit size, in the base layer so any size-* / w-* / h-* utility on an icon still wins. */
 @layer base {
   svg[height="1em"][width="1em"] { width: 1.5rem; height: 1.5rem; }
+}
+
+/* ─────────────── Warm bands ─────────────── */
+/* Sections that were plain white or near-white now carry a warm sand or cream tint with a faint grid and a glow in one corner, so the pages
+   read as layered bands instead of one long white sheet. --band is the band's own colour (used for rings and gaps that must blend in). */
+section.bg-white {
+  --band: #f1e4cb;
+  background-color: var(--band);
+  background-image:
+    radial-gradient(60% 90% at 100% 0%, rgba(176, 128, 64, 0.2), transparent 62%),
+    linear-gradient(rgba(122, 80, 38, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(122, 80, 38, 0.045) 1px, transparent 1px);
+  background-size: auto, 56px 56px, 56px 56px;
+}
+section.bg-neutral-50 {
+  --band: #faf5e8;
+  background-color: var(--band);
+  background-image: radial-gradient(55% 80% at 0% 100%, rgba(176, 128, 64, 0.13), transparent 62%);
 }

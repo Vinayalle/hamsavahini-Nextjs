@@ -238,9 +238,9 @@ export const NAV: NavItem[] = [
       { label: "Who we are", href: "/about", description: "Our company and what we do" },
       { label: "Our mission & vision", href: "/about#vision", description: "Where we are headed" },
       { label: "Why choose us", href: "/about#why", description: "What sets us apart" },
+      { label: "Partner with us", href: "/partner-with-us", description: "Buy, supply or build a long-term partnership" },
       { label: "Quality & compliance", href: "/quality-compliance", description: "How we test and document" },
       { label: "Sustainability", href: "/sustainability", description: "Responsible sourcing" },
-      { label: "Global operations", href: "/global-operations", description: "Where we work" },
     ],
   },
   {
@@ -254,6 +254,7 @@ export const NAV: NavItem[] = [
   },
   { label: "Products", href: "/products" },
   { label: "Industries", href: "/industries" },
+  { label: "Global Operations", href: "/global-operations" },
   {
     label: "Insights",
     href: "/insights",
@@ -273,6 +274,7 @@ export const FOOTER_COLUMNS: { title: string; links: { label: string; href: stri
       { label: "Who we are", href: "/about" },
       { label: "Mission & vision", href: "/about#vision" },
       { label: "Why choose us", href: "/about#why" },
+      { label: "Partner with us", href: "/partner-with-us" },
       { label: "Global operations", href: "/global-operations" },
       { label: "Careers", href: "/careers" },
     ],
@@ -303,6 +305,6 @@ export const FOOTER_COLUMNS: { title: string; links: { label: string; href: stri
 /** Every public path, used by the sitemap and the link checks. Dynamic pages (products, posts, projects, careers) are added from the database. */
 export const STATIC_PATHS = [
   "/", "/about", "/minerals", "/industries", "/products", "/insights", "/projects", "/commodity-desk", "/global-operations", "/careers",
-  "/contact-us", "/request-a-quote", "/quality-compliance", "/sustainability", "/privacy-policy", "/terms", "/photo-credits",
+  "/contact-us", "/request-a-quote", "/quality-compliance", "/sustainability", "/privacy-policy", "/terms", "/photo-credits", "/partner-with-us",
   ...MINERALS.map((m) => `/minerals/${m.slug}`),
 ];
