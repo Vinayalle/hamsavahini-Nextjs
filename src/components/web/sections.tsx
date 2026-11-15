@@ -154,28 +154,6 @@ export function ProductGridCard({ product, icon: Icon, index = 0 }: { product: P
   );
 }
 
-/**
- * A band of names that drifts slowly across the page (pure CSS, pauses under the pointer, still when the visitor prefers reduced motion).
- * The list is written twice so the loop has no gap; the second copy is hidden from screen readers.
- */
-export function Marquee({ items, label }: { items: string[]; label: string }) {
-  const row = (hidden: boolean) => (
-    <ul className="flex shrink-0 items-center" aria-hidden={hidden || undefined}>
-      {items.map((t) => (
-        <li key={t} className="flex items-center gap-8 pr-8 text-sm font-bold uppercase tracking-[0.22em] text-gold-200/90 md:gap-12 md:pr-12 md:text-base">
-          {t}
-          <span aria-hidden className="size-1.5 rotate-45 bg-gold-400" />
-        </li>
-      ))}
-    </ul>
-  );
-  return (
-    <div className="marquee" role="region" aria-label={label}>
-      <div className="marquee-track">{row(false)}{row(true)}</div>
-    </div>
-  );
-}
-
 export function CareerRow({ career, index = 0 }: { career: CareerCard; index?: number }) {
   return (
     <Reveal as="li" delay={(index % 4) * 70}>
@@ -232,21 +210,24 @@ export function SplitFeature({ eyebrow, title, children, icon: Icon, action, fli
  */
 export function ProcessFlow({ steps }: { steps: Point[] }) {
   return (
-    <ol style={{ "--flow-edge": steps.length === 3 ? "16.6%" : "10%" } as React.CSSProperties} className={`relative grid gap-10 lg:gap-6 ${steps.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-5"}`}>
-      {/* The line: along the top of the circles on a wide screen, down the left side on a phone */}
+    <ol style={{ "--flow-edge": steps.length === 3 ? "16.6%" : "10%" } as React.CSSProperties} className={`relative grid gap-12 lg:gap-6 ${steps.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-5"}`}>
+      {/* The line: along the circles on a wide screen (with a gold light that travels along it), down the left side on a phone */}
       <div aria-hidden className="absolute bottom-6 left-8 top-6 w-px bg-gradient-to-b from-gold-400 via-gold-300 to-gold-200 lg:bottom-auto lg:left-[var(--flow-edge)] lg:right-[var(--flow-edge)] lg:top-10 lg:h-px lg:w-auto lg:bg-gradient-to-r" />
+      <div aria-hidden className="absolute left-[var(--flow-edge)] right-[var(--flow-edge)] top-10 hidden h-px overflow-hidden lg:block"><span className="flow-light absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-gold-500 to-transparent" /></div>
       {steps.map((s, i) => (
         <Reveal key={s.title} as="li" delay={i * 130} className="relative flex gap-5 lg:flex-col lg:items-center lg:gap-0 lg:text-center">
-          <div className="relative shrink-0">
-            <span aria-hidden className={`${badge} relative z-10 size-16 shadow-xl shadow-gold-500/25 ring-8 ring-neutral-50 lg:size-20`}><s.icon className="size-7 lg:size-9" strokeWidth={1.6} /></span>
-            <span aria-hidden className="absolute -right-1 -top-1 z-20 flex size-7 items-center justify-center rounded-full bg-ink text-xs font-bold text-gold-200 ring-2 ring-neutral-50">{i + 1}</span>
+          <div className="relative shrink-0 lg:z-10">
+            <span aria-hidden className={`${badge} relative z-10 size-16 shadow-xl shadow-gold-500/30 ring-8 ring-[var(--band)] transition duration-500 group-hover/step:scale-110 lg:size-20`}><s.icon className="size-7 lg:size-9" strokeWidth={1.6} /></span>
+            <span aria-hidden className="absolute -right-1 -top-1 z-20 flex size-7 items-center justify-center rounded-full bg-ink text-xs font-bold text-gold-200 ring-2 ring-[var(--band)]">{i + 1}</span>
           </div>
-          <div className="min-w-0 lg:mt-6">
-            <h3 className="text-lg font-bold leading-snug text-neutral-900">{s.title}</h3>
-            <p className="mt-2 text-[15px] leading-7 text-neutral-600">{s.text}</p>
+          <div className="group/step relative min-w-0 flex-1 overflow-hidden rounded-3xl border border-neutral-200 bg-white p-5 shadow-lg shadow-neutral-900/5 transition duration-300 hover:-translate-y-1.5 hover:border-gold-300 hover:shadow-2xl hover:shadow-gold-500/15 lg:-mt-6 lg:flex-none lg:self-stretch lg:px-5 lg:pb-7 lg:pt-12">
+            <span aria-hidden className="pointer-events-none absolute -bottom-3 right-3 select-none text-[88px] font-bold leading-none text-gold-100/70">{String(i + 1).padStart(2, "0")}</span>
+            <p className="relative text-xs font-bold uppercase tracking-[0.18em] text-gold-700">Step {i + 1}</p>
+            <h3 className="relative mt-1.5 text-lg font-bold leading-snug text-neutral-900">{s.title}</h3>
+            <p className="relative mt-2.5 text-[15px] leading-7 text-neutral-600">{s.text}</p>
           </div>
           {i < steps.length - 1 && (
-            <span aria-hidden className="absolute left-[calc(100%+0.75rem)] top-10 z-10 hidden size-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-50 text-gold-600 ring-1 ring-gold-300 lg:flex"><FaArrowRight className="size-3" /></span>
+            <span aria-hidden className="absolute left-[calc(100%+0.75rem)] top-10 z-20 hidden size-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--band)] text-gold-600 ring-1 ring-gold-300 lg:flex"><FaArrowRight className="size-3" /></span>
           )}
         </Reveal>
       ))}
@@ -281,7 +262,7 @@ export function Steps({ steps }: { steps: Point[] }) {
       <div aria-hidden className="absolute bottom-4 left-6 top-4 w-px bg-gradient-to-b from-gold-400 via-gold-300 to-transparent md:left-8" />
       {steps.map((s, i) => (
         <Reveal key={s.title} as="li" className="relative pl-[4.5rem] md:pl-28">
-          <div aria-hidden className={`${badge} absolute left-0 top-1 size-12 ring-4 ring-white md:size-16`}><s.icon className="size-6 md:size-7" /></div>
+          <div aria-hidden className={`${badge} absolute left-0 top-1 size-12 ring-4 ring-[var(--band)] md:size-16`}><s.icon className="size-6 md:size-7" /></div>
           <div className={`${card} p-6 md:p-7`}>
             <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-gold-700">Step {i + 1}</p>
             <h3 className="mb-1.5 text-xl font-bold text-neutral-900">{s.title}</h3>

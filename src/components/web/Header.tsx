@@ -52,7 +52,7 @@ export default function Header() {
           </Link>
 
           {/* desktop */}
-          <nav aria-label="Main" className="hidden min-w-0 items-center gap-0.5 lg:flex 2xl:gap-2">
+          <nav aria-label="Main" className="hidden min-w-0 items-center gap-0.5 xl:flex 2xl:gap-2">
             {NAV.map((item) => {
               const active = isActive(item);
               if (!item.children) {
@@ -86,21 +86,21 @@ export default function Header() {
             })}
           </nav>
 
-          <div className="hidden shrink-0 items-center gap-3 lg:flex">
+          <div className="hidden shrink-0 items-center gap-3 xl:flex">
             <Link href="/contact-us" className="btn-sheen group flex h-11 items-center gap-2 whitespace-nowrap rounded-xl bg-gradient-to-b from-gold-400 to-gold-500 px-4 text-sm font-bold text-ink shadow-md shadow-gold-500/25 transition hover:-translate-y-0.5 hover:from-gold-300 hover:to-gold-400 hover:shadow-lg hover:shadow-gold-500/30 2xl:px-5">
               Contact us
               <FaArrowRight className="size-3 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
             </Link>
           </div>
 
-          <button type="button" aria-label={mobileOpen ? "Close menu" : "Open menu"} aria-expanded={mobileOpen} aria-controls="mobile-menu" onClick={() => setMobileOpen((v) => !v)} className="flex size-11 cursor-pointer items-center justify-center rounded-lg border border-neutral-200 text-neutral-800 lg:hidden">
+          <button type="button" aria-label={mobileOpen ? "Close menu" : "Open menu"} aria-expanded={mobileOpen} aria-controls="mobile-menu" onClick={() => setMobileOpen((v) => !v)} className="flex size-11 cursor-pointer items-center justify-center rounded-lg border border-neutral-200 text-neutral-800 xl:hidden">
             {mobileOpen ? <LuX className="size-6" aria-hidden /> : <LuMenu className="size-6" aria-hidden />}
           </button>
         </div>
       </div>
 
       {/* mobile */}
-      <div id="mobile-menu" className={`border-t border-neutral-200 bg-white lg:hidden ${mobileOpen ? "block" : "hidden"}`}>
+      <div id="mobile-menu" className={`border-t border-neutral-200 bg-white xl:hidden ${mobileOpen ? "block" : "hidden"}`}>
         <div className="max-h-[calc(100svh-var(--site-header-h))] overflow-y-auto px-5 py-4">
           {NAV.map((item) => (
             <div key={item.label} className="border-b border-neutral-100">

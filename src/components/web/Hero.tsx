@@ -71,9 +71,6 @@ export default function Hero() {
           <Link href="/products" className="btn-sheen group inline-flex items-center gap-2 rounded-lg bg-gradient-to-b from-gold-400 to-gold-500 px-7 py-4 text-[15px] font-bold text-ink shadow-lg shadow-gold-500/30 transition hover:from-gold-300 hover:to-gold-400">
             Explore Products <FaArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
           </Link>
-          <Link href="/request-a-quote" className="inline-flex items-center rounded-lg border border-white/25 bg-white/10 px-7 py-4 text-[15px] font-bold text-white backdrop-blur transition hover:border-gold-300 hover:bg-white/20">
-            Request a Quote
-          </Link>
         </div>
       </div>
     </section>

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { LuBadgeCheck, LuEarth, LuLeaf, LuMapPin, LuNewspaper, LuPackage } from "react-icons/lu";
+import { IconCrystals, IconCubes, IconFactory, IconGlobe, IconMountain, IconShield, IconShip } from "@/components/web/brand-icons";
 import Hero from "@/components/web/Hero";
 import { CountUp, Reveal } from "@/components/web/motion";
-import { CheckList, IndustryCard, Marquee, CommodityShowcase, PostGridCard, ProcessFlow, ProductGridCard, SeeAll, SplitFeature } from "@/components/web/sections";
+import { CheckList, IndustryCard, CommodityShowcase, PostGridCard, ProcessFlow, ProductGridCard, SeeAll, SplitFeature } from "@/components/web/sections";
 import { ButtonLink, CtaBand, SectionHeading, Tag, badge, bodyFont, card, container, headingFont } from "@/components/web/ui";
+import { MineralStrip } from "@/components/web/MineralStrip";
 import { MINERAL_PHOTO, PHOTOS } from "@/content/photos";
+import { SOURCING_PLACES } from "@/content/sourcing";
 import { CAPABILITIES, COMPANY, INDUSTRIES, MINERALS, mineralBySlug } from "@/content/site";
 import { listLocations, listPosts, listProducts, listRecentProducts, loadPublic } from "@/server/services/public";
 
@@ -27,10 +30,10 @@ export default async function HomePage() {
   const recentProducts = productsResult.data;
   // Only real numbers: what the website itself lists. A number that is zero is not shown.
   const numbers = [
-    { value: MINERALS.length, label: "Minerals we supply" },
-    { value: INDUSTRIES.length, label: "Industries we serve" },
-    { value: totalResult.data.total, label: "Products in the catalogue" },
-    { value: locationsResult.data.length, label: "Locations worldwide" },
+    { value: MINERALS.length, label: "Minerals we supply", icon: IconCrystals },
+    { value: INDUSTRIES.length, label: "Industries we serve", icon: IconFactory },
+    { value: totalResult.data.total, label: "Products in the catalogue", icon: IconCubes },
+    { value: SOURCING_PLACES.length, label: "Global locations", icon: IconGlobe },
   ].filter((n) => n.value > 0);
   const posts = postsResult.data.items;
   const locations = locationsResult.data.slice(0, 6);
@@ -39,26 +42,68 @@ export default async function HomePage() {
     <div className={`${bodyFont} text-neutral-800`}>
       <Hero />
 
-      {/* Minerals ticker */}
-      <section aria-label="Minerals we supply" className="relative overflow-hidden border-y border-gold-500/20 bg-neutral-950 py-4">
-        <div aria-hidden className="soft-pulse absolute left-1/2 top-1/2 h-24 w-2/3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-500/15 blur-3xl" />
-        <Marquee items={MINERALS.map((m) => m.name)} label="Minerals we supply" />
+      {/* Minerals strip */}
+      <MineralStrip items={MINERALS.map((m) => ({ name: m.name, href: `/minerals/${m.slug}`, image: `/images/strip/${m.slug}.png` }))} />
+
+      {/* About: who we are, why partner with us, and a picture of the work */}
+      <section aria-labelledby="intro-title" className="relative overflow-hidden bg-white">
+        <div aria-hidden className="absolute -left-24 top-10 size-80 rounded-full bg-gold-200/40 blur-3xl" />
+        <div className={`${container} relative grid items-stretch gap-10 py-12 md:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14`}>
+          <Reveal variant="left" className="flex flex-col justify-center">
+            <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-gold-700">About {COMPANY.short}</p>
+            <h2 id="intro-title" className={`${headingFont} mb-5 text-[30px] leading-[1.15] text-neutral-900 md:text-[44px]`}>
+              Connecting Trusted Producers with <span className="text-gold-600">Industries That Need Them</span>
+            </h2>
+            <p className="text-base leading-7 text-neutral-600 md:text-lg md:leading-8">{COMPANY.name} is a global mining, sourcing and trading enterprise transforming natural resources into industrial value. Based in India, we specialise in high-grade minerals and ores, providing reliable supply, quality assurance and seamless logistics to clients worldwide.</p>
+            <ul className="mt-8 grid grid-cols-3 divide-x divide-gold-600/25">
+              {[{ icon: IconMountain, a: "Sourcing &", b: "Development" }, { icon: IconShield, a: "Quality &", b: "Compliance" }, { icon: IconShip, a: "Global", b: "Supply Chain" }].map((p) => (
+                <li key={p.a} className="flex flex-col items-start gap-3 px-3 first:pl-0 sm:flex-row sm:items-center sm:px-5">
+                  <p.icon strokeWidth={2.8} className="size-11 shrink-0 text-gold-600 md:size-12" />
+                  <span className="text-[13px] font-bold leading-snug text-neutral-900 md:text-sm">{p.a}<br />{p.b}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-9 flex flex-wrap gap-3"><ButtonLink href="/about">Explore Our Company</ButtonLink><ButtonLink href="/partner-with-us" variant="outline">Partner With Us</ButtonLink></div>
+          </Reveal>
+
+          <Reveal variant="right" delay={160} className="relative min-h-[380px] sm:min-h-[460px] lg:min-h-[520px]">
+            <figure className="group absolute right-0 top-0 h-[84%] w-[80%] overflow-hidden rounded-3xl shadow-2xl shadow-neutral-900/25 ring-1 ring-black/10">
+              <img src="/images/about-mine.jpg" alt="A mining truck on a haul road in an open-pit mine" width={1100} height={620} loading="lazy" decoding="async" className="size-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+              <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+            </figure>
+            <figure className="group about-bob absolute bottom-0 left-0 h-[48%] w-[56%] overflow-hidden rounded-3xl shadow-2xl shadow-neutral-900/30 ring-8 ring-[var(--band)]">
+              <img src="/images/about-port.jpg" alt="A container ship at sea carrying mineral cargo" width={900} height={506} loading="lazy" decoding="async" className="size-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+            </figure>
+            <span aria-hidden className="absolute right-6 bottom-8 hidden size-24 rounded-full border-2 border-dashed border-gold-500/60 sm:block about-spin-slow" />
+          </Reveal>
+        </div>
       </section>
 
       {/* By the numbers: counts up when it scrolls into view */}
       {numbers.length > 0 && (
-        <section aria-label="Our numbers" className="relative isolate overflow-hidden bg-gradient-to-br from-gold-800 via-gold-700 to-gold-600 text-white">
-          <div aria-hidden className="about-grid absolute inset-0 -z-10 opacity-[0.1]" />
-          <div aria-hidden className="about-float absolute -left-16 top-0 -z-10 size-72 rounded-full bg-gold-300/25 blur-3xl" />
-          <div aria-hidden className="about-float-slow absolute -right-10 bottom-0 -z-10 size-72 rounded-full bg-gold-900/40 blur-3xl" />
-          <dl className={`${container} grid grid-cols-2 gap-y-8 py-10 md:py-12 ${({ 1: "lg:grid-cols-1", 2: "lg:grid-cols-2", 3: "lg:grid-cols-3", 4: "lg:grid-cols-4" } as Record<number, string>)[Math.min(numbers.length, 4)]}`}>
+        <section aria-label="Our numbers" className="relative isolate overflow-hidden bg-[#24150a] text-white">
+          <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(50%_120%_at_50%_0%,rgba(176,128,64,0.28),transparent_70%)]" />
+          {[false, true].map((flip) => (
+            <svg key={String(flip)} aria-hidden viewBox="0 0 300 110" className={`pointer-events-none absolute bottom-0 -z-10 h-24 w-[22%] min-w-[150px] opacity-80 ${flip ? "right-0 -scale-x-100" : "left-0"}`} fill="none" stroke="#d8b574" strokeLinecap="round">
+              {[0, 7, 14, 21, 28, 35].map((d) => (
+                <path key={d} d={`M0 ${96 - d} C 70 ${20 + d}, 160 ${112 - d}, 300 ${58 - d / 2}`} strokeWidth="1.1" strokeDasharray="0.1 4" opacity={0.95 - d / 60} />
+              ))}
+              <path d="M0 100 C 80 40, 170 112, 300 64" strokeWidth="1.6" opacity="0.7" />
+            </svg>
+          ))}
+          <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-gold-400/50 to-transparent" />
+          <dl className={`${container} grid grid-cols-2 gap-y-8 py-9 md:py-11 ${({ 1: "lg:grid-cols-1", 2: "lg:grid-cols-2", 3: "lg:grid-cols-3", 4: "lg:grid-cols-4" } as Record<number, string>)[Math.min(numbers.length, 4)]}`}>
             {numbers.map((n, i) => (
-              <Reveal key={n.label} variant="scale" delay={i * 120} className="text-center">
-                <dd className={`${headingFont} text-[44px] leading-none text-gold-200 md:text-[64px]`}><CountUp to={n.value} /></dd>
-                <dt className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-white/80 md:text-sm">{n.label}</dt>
+              <Reveal key={n.label} variant="scale" delay={i * 120} className="flex flex-col items-center border-gold-500/25 lg:border-l lg:first:border-l-0">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <n.icon strokeWidth={2.6} className="size-10 text-gold-400 md:size-12" />
+                  <span className="text-[34px] font-bold leading-none tracking-tight text-white md:text-[46px]"><CountUp to={n.value} suffix="+" /></span>
+                </div>
+                <dt className="mt-3 text-center text-[10.5px] font-bold uppercase tracking-[0.16em] text-white/90 md:text-[13px]">{n.label}</dt>
               </Reveal>
             ))}
           </dl>
+          <div aria-hidden className="h-[3px] w-full bg-gradient-to-r from-transparent via-gold-400 to-transparent shadow-[0_0_22px_6px_rgba(216,181,116,0.45)]" />
         </section>
       )}
 
@@ -87,9 +132,11 @@ export default async function HomePage() {
       </section>
 
       {/* More commodities */}
-      <section aria-labelledby="more-commodities-title" className="bg-neutral-50">
-        <div className={`${container} py-10 md:py-14`}>
-          <SectionHeading id="more-commodities-title" eyebrow="And more" title="More commodities we trade" description="Coal, petroleum coke, phosphate, titanium minerals, zinc, rice and more. Pick one to ask for a quote." center />
+      <section aria-labelledby="more-commodities-title" className="relative isolate overflow-hidden bg-neutral-950">
+        <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(55%_70%_at_85%_0%,rgba(176,128,64,0.32),transparent_62%),radial-gradient(45%_60%_at_0%_100%,rgba(176,128,64,0.18),transparent_62%)]" />
+        <div aria-hidden className="about-grid absolute inset-0 -z-10 opacity-[0.07]" />
+        <div className={`${container} py-12 md:py-16`}>
+          <SectionHeading id="more-commodities-title" eyebrow="And more" title="More commodities we trade" description="Coal, petroleum coke, phosphate, titanium minerals, zinc, rice and more. Pick one to ask for a quote." light center />
           <CommodityShowcase />
         </div>
       </section>

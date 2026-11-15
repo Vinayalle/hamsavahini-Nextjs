@@ -48,3 +48,70 @@ export const MINERAL_GALLERY: Record<string, { src: string; alt: string }[]> = {
     { src: "/images/commodities/phosphate-rock.jpg", alt: "Phosphate rock and crushed phosphate" },
   ],
 };
+
+/** Every commodity picture supplied by the company (public/images/commodities), grouped for the full range on the Minerals page. */
+export type CommodityCategory = "Metals & alloys" | "Ores & concentrates" | "Industrial minerals" | "Coal & carbon" | "Natural stone" | "Agri commodities";
+export interface CommodityPhoto { slug: string; name: string; category: CommodityCategory; wide?: boolean }
+export const COMMODITY_CATEGORIES: CommodityCategory[] = ["Metals & alloys", "Ores & concentrates", "Industrial minerals", "Coal & carbon", "Natural stone", "Agri commodities"];
+export const COMMODITIES: CommodityPhoto[] = [
+  { slug: "aluminium-metal", name: "Aluminium Metal", category: "Metals & alloys" },
+  { slug: "copper-cathode", name: "Copper Cathode", category: "Metals & alloys" },
+  { slug: "nickel-metal", name: "Nickel Metal", category: "Metals & alloys" },
+  { slug: "zinc", name: "Zinc Metal", category: "Metals & alloys" },
+  { slug: "lead-metal", name: "Lead Metal", category: "Metals & alloys" },
+  { slug: "ferrochrome", name: "Ferrochrome", category: "Metals & alloys" },
+  { slug: "ferromanganese", name: "Ferromanganese", category: "Metals & alloys" },
+  { slug: "ferronickel", name: "Ferronickel", category: "Metals & alloys" },
+  { slug: "silicomanganese", name: "Silicomanganese", category: "Metals & alloys" },
+  { slug: "iron-ore", name: "Iron Ore", category: "Ores & concentrates" },
+  { slug: "manganese-ore", name: "Manganese Ore", category: "Ores & concentrates" },
+  { slug: "chromite-ore", name: "Chromite Ore", category: "Ores & concentrates" },
+  { slug: "copper-ore", name: "Copper Ore", category: "Ores & concentrates" },
+  { slug: "copper-concentrate", name: "Copper Concentrate", category: "Ores & concentrates" },
+  { slug: "nickel-ore", name: "Nickel Ore", category: "Ores & concentrates" },
+  { slug: "zinc-ore", name: "Zinc Ore", category: "Ores & concentrates" },
+  { slug: "lead-ore", name: "Lead Ore (Galena)", category: "Ores & concentrates" },
+  { slug: "tin-ore", name: "Tin Ore (Cassiterite)", category: "Ores & concentrates" },
+  { slug: "bauxite", name: "Bauxite", category: "Ores & concentrates" },
+  { slug: "ilmenite", name: "Ilmenite", category: "Ores & concentrates" },
+  { slug: "rutile", name: "Rutile", category: "Ores & concentrates" },
+  { slug: "zircon", name: "Zircon", category: "Ores & concentrates" },
+  { slug: "graphite", name: "Graphite", category: "Ores & concentrates" },
+  { slug: "beneficiated-ilmenite-sand", name: "Beneficiated Ilmenite Sand", category: "Ores & concentrates", wide: true },
+  { slug: "titanium-minerals", name: "Titanium-Bearing Minerals", category: "Ores & concentrates", wide: true },
+  { slug: "silica-sand", name: "Silica Sand", category: "Industrial minerals" },
+  { slug: "quartz", name: "Quartz", category: "Industrial minerals" },
+  { slug: "feldspar", name: "Feldspar", category: "Industrial minerals" },
+  { slug: "mica", name: "Mica", category: "Industrial minerals" },
+  { slug: "kaolin", name: "Kaolin (China Clay)", category: "Industrial minerals" },
+  { slug: "bentonite", name: "Bentonite", category: "Industrial minerals" },
+  { slug: "barite", name: "Barite", category: "Industrial minerals" },
+  { slug: "fluorspar", name: "Fluorspar", category: "Industrial minerals" },
+  { slug: "gypsum", name: "Gypsum", category: "Industrial minerals" },
+  { slug: "limestone", name: "Limestone", category: "Industrial minerals" },
+  { slug: "dolomite", name: "Dolomite", category: "Industrial minerals" },
+  { slug: "magnesite", name: "Magnesite", category: "Industrial minerals" },
+  { slug: "phosphate-rock", name: "Phosphate Rock", category: "Industrial minerals" },
+  { slug: "thermal-coal", name: "Thermal Coal", category: "Coal & carbon" },
+  { slug: "coking-coal", name: "Coking Coal", category: "Coal & carbon" },
+  { slug: "metallurgical-coke", name: "Metallurgical Coke", category: "Coal & carbon" },
+  { slug: "petroleum-coke", name: "Petroleum Coke", category: "Coal & carbon" },
+  { slug: "carbon-materials", name: "Carbon Materials", category: "Coal & carbon" },
+  { slug: "granite", name: "Granite", category: "Natural stone" },
+  { slug: "marble", name: "Marble", category: "Natural stone" },
+  { slug: "granite-slabs", name: "Granite Slabs", category: "Natural stone", wide: true },
+  { slug: "natural-stone-blocks", name: "Natural Stone Blocks", category: "Natural stone", wide: true },
+  { slug: "rice", name: "Long-Grain Rice", category: "Agri commodities" },
+  { slug: "golden-rice", name: "Golden Parboiled Rice", category: "Agri commodities" },
+  { slug: "ir64-rice", name: "IR64 Parboiled Rice", category: "Agri commodities", wide: true },
+];
+
+/** Pictures that show what each industry buys (public/images/commodities); the slugs are the ones in COMMODITIES. */
+export const INDUSTRY_MATERIALS: Record<string, string[]> = {
+  "steel-metallurgy": ["iron-ore", "ferromanganese", "ferrochrome", "metallurgical-coke"],
+  "glass-ceramics": ["silica-sand", "feldspar", "kaolin", "quartz"],
+  "construction-infrastructure": ["granite", "marble", "limestone", "dolomite"],
+  "power-energy": ["thermal-coal", "coking-coal", "petroleum-coke", "carbon-materials"],
+  "industrial-manufacturing": ["aluminium-metal", "zinc", "copper-cathode", "nickel-metal"],
+};
+export const commodityBySlug = (slug: string) => COMMODITIES.find((c) => c.slug === slug);

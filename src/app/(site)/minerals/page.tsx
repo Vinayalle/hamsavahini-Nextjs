@@ -1,5 +1,6 @@
 import { LuLayers } from "react-icons/lu";
-import { CommodityShowcase, MineralCard, SeeAll } from "@/components/web/sections";
+import { MineralCard, SeeAll } from "@/components/web/sections";
+import { CommodityCatalogue } from "@/components/web/CommodityCatalogue";
 import { CtaBand, PageHero, SectionHeading, bodyFont, container } from "@/components/web/ui";
 import { MINERALS } from "@/content/site";
 import { pageMeta } from "@/content/seo";
@@ -21,8 +22,8 @@ export default function MineralsPage() {
       </section>
       <section aria-labelledby="more-commodities" className="bg-neutral-50">
         <div className={`${container} py-10 md:py-14`}>
-          <SectionHeading id="more-commodities" eyebrow="And more" title="More commodities we trade" description="Coal, petroleum coke, phosphate, titanium minerals, zinc, rice and more. Pick one to ask for a quote." center />
-          <CommodityShowcase />
+          <SectionHeading id="more-commodities" eyebrow="And more" title="Our full commodity range" description="Metals, ores, industrial minerals, coal, natural stone and rice. Choose a group, then pick a commodity to ask for a quote." center />
+          <CommodityCatalogue />
         </div>
       </section>
       <CtaBand />

@@ -4,6 +4,7 @@ import { Reveal } from "@/components/web/motion";
 import { CheckList } from "@/components/web/sections";
 import { ButtonLink, CtaBand, PageHero, SectionHeading, badge, bodyFont, card, container, headingFont } from "@/components/web/ui";
 import { INDUSTRIES, mineralBySlug } from "@/content/site";
+import { INDUSTRY_MATERIALS, commodityBySlug } from "@/content/photos";
 import { pageMeta } from "@/content/seo";
 
 export const metadata = pageMeta("Industries", "Steel and metallurgy, glass and ceramics, construction, power and energy, and industrial manufacturing: the industries we supply with minerals.", "/industries");
@@ -48,6 +49,28 @@ export default function IndustriesPage() {
                 </ul>
               </div>
             </Reveal>
+            {(INDUSTRY_MATERIALS[ind.slug] ?? []).length > 0 && (
+              <div className="md:col-span-2">
+                <h3 className="mb-5 text-xl font-bold text-neutral-900 md:text-2xl">Materials for {ind.name}</h3>
+                <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
+                  {(INDUSTRY_MATERIALS[ind.slug] ?? []).map((slug, i) => {
+                    const c = commodityBySlug(slug);
+                    return c && (
+                      <Reveal key={slug} as="li" variant="scale" delay={i * 90}>
+                        <Link href={`/request-a-quote?mineral=${encodeURIComponent(c.name)}`} className="group relative block overflow-hidden rounded-3xl bg-neutral-900 shadow-xl shadow-neutral-900/15 ring-1 ring-black/5 transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-gold-500/25 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-gold-500/50">
+                          <img src={`/images/commodities/${c.slug}.jpg`} alt={c.name} width={1000} height={1000} loading="lazy" decoding="async" className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <span aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/75 to-transparent" />
+                          <span className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 p-4 text-white">
+                            <span className="text-[15px] font-bold leading-tight md:text-base">{c.name}<span className="sr-only">: request a quote</span></span>
+                            <span aria-hidden className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gold-500 text-ink shadow-lg transition group-hover:bg-gold-300"><FaArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" /></span>
+                          </span>
+                        </Link>
+                      </Reveal>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </div>
         </section>
       ))}
