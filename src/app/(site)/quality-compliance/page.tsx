@@ -1,5 +1,4 @@
 import { LuBadgeCheck, LuFileText, LuSearch, LuShieldCheck } from "react-icons/lu";
-import { Reveal } from "@/components/web/motion";
 import { PHOTOS } from "@/content/photos";
 import { SplitFeature, Steps } from "@/components/web/sections";
 import { ButtonLink, CtaBand, PageHero, PointCard, SectionHeading, bodyFont, container } from "@/components/web/ui";
@@ -51,7 +50,6 @@ export default function QualityPage() {
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {PILLARS.map((p, i) => <PointCard key={p.title} icon={p.icon} title={p.title} text={p.text} index={i} />)}
           </ul>
-          <Reveal className="mt-10 text-center"><ButtonLink href="/sustainability" variant="outline">Our sustainability commitment</ButtonLink></Reveal>
         </div>
       </section>
 
