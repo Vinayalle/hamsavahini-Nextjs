@@ -22,9 +22,9 @@ export const COMPANY = {
  * edited in the admin. Change them in this one place. A line left empty is simply not shown.
  */
 export const CONTACT = {
-  email: "info@example-hamsavahin.test",
-  phone: "+00 000 000 0000",
-  address: "Level 21, Bandra Kurla Complex, Mumbai 400051, India",
+  email: "info@hamsavahin.in",
+  phone: "8897645588",
+  address: "Vaishnavi's Cymbol, Block -C , 1st Floor , Financial district, Nanakramguda, Hyderabad, Telangana - 500032",
 };
 
 /* ───────────── Minerals ───────────── */

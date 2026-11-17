@@ -288,34 +288,6 @@ export default function AboutPage() {
           </ul>
         </div>
       </section>
-
-      {/* ───────── Sustainability ───────── */}
-      <section aria-labelledby="sustainability-title" className="relative isolate overflow-hidden bg-gradient-to-br from-emerald-950 via-neutral-900 to-neutral-950 text-white">
-        <div aria-hidden className="absolute inset-0 -z-10">
-          <div className="about-float absolute -left-16 top-0 size-80 rounded-full bg-emerald-500/20 blur-3xl" />
-          <div className="about-float-slow absolute -right-10 bottom-0 size-72 rounded-full bg-emerald-400/10 blur-3xl" />
-        </div>
-        <div className={`${container} grid items-center gap-10 py-10 md:grid-cols-[auto_1fr] md:gap-16 md:py-16`}>
-          <Reveal variant="scale">
-            <div aria-hidden className="relative mx-auto flex size-32 items-center justify-center md:size-48">
-              <span className="about-ring absolute inset-0 rounded-full bg-emerald-400/30" />
-              <span className="about-ring absolute inset-0 rounded-full bg-emerald-400/20" style={{ animationDelay: "1.4s" }} />
-              <div className="relative flex size-full items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-700 shadow-2xl shadow-emerald-500/30">
-                <Leaf className="size-14 text-white md:size-20" strokeWidth={1.4} />
-              </div>
-            </div>
-          </Reveal>
-          <div>
-            <Reveal><h2 id="sustainability-title" className={`${headingFont} mb-5 text-[30px] md:text-[46px]`}>Sustainability Commitment</h2></Reveal>
-            <Reveal variant="bar" delay={150} className="mb-6 h-1 w-16 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-200" />
-            <Reveal delay={200}>
-              <p className="max-w-3xl text-base leading-7 text-white/85 md:text-lg md:leading-8">
-                At Hamsavahin Aarth Mines, sustainability is integral to our operations. We promote responsible mining practices, fair trade, and environmental stewardship, ensuring that every partnership contributes to a stronger, more sustainable global supply chain.
-              </p>
-            </Reveal>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

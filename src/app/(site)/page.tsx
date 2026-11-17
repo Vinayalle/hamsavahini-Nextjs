@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LuBadgeCheck, LuEarth, LuLeaf, LuMapPin, LuNewspaper, LuPackage } from "react-icons/lu";
+import { LuBadgeCheck, LuEarth, LuMapPin, LuNewspaper, LuPackage } from "react-icons/lu";
 import { IconCrystals, IconCubes, IconFactory, IconGlobe, IconMountain, IconShield, IconShip } from "@/components/web/brand-icons";
 import Hero from "@/components/web/Hero";
 import { CountUp, Reveal } from "@/components/web/motion";
@@ -149,9 +149,6 @@ export default async function HomePage() {
         <div className={`${container} space-y-12 py-10 md:space-y-28 md:py-14`}>
           <SplitFeature dark eyebrow="Quality" title="Tested, certified and traceable" icon={LuBadgeCheck} photo={PHOTOS.quality} action={<ButtonLink href="/quality-compliance" variant="white">How we assure quality</ButtonLink>}>
             <p>Each shipment is tested and certified to international standards, with full traceability and transparent documentation, so you know what you are buying before it sails.</p>
-          </SplitFeature>
-          <SplitFeature dark flip eyebrow="Responsibility" title="Sourcing that respects people and places" icon={LuLeaf} photo={PHOTOS.sustainability} action={<ButtonLink href="/sustainability" variant="white">Our sustainability commitment</ButtonLink>}>
-            <p>Sustainability is integral to our operations. We promote responsible mining practices, fair trade and environmental stewardship in every partnership.</p>
           </SplitFeature>
         </div>
       </section>

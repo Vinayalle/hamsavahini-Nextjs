@@ -1,20 +1,16 @@
 import Link from "next/link";
-import { LuArrowUp } from "react-icons/lu";
-// import { LuMail, LuMapPin, LuPhone } from "react-icons/lu"; // used by the contact details block below (currently commented out)
-import { COMPANY, FOOTER_COLUMNS } from "@/content/site";
+import { LuArrowUp, LuMail, LuMapPin, LuPhone } from "react-icons/lu";
+import { COMPANY, CONTACT, FOOTER_COLUMNS } from "@/content/site";
 import type { PublicSettings } from "@/server/services/public";
 import { ButtonLink } from "./ui";
 import { Logo } from "@/components/brand/Logo";
 
 /**
- * Site footer. The "about" text and the copyright line are fixed text. The contact details block (address, phone, email from
- * src/content/site.ts, CONTACT) is commented out below, so the footer currently shows no contact details.
+ * Site footer: the logo, the contact details (address, phone, email from src/content/site.ts, CONTACT), the link columns and the copyright line.
  */
-// `settings` carries the contact details; it is only read by the commented-out block below.
 export default function Footer(_props: { settings: PublicSettings }) {
-  void _props; // keeps the prop for when the contact block below is switched back on
+  void _props; // the page layout still passes the settings; the footer reads CONTACT directly
   const year = new Date().getFullYear();
-  // const hasContact = !!(settings.address || settings.phone || settings.email);
   return (
     <footer className="bg-neutral-950 text-white" aria-label="Site footer">
       <div className="mx-auto max-w-[1200px] px-5 py-9 sm:px-8 md:py-12 lg:px-10">
@@ -23,16 +19,11 @@ export default function Footer(_props: { settings: PublicSettings }) {
             <Link href="/" className="inline-flex items-center gap-3" aria-label="Hamsavahin Aarth Mines, home">
               <Logo variant="lockup" onDark className="h-20" />
             </Link>
-            <p className="mt-5 max-w-sm text-[15px] leading-7 text-white/70">{COMPANY.description}</p>
-            {/* Contact details (address, phone, email): hidden for now. Remove this comment to show them again.
-            {hasContact && (
-              <address className="mt-6 space-y-3 text-[15px] not-italic text-white/80">
-                {settings.address && <p className="flex gap-3"><LuMapPin className="mt-1 size-4 shrink-0 text-gold-300" aria-hidden /><span className="whitespace-pre-line">{settings.address}</span></p>}
-                {settings.phone && <p className="flex gap-3"><LuPhone className="mt-1 size-4 shrink-0 text-gold-300" aria-hidden /><a href={`tel:${settings.phone.replace(/[^+\d]/g, "")}`} className="hover:text-white">{settings.phone}</a></p>}
-                {settings.email && <p className="flex gap-3"><LuMail className="mt-1 size-4 shrink-0 text-gold-300" aria-hidden /><a href={`mailto:${settings.email}`} className="break-all hover:text-white">{settings.email}</a></p>}
-              </address>
-            )}
-            */}
+            <address className="mt-6 max-w-sm space-y-3.5 text-[15px] not-italic text-white/80">
+              <p className="flex gap-3"><LuMapPin className="mt-1 size-4 shrink-0 text-gold-300" aria-hidden /><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONTACT.address)}`} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">{CONTACT.address}<span className="sr-only"> (opens in Google Maps)</span></a></p>
+              <p className="flex gap-3"><LuPhone className="mt-1 size-4 shrink-0 text-gold-300" aria-hidden /><a href={`tel:${/^\+/.test(CONTACT.phone) ? "" : "+91"}${CONTACT.phone.replace(/[^+\d]/g, "")}`} className="transition-colors hover:text-white">{CONTACT.phone}</a></p>
+              <p className="flex gap-3"><LuMail className="mt-1 size-4 shrink-0 text-gold-300" aria-hidden /><a href={`mailto:${CONTACT.email}`} className="break-all transition-colors hover:text-white">{CONTACT.email}</a></p>
+            </address>
             <div className="mt-8"><ButtonLink href="/contact-us" variant="outline" className="!border-white/40 !text-white hover:!bg-white hover:!text-neutral-900">Get in touch</ButtonLink></div>
           </div>
 
