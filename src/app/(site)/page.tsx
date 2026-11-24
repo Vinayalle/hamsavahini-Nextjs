@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LuBadgeCheck, LuEarth, LuMapPin, LuNewspaper, LuPackage } from "react-icons/lu";
-import { IconCrystals, IconCubes, IconFactory, IconGlobe, IconMountain, IconShield, IconShip } from "@/components/web/brand-icons";
+import { IconGlobe, IconMountain, IconShield, IconShip } from "@/components/web/brand-icons";
 import Hero from "@/components/web/Hero";
 import { CountUp, Reveal } from "@/components/web/motion";
-import { CheckList, IndustryCard, CommodityShowcase, PostGridCard, ProcessFlow, ProductGridCard, SeeAll, SplitFeature } from "@/components/web/sections";
+import { CheckList, IndustryCard, PostGridCard, ProcessFlow, ProductGridCard, SeeAll, SplitFeature } from "@/components/web/sections";
 import { ButtonLink, CtaBand, SectionHeading, Tag, badge, bodyFont, card, container, headingFont } from "@/components/web/ui";
 import { MineralStrip } from "@/components/web/MineralStrip";
 import { MINERAL_PHOTO, PHOTOS } from "@/content/photos";
 import { SOURCING_PLACES } from "@/content/sourcing";
 import { CAPABILITIES, COMPANY, INDUSTRIES, MINERALS, mineralBySlug } from "@/content/site";
-import { listLocations, listPosts, listProducts, listRecentProducts, loadPublic } from "@/server/services/public";
+import { listPosts, listRecentProducts, loadPublic } from "@/server/services/public";
 
 
 export const metadata: Metadata = {
@@ -19,24 +20,23 @@ export const metadata: Metadata = {
 };
 
 const SPOTLIGHT = ["iron-ore-fines", "granite-dimension-stones", "quartz-silica-minerals"].map((s) => mineralBySlug(s)!);
+const SUPPLY_GROUPS = ["Ferrous & Ferroalloys", "Base Metals", "Industrial Minerals", "Energy & Fuels", "Dimension Stones", "Agri"];
 
 export default async function HomePage() {
-  const [postsResult, locationsResult, productsResult, totalResult] = await Promise.all([
+  const [postsResult, productsResult] = await Promise.all([
     loadPublic(() => listPosts({ take: 3 }), { items: [], total: 0 }),
-    loadPublic(() => listLocations(), []),
     loadPublic(() => listRecentProducts(6), []),
-    loadPublic(() => listProducts({ take: 1 }), { items: [], total: 0 }),
   ]);
   const recentProducts = productsResult.data;
-  // Only real numbers: what the website itself lists. A number that is zero is not shown.
+  // The numbers band. The two sourcing figures are counted from the sourcing list (src/content/sourcing.ts); the years are fixed text.
+  const sourcing = SOURCING_PLACES.filter((p) => p.kind === "sourcing");
   const numbers = [
-    { value: MINERALS.length, label: "Minerals we supply", icon: IconCrystals },
-    { value: INDUSTRIES.length, label: "Industries we serve", icon: IconFactory },
-    { value: totalResult.data.total, label: "Products in the catalogue", icon: IconCubes },
-    { value: SOURCING_PLACES.length, label: "Global locations", icon: IconGlobe },
+    { value: 30, suffix: "+", label: "Years of board experience", icon: IconShield },
+    { value: new Set(sourcing.map((p) => p.country)).size, suffix: "", label: "Sourcing countries", icon: IconGlobe },
+    { value: sourcing.length, suffix: "", label: "Sourcing regions", icon: IconMountain },
   ].filter((n) => n.value > 0);
   const posts = postsResult.data.items;
-  const locations = locationsResult.data.slice(0, 6);
+  const sourcingRegions = SOURCING_PLACES.filter((p) => p.kind === "sourcing").slice(0, 6);
 
   return (
     <div className={`${bodyFont} text-neutral-800`}>
@@ -54,7 +54,7 @@ export default async function HomePage() {
             <h2 id="intro-title" className={`${headingFont} mb-5 text-[30px] leading-[1.15] text-neutral-900 md:text-[44px]`}>
               Connecting Trusted Producers with <span className="text-gold-600">Industries That Need Them</span>
             </h2>
-            <p className="text-base leading-7 text-neutral-600 md:text-lg md:leading-8">{COMPANY.name} is a global mining, sourcing and trading enterprise transforming natural resources into industrial value. Based in India, we specialise in high-grade minerals and ores, providing reliable supply, quality assurance and seamless logistics to clients worldwide.</p>
+            <p className="text-base leading-7 text-neutral-600 md:text-lg md:leading-8">A Hyderabad-based sourcing and trading company supplying steel, cement, glass and power industries across domestic and international markets.</p>
             <ul className="mt-8 grid grid-cols-3 divide-x divide-gold-600/25">
               {[{ icon: IconMountain, a: "Sourcing &", b: "Development" }, { icon: IconShield, a: "Quality &", b: "Compliance" }, { icon: IconShip, a: "Global", b: "Supply Chain" }].map((p) => (
                 <li key={p.a} className="flex flex-col items-start gap-3 px-3 first:pl-0 sm:flex-row sm:items-center sm:px-5">
@@ -97,7 +97,7 @@ export default async function HomePage() {
               <Reveal key={n.label} variant="scale" delay={i * 120} className="flex flex-col items-center border-gold-500/25 lg:border-l lg:first:border-l-0">
                 <div className="flex items-center gap-3 md:gap-4">
                   <n.icon strokeWidth={2.6} className="size-10 text-gold-400 md:size-12" />
-                  <span className="text-[34px] font-bold leading-none tracking-tight text-white md:text-[46px]"><CountUp to={n.value} suffix="+" /></span>
+                  <span className="text-[34px] font-bold leading-none tracking-tight text-white md:text-[46px]"><CountUp to={n.value} suffix={n.suffix} /></span>
                 </div>
                 <dt className="mt-3 text-center text-[10.5px] font-bold uppercase tracking-[0.16em] text-white/90 md:text-[13px]">{n.label}</dt>
               </Reveal>
@@ -110,16 +110,25 @@ export default async function HomePage() {
       {/* What we do */}
       <section aria-labelledby="do-title" className="bg-neutral-50">
         <div className={`${container} py-10 md:py-14`}>
-          <SectionHeading id="do-title" eyebrow="What we do" title="From the mine to your port" description="Five connected services that take a consignment from verified source to the destination you name." />
-          <div className="mt-12 md:mt-14"><ProcessFlow steps={CAPABILITIES} /></div>
+          <SectionHeading id="do-title" title="How we work" description="Four connected services that take a consignment from verified source to the destination you name." />
+          <div className="mt-12 md:mt-14"><ProcessFlow steps={CAPABILITIES} numbered={false} /></div>
         </div>
       </section>
 
-      {/* Mineral spotlights */}
+      {/* What we supply */}
       <section aria-labelledby="minerals-title" className="bg-white">
-        <div className={`${container} py-10 md:py-14`}>
-          <SectionHeading id="minerals-title" eyebrow="What we supply" title="Minerals for the industries that build the world" center />
-          <div className="space-y-12 md:space-y-28">
+        <div className={`${container} py-12 md:py-16`}>
+          <SectionHeading id="minerals-title" eyebrow="What we supply" title="What we supply" description="We supply high-grade ores and industrial minerals from verified mines in India and select international origins, to the grade and size each buyer specifies." center />
+          <ul aria-label="What we supply" className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-3">
+            {SUPPLY_GROUPS.map((g, i) => (
+              <Reveal key={g} as="li" variant="scale" delay={i * 80}>
+                <Link href="/minerals" className="inline-flex items-center rounded-full border border-gold-600/30 bg-white/70 px-5 py-3 text-base font-bold text-neutral-800 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-gold-500 hover:bg-gold-500 hover:text-ink hover:shadow-lg">{g}</Link>
+              </Reveal>
+            ))}
+          </ul>
+
+          {/* Mineral spotlights */}
+          <div className="mt-14 space-y-12 md:mt-20 md:space-y-28">
             {SPOTLIGHT.map((m, i) => (
               <SplitFeature key={m.slug} eyebrow={m.name} title={m.short} icon={m.icon} photo={MINERAL_PHOTO[m.slug]} flip={i % 2 === 1} action={<ButtonLink href={`/minerals/${m.slug}`}>Explore {m.name}</ButtonLink>}>
                 <p>{m.intro}</p>
@@ -128,16 +137,6 @@ export default async function HomePage() {
             ))}
           </div>
           <SeeAll href="/minerals">See all minerals</SeeAll>
-        </div>
-      </section>
-
-      {/* More commodities */}
-      <section aria-labelledby="more-commodities-title" className="relative isolate overflow-hidden bg-neutral-950">
-        <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(55%_70%_at_85%_0%,rgba(176,128,64,0.32),transparent_62%),radial-gradient(45%_60%_at_0%_100%,rgba(176,128,64,0.18),transparent_62%)]" />
-        <div aria-hidden className="about-grid absolute inset-0 -z-10 opacity-[0.07]" />
-        <div className={`${container} py-12 md:py-16`}>
-          <SectionHeading id="more-commodities-title" eyebrow="And more" title="More commodities we trade" description="Coal, petroleum coke, phosphate, titanium minerals, zinc, rice and more. Pick one to ask for a quote." light center />
-          <CommodityShowcase />
         </div>
       </section>
 
@@ -159,22 +158,20 @@ export default async function HomePage() {
           <SplitFeature eyebrow="Global reach" title="Global reach with local expertise" icon={LuEarth} photo={PHOTOS.global} action={<ButtonLink href="/global-operations">Explore our operations</ButtonLink>}>
             <p>We connect resource-rich regions with industries around the world, handling warehousing, shipping and customs so every consignment reaches its destination smoothly and on time.</p>
           </SplitFeature>
-          {locations.length > 0 && (
-            <ul aria-label="Locations" className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {locations.map((l, i) => (
-                <Reveal key={l.id} as="li" delay={(i % 3) * 90}>
-                  <div className={`${card} flex items-start gap-4 p-5`}>
-                    <span aria-hidden className={`${badge} size-11 !rounded-xl`}><LuMapPin className="size-5" /></span>
-                    <div className="min-w-0">
-                      <p className="font-bold text-neutral-900">{l.name}</p>
-                      <p className="text-sm text-neutral-600">{[l.city, l.country].filter(Boolean).join(", ")}</p>
-                      <div className="mt-2"><Tag>{l.type}</Tag></div>
-                    </div>
+          <ul aria-label="Where we source" className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {sourcingRegions.map((l, i) => (
+              <Reveal key={l.name} as="li" delay={(i % 3) * 90}>
+                <div className={`${card} flex h-full items-start gap-4 p-5`}>
+                  <span aria-hidden className={`${badge} size-11 !rounded-xl`}><LuMapPin className="size-5" /></span>
+                  <div className="min-w-0">
+                    <p className="font-bold text-neutral-900">{l.name}</p>
+                    <p className="text-sm text-neutral-600">{l.country}</p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">{l.commodities.slice(0, 3).map((c) => <Tag key={c}>{c}</Tag>)}</div>
                   </div>
-                </Reveal>
-              ))}
-            </ul>
-          )}
+                </div>
+              </Reveal>
+            ))}
+          </ul>
         </div>
       </section>
 

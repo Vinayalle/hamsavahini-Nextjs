@@ -1,10 +1,10 @@
-import { Fragment, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { LuAtom as Atom, LuAward as Award, LuBadgeCheck as BadgeCheck, LuBrickWall as BrickWall, LuBuilding2 as Building2, LuCircleCheck as CheckCircle2, LuChevronDown as ChevronDown, LuChevronRight as ChevronRight, LuClock as Clock, LuEye as Eye, LuFactory as Factory, LuFileCheck2 as FileCheck2, LuFlaskConical as FlaskConical, LuFlame as Flame, LuGlassWater as GlassWater, LuGem as Gem, LuGlobe as Globe, LuHandshake as Handshake, LuLayers as Layers, LuLeaf as Leaf, LuChartLine as LineChart, LuMountain as Mountain, LuPickaxe as Pickaxe, LuScale as Scale, LuShieldCheck as ShieldCheck, LuShip as Ship, LuTarget as Target, LuTelescope as Telescope, LuZap as Zap } from "react-icons/lu";
+import { LuAward as Award, LuBadgeCheck as BadgeCheck, LuCircleCheck as CheckCircle2, LuChevronRight as ChevronRight, LuClock as Clock, LuEye as Eye, LuFileCheck2 as FileCheck2, LuGlobe as Globe, LuHandshake as Handshake, LuLeaf as Leaf, LuChartLine as LineChart, LuMountain as Mountain, LuPickaxe as Pickaxe, LuScale as Scale, LuShieldCheck as ShieldCheck, LuShip as Ship, LuTarget as Target, LuTelescope as Telescope } from "react-icons/lu";
 import type { IconType } from "react-icons";
 import { fontVars } from "@/components/web/fonts";
-import { Reveal, ScrollProgress, TimelineRail } from "@/components/web/motion";
+import { CountUp, Reveal, ScrollProgress, TimelineRail } from "@/components/web/motion";
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -36,21 +36,6 @@ const WHAT_WE_DO: Item[] = [
   { title: "Long-Term Supply Partnerships", icon: Handshake, text: "We work closely with industrial clients to establish dependable sourcing strategies and long-term contracts that ensure production continuity." },
   { title: "Market Intelligence", icon: LineChart, text: "Our team provides actionable insights into market trends, price movements, and demand forecasts to support informed procurement decisions." },
 ];
-const MINERALS: Item[] = [
-  { title: "Iron Ore & Fines", icon: Mountain },
-  { title: "Quartz & Silica Minerals", icon: Gem },
-  { title: "Bauxite & Laterite", icon: Layers },
-  { title: "Manganese Ore", icon: Atom },
-  { title: "Granite & Dimension Stones", icon: BrickWall },
-  { title: "Industrial & Specialty Minerals", icon: FlaskConical },
-];
-const INDUSTRIES: Item[] = [
-  { title: "Steel & Metallurgy", icon: Flame },
-  { title: "Glass & Ceramics", icon: GlassWater },
-  { title: "Construction & Infrastructure", icon: Building2 },
-  { title: "Power & Energy", icon: Zap },
-  { title: "Industrial Manufacturing", icon: Factory },
-];
 const WHY_PARTNER: Item[] = [
   { title: "Global reach with local expertise", icon: Globe },
   { title: "Proven track record of reliability", icon: ShieldCheck },
@@ -81,7 +66,6 @@ function SectionTitle({ id, eyebrow, light, children }: { id: string; eyebrow?: 
 }
 
 export default function AboutPage() {
-  const heading = ["About", "Hamsavahin", "Aarth", "Mines"];
   return (
     <div className={`${fontVars} ${bodyFont} overflow-x-clip text-neutral-800`}>
       <noscript>
@@ -91,10 +75,8 @@ export default function AboutPage() {
 
       {/* ───────── Hero ───────── */}
       <section
-        aria-labelledby="about-title"
-        className="relative isolate flex items-center overflow-hidden bg-neutral-950 text-white"
-        // Same height rule as the home-page hero: screen height minus the navbar (a 440px floor keeps the text clear on very short screens).
-        style={{ height: "calc(100svh - var(--site-header-h))", minHeight: 440 }}
+        aria-labelledby="who-title"
+        className="relative isolate overflow-hidden bg-neutral-950 text-white"
       >
         <div aria-hidden className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(60%_90%_at_82%_18%,rgba(176,128,64,0.5),transparent_62%),radial-gradient(45%_60%_at_8%_95%,rgba(176,128,64,0.22),transparent_62%)]" />
@@ -103,66 +85,98 @@ export default function AboutPage() {
           <div className="about-float-slow absolute -left-28 bottom-[-6rem] size-[22rem] rounded-full bg-gold-500/20 blur-3xl" />
         </div>
 
-        {/* Two columns from 640px up: text on the left, the emblem (decorative rings around a gem) in its own column on the right, so the two always sit
-            together instead of drifting apart. The emblem is drawn once at 19rem and scaled to fit each screen (mini at 640/768px). Below 1024px the text column is only as wide as the text and the emblem fills the rest, close beside it. */}
-        <div className={`${container} relative grid items-center gap-8 py-12 sm:grid-cols-[auto_minmax(0,1fr)] md:py-16 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.6fr)]`}>
+        <div className={`${container} relative grid items-center gap-8 pb-10 pt-8 md:grid-cols-[1.1fr_0.9fr] md:gap-12 md:pb-12 md:pt-12`}>
           <div>
-            <nav aria-label="Breadcrumb" className="hero-rise mb-8 flex items-center gap-1.5 text-sm text-white/65">
+            <nav aria-label="Breadcrumb" className="hero-rise mb-6 flex items-center gap-1.5 text-sm text-white/65">
               <Link href="/" className="hover:text-white">Home</Link>
               <ChevronRight className="size-4" aria-hidden />
               <span className="text-white">About Us</span>
             </nav>
-            <p className="hero-rise mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-bold uppercase tracking-[0.18em] backdrop-blur" style={{ animationDelay: "100ms" }}>
+            <p className="hero-rise mb-5 inline-flex items-center gap-2 rounded-full border border-gold-400/40 bg-gold-500/15 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-gold-200 backdrop-blur" style={{ animationDelay: "80ms" }}>
               <Pickaxe className="size-4 text-gold-300" aria-hidden /> About Us
             </p>
-            <h1 id="about-title" className={`${headingFont} max-w-[10.5em] text-[32px] leading-[1.1] sm:text-[40px] md:text-[clamp(2.5rem,5.2vw,3.5rem)] xl:text-[clamp(3rem,4.4vw,4.75rem)]`}>
-              {heading.map((word, i) => (
-                <Fragment key={word}>
-                  {i > 0 && " "}
-                  <span className="hero-rise inline-block" style={{ animationDelay: `${220 + i * 140}ms` }}>{word}</span>
-                </Fragment>
-              ))}
+            <h1 id="who-title" className={`${headingFont} hero-rise text-[38px] leading-[1.08] text-white sm:text-[48px] md:text-[clamp(3rem,5.4vw,4.75rem)]`} style={{ animationDelay: "160ms" }}>
+              Who we <span className="shimmer-text">are</span>
             </h1>
-            <div className="hero-rise mt-8 h-1 w-24 origin-left rounded-full bg-gradient-to-r from-gold-400 to-gold-300" style={{ animationDelay: "900ms" }} aria-hidden />
+            <div aria-hidden className="hero-rise mt-6 h-1 w-24 rounded-full bg-gradient-to-r from-gold-400 to-gold-200" style={{ animationDelay: "320ms" }} />
           </div>
 
-          <div aria-hidden data-emblem className="pointer-events-none relative hidden size-[9rem] justify-self-center sm:block md:size-[13rem] lg:size-[17rem] xl:size-[19rem]">
-            <div className="absolute left-1/2 top-1/2 size-[19rem] -translate-x-1/2 -translate-y-1/2 scale-[0.474] md:scale-[0.684] lg:scale-[0.895] xl:scale-100">
-              <div className="relative flex size-full items-center justify-center">
-                <div className="about-spin-slow absolute inset-0 rounded-full border border-dashed border-white/20" />
-                <div className="about-spin-slow-reverse absolute inset-6 rounded-full border border-white/15" />
-                <div className="absolute inset-16 rounded-full border border-gold-500/40" />
-                <div className="about-float flex size-28 items-center justify-center rounded-3xl bg-gradient-to-br from-gold-400 to-gold-700 shadow-2xl shadow-gold-600/40">
-                  <Gem className="size-14 text-white" strokeWidth={1.5} />
-                </div>
-                <span className="about-float-slow absolute left-2 top-14 flex size-11 items-center justify-center rounded-xl border border-white/20 bg-white/10 backdrop-blur"><Mountain className="size-5" /></span>
-                <span className="about-float absolute bottom-10 right-0 flex size-11 items-center justify-center rounded-xl border border-white/20 bg-white/10 backdrop-blur"><Ship className="size-5" /></span>
-                <span className="about-float-slow absolute bottom-2 left-16 flex size-11 items-center justify-center rounded-xl border border-white/20 bg-white/10 backdrop-blur"><Leaf className="size-5" /></span>
-              </div>
-            </div>
+          <div aria-hidden className="relative mx-auto hidden h-[300px] w-full max-w-[460px] sm:block md:h-[330px]">
+            <div className="about-float absolute left-1/2 top-1/2 size-60 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-500/35 blur-3xl" />
+            <figure className="about-bob absolute right-0 top-0 h-[78%] w-[66%] overflow-hidden rounded-3xl shadow-2xl shadow-black/50 ring-1 ring-white/25">
+              <img src="/images/about-mine.jpg" alt="" width={1100} height={620} decoding="async" className="size-full object-cover" />
+            </figure>
+            <figure className="about-bob absolute bottom-0 left-0 h-[56%] w-[52%] overflow-hidden rounded-3xl shadow-2xl shadow-black/60 ring-4 ring-neutral-950" style={{ animationDelay: "-1.1s" }}>
+              <img src="/images/about-port.jpg" alt="" width={900} height={506} decoding="async" className="size-full object-cover" />
+            </figure>
+            <span className="about-float absolute left-[8%] top-[10%] flex size-12 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-gold-200 backdrop-blur"><Mountain className="size-6" /></span>
+            <span className="about-float-slow absolute bottom-[22%] right-[2%] flex size-12 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-gold-200 backdrop-blur"><Ship className="size-6" /></span>
           </div>
         </div>
-        <div aria-hidden className="about-bob pointer-events-none absolute inset-x-0 bottom-5 flex justify-center text-white/60"><ChevronDown className="size-6" /></div>
+        <div className={`${container} relative pb-12 md:pb-16`}>
+          <Reveal>
+            <div className="relative overflow-hidden rounded-3xl border border-gold-600/20 bg-[#fbf5ea] shadow-2xl shadow-black/40">
+              <span aria-hidden className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-gold-300 via-gold-500 to-gold-700" />
+              <span aria-hidden className={`${headingFont} pointer-events-none absolute left-6 top-1 select-none text-[96px] leading-none text-gold-500/25 md:left-12 md:text-[110px]`}>&ldquo;</span>
+              <div className="grid gap-8 p-7 pl-9 pt-14 md:p-12 md:pl-14 md:pt-16 lg:grid-cols-[1.15fr_0.85fr] lg:gap-0">
+                <p className="relative text-lg leading-8 text-neutral-900 md:text-[21px] md:leading-[1.75] lg:pr-12">
+                  Hamsavahin Aarth Mines is an India-based mineral sourcing and trading company serving industrial clients both domestically and internationally. We act as a reliable link between verified mines and producers and the industries that depend on them, including steel and metallurgy, cement, glass and ceramics, power and energy, and infrastructure.
+                </p>
+                <p className="relative border-t border-gold-600/20 pt-8 text-base leading-8 text-neutral-600 md:text-[17px] lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0">
+                  Our portfolio includes iron ore and fines, manganese ore, quartz and silica, bauxite and laterite, granite and dimension stones, and a range of industrial and specialty minerals. We source from established mining regions across India and from select international origins. We supply on both spot and long-term contract basis, to buyers within India and in overseas markets.
+                </p>
+              </div>
+              <div className="grid gap-5 border-t border-gold-600/20 bg-gold-50/70 px-7 py-6 pl-9 md:grid-cols-2 md:px-12 md:pl-14">
+                <ul aria-label="Industries we serve" className="flex flex-wrap gap-2">
+                  {["Steel & Metallurgy", "Cement", "Glass & Ceramics", "Power & Energy", "Infrastructure"].map((t, i) => (
+                    <Reveal key={t} as="li" variant="scale" delay={200 + i * 70} className="rounded-full border border-gold-600/30 bg-white px-3.5 py-1 text-sm font-bold text-gold-800">{t}</Reveal>
+                  ))}
+                </ul>
+                <ul aria-label="Supply terms" className="grid grid-cols-2 gap-x-4 gap-y-2 md:justify-self-end">
+                  {["Spot supply", "Long-term contracts", "Within India", "Overseas markets"].map((t) => (
+                    <li key={t} className="flex items-center gap-2 text-sm font-bold text-gold-800"><CheckCircle2 className="size-4 shrink-0 text-gold-600" aria-hidden />{t}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ───────── Our story ───────── */}
+      <section aria-labelledby="story-title" className="bg-neutral-50">
+        <div className={`${container} grid items-center gap-12 py-14 md:grid-cols-[0.85fr_1.15fr] md:gap-16 md:py-20`}>
+          <Reveal variant="left" className="relative mx-auto w-full max-w-[460px] pb-8 md:mx-0">
+            <div aria-hidden className="absolute -inset-3 -z-10 -rotate-3 rounded-[2.25rem] bg-gradient-to-br from-gold-400/60 via-gold-300/30 to-transparent" />
+            <figure className="group overflow-hidden rounded-[2rem] shadow-2xl shadow-neutral-900/25 ring-1 ring-black/10">
+              <img src="/images/global.jpg" alt="A bulk carrier being loaded at a port" width={1400} height={1000} loading="lazy" decoding="async" className="aspect-[4/5] w-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+            </figure>
+            <div className="about-bob absolute -bottom-0 right-4 rounded-2xl border border-gold-600/30 bg-gradient-to-br from-neutral-950 to-ink px-6 py-4 text-white shadow-2xl shadow-black/40 md:-right-6">
+              <span className="sr-only">30+ years of combined experience</span>
+              <p aria-hidden className={`${headingFont} text-[40px] leading-none text-gold-300`}><CountUp to={30} suffix="+" /></p>
+              <p aria-hidden className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-white/80">Years of combined<br />experience</p>
+            </div>
+          </Reveal>
+
+          <Reveal variant="right" delay={120}>
+            <h2 id="story-title" className={`${headingFont} text-[32px] leading-tight text-neutral-900 md:text-[50px]`}>Our story</h2>
+            <div aria-hidden className="mb-7 mt-5 h-1 w-20 rounded-full bg-gradient-to-r from-gold-500 to-gold-300" />
+            <p className="text-base leading-8 text-neutral-700 md:text-lg md:leading-9">
+              Hamsavahin Aarth Mines was established in 2025 by a board of industry professionals with over 30 years of combined experience in mining, mineral trading, export operations and logistics. Over three decades, our leadership has built strong working relationships with mine owners, industrial buyers, port authorities, shipping lines and inspection agencies, both in India and internationally.
+            </p>
+            <blockquote className="relative mt-8 overflow-hidden rounded-3xl bg-gradient-to-br from-neutral-950 to-ink p-7 text-white shadow-2xl shadow-neutral-900/25 ring-1 ring-white/10 md:p-9">
+              <div aria-hidden className="about-float absolute -right-8 -top-8 size-36 rounded-full bg-gold-500/35 blur-3xl" />
+              <span aria-hidden className={`${headingFont} pointer-events-none absolute left-4 top-0 select-none text-[80px] leading-none text-gold-400/40`}>&ldquo;</span>
+              <p className="relative pt-5 text-lg font-semibold leading-8 text-gold-100 md:text-[21px] md:leading-9">The company was founded to bring this experience into a single, focused organisation: one that understands the mine, understands the buyer, and manages everything in between.</p>
+            </blockquote>
+          </Reveal>
+        </div>
       </section>
 
       {/* ───────── Introduction ───────── */}
-      <section aria-label="Introduction" className="bg-white">
+      <section aria-label="What we stand for" className="bg-white">
         <div className={`${container} py-9 md:py-14`}>
-          <div className="grid gap-8 md:grid-cols-12 md:gap-14">
-            <Reveal variant="left" className="md:col-span-7">
-              <div className="border-l-4 border-gold-600 pl-6 md:pl-8">
-                <p className="text-xl leading-9 text-neutral-900 md:text-[26px] md:leading-[1.55]">
-                  Hamsavahin Aarth Mines is a global sourcing and trading company connecting trusted mineral producers with industries that demand excellence and reliability. Based in India, we specialize in high-grade mineral and ore supply, providing seamless trade and logistics solutions to clients worldwide.
-                </p>
-              </div>
-            </Reveal>
-            <Reveal variant="right" delay={120} className="md:col-span-5">
-              <p className="text-base leading-7 text-neutral-600 md:text-lg md:leading-8">
-                With decades of collective expertise in mining partnerships, global trade, and logistics, we deliver minerals that meet international standards of quality, compliance, and sustainability. Our commitment to transparency, timeliness, and ethical business practices sets us apart as a reliable global partner in mineral supply.
-              </p>
-            </Reveal>
-          </div>
-          <ul aria-label="What we stand for" className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3 md:mt-16 lg:grid-cols-6">
+          <ul aria-label="What we stand for" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {PILLARS.map((p, i) => (
               <Reveal key={p.title} as="li" delay={i * 70} variant="scale">
                 <div className="group flex h-full flex-col items-center gap-3 rounded-2xl border border-neutral-200 bg-neutral-50 px-3 py-5 text-center transition duration-300 hover:-translate-y-1 hover:border-gold-200 hover:bg-white hover:shadow-xl hover:shadow-gold-500/10">
@@ -209,16 +223,15 @@ export default function AboutPage() {
       {/* ───────── What we do: a timeline that fills as you scroll ───────── */}
       <section aria-labelledby="what-title" className="bg-white">
         <div className={`${container} py-9 md:py-14`}>
-          <SectionTitle id="what-title" eyebrow="Our services">What We Do</SectionTitle>
+          <SectionTitle id="what-title">How we work</SectionTitle>
           <TimelineRail>
             <ol className="space-y-6 md:space-y-8">
-              {WHAT_WE_DO.map((item, i) => (
+              {WHAT_WE_DO.map((item) => (
                 <Reveal key={item.title} as="li" className="relative pl-[4.5rem] md:pl-28">
                   <div aria-hidden className={`${badge} absolute left-0 top-2 size-12 ring-4 ring-white md:size-16`}>
                     <item.icon className="size-6 md:size-7" />
                   </div>
                   <div className="group relative overflow-hidden rounded-3xl border border-neutral-200 bg-white p-6 transition duration-300 hover:-translate-y-1 hover:border-gold-200 hover:shadow-2xl hover:shadow-gold-500/10 md:p-8">
-                    <span aria-hidden className={`${headingFont} pointer-events-none absolute right-6 top-3 text-[64px] leading-none text-neutral-100 transition-colors duration-300 group-hover:text-gold-100 md:text-[88px]`}>{String(i + 1).padStart(2, "0")}</span>
                     <h3 className="relative mb-2 text-xl font-bold text-neutral-900 md:text-2xl">{item.title}</h3>
                     <p className="relative max-w-2xl text-base leading-7 text-neutral-600 md:text-lg md:leading-8">{item.text}</p>
                   </div>
@@ -226,45 +239,6 @@ export default function AboutPage() {
               ))}
             </ol>
           </TimelineRail>
-        </div>
-      </section>
-
-      {/* ───────── Minerals ───────── */}
-      <section aria-label="Minerals" className="relative overflow-hidden bg-neutral-50">
-        <div aria-hidden className="pointer-events-none absolute -right-20 bottom-0 size-80 rounded-full bg-gold-500/10 blur-3xl" />
-        <div className={`${container} relative py-9 md:py-14`}>
-          <SectionTitle id="minerals-title" eyebrow="What we supply">Our Minerals</SectionTitle>
-          <ul aria-labelledby="minerals-title" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {MINERALS.map((m, i) => (
-              <Reveal key={m.title} as="li" delay={(i % 3) * 100} variant="scale">
-                <div className="group relative flex h-full items-center gap-5 overflow-hidden rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:border-gold-200 hover:shadow-2xl hover:shadow-gold-500/10 md:p-6">
-                  <span aria-hidden className="absolute inset-x-0 bottom-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-gold-400 to-gold-300 transition-transform duration-500 group-hover:scale-x-100" />
-                  <div aria-hidden className={`${badge} size-14 transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110`}><m.icon className="size-7" /></div>
-                  <span className="text-lg font-bold leading-snug text-neutral-900">{m.title}</span>
-                </div>
-              </Reveal>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* ───────── Industries ───────── */}
-      <section aria-label="Industries" className="bg-white">
-        <div className={`${container} py-9 md:py-14`}>
-          <SectionTitle id="industries-title" eyebrow="Who we serve">Industries We Serve</SectionTitle>
-          <ul aria-labelledby="industries-title" className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
-            {INDUSTRIES.map((m, i) => (
-              <Reveal key={m.title} as="li" delay={i * 90} className={i === INDUSTRIES.length - 1 ? "col-span-2 md:col-span-1" : ""}>
-                <div className="group flex h-full flex-col items-center gap-4 rounded-3xl border border-neutral-200 bg-gradient-to-b from-white to-neutral-50 px-4 py-8 text-center transition duration-300 hover:-translate-y-1.5 hover:border-gold-200 hover:shadow-2xl hover:shadow-gold-500/10">
-                  <div className="relative">
-                    <span aria-hidden className="about-ring absolute inset-0 rounded-2xl bg-gold-500/30" />
-                    <div aria-hidden className={`${badge} relative size-16 transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110`}><m.icon className="size-8" /></div>
-                  </div>
-                  <span className="text-base font-bold leading-snug text-neutral-900">{m.title}</span>
-                </div>
-              </Reveal>
-            ))}
-          </ul>
         </div>
       </section>
 

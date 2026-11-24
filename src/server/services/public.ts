@@ -196,15 +196,13 @@ export async function listOpportunities(): Promise<OpportunityRow[]> {
 
 /* ───────────── Sitemap ───────────── */
 export async function listSitemapEntries() {
-  const [posts, projects, products, careers] = await Promise.all([
+  const [posts, products, careers] = await Promise.all([
     db().post.findMany({ where: postWhere, select: { slug: true, updatedAt: true } }),
-    db().project.findMany({ where: { status: "published" }, select: { slug: true, updatedAt: true } }),
     db().product.findMany({ where: productWhere, select: { slug: true, updatedAt: true } }),
     db().career.findMany({ where: careerWhere(), select: { slug: true, updatedAt: true } }),
   ]);
   return [
     ...posts.map((p) => ({ path: `/insights/${p.slug}`, updated: iso(p.updatedAt)! })),
-    ...projects.map((p) => ({ path: `/projects/${p.slug}`, updated: iso(p.updatedAt)! })),
     ...products.map((p) => ({ path: `/products/${p.slug}`, updated: iso(p.updatedAt)! })),
     ...careers.map((p) => ({ path: `/careers/${p.slug}`, updated: iso(p.updatedAt)! })),
   ];

@@ -1,12 +1,11 @@
 import { FaArrowRight } from "react-icons/fa";
 import Link from "next/link";
-import { LuCircleCheck } from "react-icons/lu";
-import { CountUp, Reveal, Tilt } from "@/components/web/motion";
+import { LuBadgeCheck, LuCircleCheck } from "react-icons/lu";
+import { Reveal, Tilt } from "@/components/web/motion";
 import { IndustryNav } from "@/components/web/IndustryNav";
-import { ProcessFlow } from "@/components/web/sections";
-import { ButtonLink, CtaBand, PageHero, SectionHeading, badge, bodyFont, container, headingFont } from "@/components/web/ui";
-import { INDUSTRIES, MINERALS, QUALITY_STEPS, mineralBySlug } from "@/content/site";
-import { COMMODITIES, INDUSTRY_MATERIALS, commodityBySlug } from "@/content/photos";
+import { ButtonLink, CtaBand, PageHero, badge, bodyFont, container, headingFont } from "@/components/web/ui";
+import { INDUSTRIES, mineralBySlug } from "@/content/site";
+import { INDUSTRY_MATERIALS, commodityBySlug } from "@/content/photos";
 import { pageMeta } from "@/content/seo";
 
 export const metadata = pageMeta("Industries", "Steel and metallurgy, glass and ceramics, construction, power and energy, and industrial manufacturing: the industries we supply with minerals.", "/industries");
@@ -19,11 +18,6 @@ const HERO_TILES = [
 ];
 
 export default function IndustriesPage() {
-  const facts = [
-    { n: INDUSTRIES.length, l: "Industries served" },
-    { n: MINERALS.length, l: "Core minerals" },
-    { n: COMMODITIES.length, l: "Commodities in our range" },
-  ];
   return (
     <div className={`${bodyFont} text-neutral-800`}>
       <PageHero
@@ -45,14 +39,6 @@ export default function IndustriesPage() {
           </div>
         )}
       >
-        <dl className="flex flex-wrap gap-x-10 gap-y-5">
-          {facts.map((f) => (
-            <div key={f.l}>
-              <dd className={`${headingFont} text-[40px] leading-none text-gold-200 md:text-[52px]`}><CountUp to={f.n} /></dd>
-              <dt className="mt-2 text-xs font-bold uppercase tracking-[0.16em] text-white/75">{f.l}</dt>
-            </div>
-          ))}
-        </dl>
       </PageHero>
 
       <IndustryNav />
@@ -70,8 +56,6 @@ export default function IndustriesPage() {
                 <div aria-hidden className="about-grid absolute inset-0 -z-10 opacity-[0.07]" />
               </>
             )}
-            {/* The big number behind the section */}
-            <span aria-hidden className={`pointer-events-none absolute ${flip ? "left-4 md:left-12" : "right-4 md:right-12"} top-2 -z-10 select-none text-[140px] font-bold leading-none md:text-[240px] ${dark ? "text-white/[0.04]" : "text-gold-700/[0.08]"}`}>{String(idx + 1).padStart(2, "0")}</span>
 
             <div className={`${container} grid items-start gap-10 py-12 md:grid-cols-[0.9fr_1.1fr] md:gap-16 md:py-16`}>
               <Reveal variant={flip ? "right" : "left"} className={flip ? "md:order-2" : ""}>
@@ -79,12 +63,11 @@ export default function IndustriesPage() {
                   <span aria-hidden className="about-ring absolute inset-0 rounded-3xl bg-gold-500/30" />
                   <div aria-hidden className={`${badge} about-bob relative size-20 !rounded-3xl md:size-24`}><ind.icon className="size-10 md:size-12" strokeWidth={2} /></div>
                 </div>
-                <p className={`mb-3 text-sm font-bold uppercase tracking-[0.2em] ${dark ? "text-gold-300" : "text-gold-700"}`}>Industry {String(idx + 1).padStart(2, "0")}</p>
                 <h2 id={`${ind.slug}-title`} className={`${headingFont} mb-4 text-[30px] leading-tight md:text-[42px] ${dark ? "text-white" : "text-neutral-900"}`}>{ind.name}</h2>
                 <p className={`text-lg leading-8 ${dark ? "text-white/75" : "text-neutral-600"}`}>{ind.summary}</p>
                 <div className="mt-7 flex flex-wrap items-center gap-3">
                   <ButtonLink href={`/request-a-quote?mineral=${encodeURIComponent(ind.name)}`} variant={dark ? "primary" : "outline"}>Request a quote</ButtonLink>
-                  <span className={`rounded-full border px-4 py-2 text-sm font-bold ${dark ? "border-white/20 text-white/80" : "border-gold-600/30 text-gold-700"}`}>{ind.minerals.length} minerals · {materials.length} materials</span>
+                  <span className={`rounded-full border px-4 py-2 text-sm font-bold ${dark ? "border-white/20 text-white/80" : "border-gold-600/30 text-gold-700"}`}>{ind.minerals.length} {ind.minerals.length === 1 ? "mineral" : "minerals"} · {materials.length} {materials.length === 1 ? "material" : "materials"}</span>
                 </div>
               </Reveal>
 
@@ -114,7 +97,7 @@ export default function IndustriesPage() {
               {materials.length > 0 && (
                 <div className="md:col-span-2">
                   <h3 className={`mb-5 text-xl font-bold md:text-2xl ${dark ? "text-white" : "text-neutral-900"}`}>Materials for {ind.name}</h3>
-                  <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
+                  <ul className={`grid grid-cols-2 gap-4 lg:gap-5 ${materials.length >= 4 ? "lg:grid-cols-4" : materials.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2 lg:max-w-[50%]"}`}>
                     {materials.map((c, i) => c && (
                       <Reveal key={c.slug} as="li" variant="scale" delay={i * 100}>
                         <Tilt className="rounded-3xl" max={5}>
@@ -137,10 +120,21 @@ export default function IndustriesPage() {
         );
       })}
 
-      <section aria-labelledby="promise-title" className="bg-neutral-50">
+      <section aria-label="Quality" className="relative isolate overflow-hidden bg-neutral-950 text-white">
+        <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(60%_120%_at_50%_0%,rgba(176,128,64,0.45),transparent_65%)]" />
+        <div aria-hidden className="about-grid absolute inset-0 -z-10 opacity-[0.07]" />
+        <div aria-hidden className="about-float absolute -left-16 top-4 -z-10 size-64 rounded-full bg-gold-500/25 blur-3xl" />
+        <div aria-hidden className="about-float-slow absolute -right-16 bottom-0 -z-10 size-64 rounded-full bg-gold-300/20 blur-3xl" />
         <div className={`${container} py-12 md:py-16`}>
-          <SectionHeading id="promise-title" eyebrow="Our promise to every industry" title="Agreed, tested, documented and delivered" description="Whatever the industry, every consignment follows the same five steps." center />
-          <div className="mt-12 md:mt-14"><ProcessFlow steps={QUALITY_STEPS} /></div>
+          <Reveal variant="scale">
+            <Link href="/quality-compliance" className="group mx-auto flex max-w-4xl flex-col items-center gap-6 rounded-3xl border border-gold-400/40 bg-white/[0.06] px-6 py-9 text-center shadow-2xl shadow-black/40 backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-gold-300 hover:bg-white/10 md:px-12 md:py-12">
+              <span aria-hidden className={`${badge} about-bob size-16 !rounded-2xl`}><LuBadgeCheck className="size-8" strokeWidth={2} /></span>
+              <p className={`${headingFont} text-[24px] leading-snug text-white md:text-[34px] md:leading-[1.25]`}>
+                Every shipment is tested against your agreed specification and comes with a <span className="shimmer-text">certificate of analysis.</span>
+              </p>
+              <span className="btn-sheen inline-flex items-center gap-2 rounded-xl bg-gradient-to-b from-gold-400 to-gold-500 px-6 py-3 text-[15px] font-bold text-ink shadow-lg shadow-gold-500/30 transition group-hover:from-gold-300 group-hover:to-gold-400">Quality &amp; compliance <FaArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-1" aria-hidden /></span>
+            </Link>
+          </Reveal>
         </div>
       </section>
 

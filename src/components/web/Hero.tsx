@@ -59,13 +59,12 @@ export default function Hero() {
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-black/65 via-black/55 to-black/75" />
       <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_50%_45%,transparent,rgba(0,0,0,0.45))]" />
 
-      <div className="mx-auto w-full max-w-4xl px-6 text-center">
+      <div className="mx-auto w-full max-w-5xl px-6 text-center">
         <h1 id="hero-title" className="text-[34px] font-bold leading-[1.1] tracking-tight sm:text-5xl md:text-6xl">
-          Premium Minerals for
-          <span className="shimmer-text mt-1 block">Industrial Excellence</span>
+From Earth to <span className="shimmer-text">Industry.</span>
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-white/85 md:text-lg md:leading-8">
-          Leading supplier of high-grade iron ore, granite, quartz and industrial minerals from verified mines. Serving steel, glass, construction and power with reliable B2B supply.
+          A mining and mineral enterprise transforming natural resources into industrial value through responsible sourcing, resource development and global supply.
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link href="/products" className="btn-sheen group inline-flex items-center gap-2 rounded-lg bg-gradient-to-b from-gold-400 to-gold-500 px-7 py-4 text-[15px] font-bold text-ink shadow-lg shadow-gold-500/30 transition hover:from-gold-300 hover:to-gold-400">
