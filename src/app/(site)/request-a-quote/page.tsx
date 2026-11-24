@@ -22,10 +22,10 @@ export default async function QuotePage({ searchParams }: { searchParams: Promis
           <Reveal variant="left">
             <h2 className={`${headingFont} mb-6 text-2xl text-neutral-900 md:text-3xl`}>How it works</h2>
             <ol className="space-y-5">
-              {STEPS.map((s, i) => (
+              {STEPS.map((s) => (
                 <li key={s.title} className="flex gap-4">
                   <span aria-hidden className={`${badge} size-12 shrink-0`}><s.icon className="size-6" /></span>
-                  <div><p className="text-xs font-bold uppercase tracking-[0.16em] text-gold-700">Step {i + 1}</p><h3 className="font-bold text-neutral-900">{s.title}</h3><p className="mt-1 leading-7 text-neutral-600">{s.text}</p></div>
+                  <div><h3 className="font-bold text-neutral-900">{s.title}</h3><p className="mt-1 leading-7 text-neutral-600">{s.text}</p></div>
                 </li>
               ))}
             </ol>

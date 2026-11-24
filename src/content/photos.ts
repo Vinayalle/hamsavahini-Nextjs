@@ -40,6 +40,15 @@ export const MINERAL_GALLERY: Record<string, { src: string; alt: string }[]> = {
   "iron-ore-fines": [PHOTOS["iron-ore"]],
   "granite-dimension-stones": [PHOTOS.granite],
   "quartz-silica-minerals": [{ src: "/images/commodities/silica-sand.jpg", alt: "High-purity white silica sand" }, PHOTOS.quartz],
+  silicomanganese: [{ src: "/images/commodities/silicomanganese.jpg", alt: "Silicomanganese alloy lumps" }, { src: "/images/commodities/ferromanganese.jpg", alt: "Ferromanganese alloy lumps" }],
+  copper: [{ src: "/images/commodities/copper-cathode.jpg", alt: "Copper cathode sheets" }, { src: "/images/commodities/copper-concentrate.jpg", alt: "Copper concentrate" }, { src: "/images/commodities/copper-ore.jpg", alt: "Copper ore" }],
+  "zinc-metal": [{ src: "/images/commodities/zinc.jpg", alt: "Zinc ingots, coils and sheets" }, { src: "/images/commodities/zinc-ore.jpg", alt: "Zinc ore" }],
+  "phosphate-rock": [{ src: "/images/commodities/phosphate-rock.jpg", alt: "Phosphate rock and crushed phosphate" }],
+  "mineral-sands": [{ src: "/images/commodities/rutile.jpg", alt: "Rutile crystals and rutile sand" }, { src: "/images/commodities/zircon.jpg", alt: "Zircon crystals and zircon sand" }, { src: "/images/commodities/ilmenite.jpg", alt: "Ilmenite ore and sand" }],
+  "feldspar-kaolin": [{ src: "/images/commodities/feldspar.jpg", alt: "Feldspar" }, { src: "/images/commodities/kaolin.jpg", alt: "Kaolin (china clay)" }, { src: "/images/commodities/mica.jpg", alt: "Mica" }],
+  "thermal-coal": [{ src: "/images/commodities/thermal-coal.jpg", alt: "Lumps and fine pieces of thermal coal" }, { src: "/images/commodities/coking-coal.jpg", alt: "Coking coal" }],
+  "petroleum-coke": [{ src: "/images/commodities/petroleum-coke.jpg", alt: "Petroleum coke lumps and crushed coke" }, { src: "/images/commodities/carbon-materials.jpg", alt: "Carbon materials" }],
+  rice: [{ src: "/images/commodities/rice.jpg", alt: "A bowl of long-grain rice" }, { src: "/images/commodities/golden-rice.jpg", alt: "Golden parboiled rice in a bowl and a jute sack" }],
   "bauxite-laterite": [{ src: "/images/commodities/bauxite.jpg", alt: "Red bauxite aluminium ore" }],
   "manganese-ore": [{ src: "/images/commodities/silicomanganese.jpg", alt: "Silicomanganese alloy lumps, a manganese product" }],
   "industrial-specialty-minerals": [
@@ -108,10 +117,12 @@ export const COMMODITIES: CommodityPhoto[] = [
 
 /** Pictures that show what each industry buys (public/images/commodities); the slugs are the ones in COMMODITIES. */
 export const INDUSTRY_MATERIALS: Record<string, string[]> = {
-  "steel-metallurgy": ["iron-ore", "ferromanganese", "ferrochrome", "metallurgical-coke"],
-  "glass-ceramics": ["silica-sand", "feldspar", "kaolin", "quartz"],
-  "construction-infrastructure": ["granite", "marble", "limestone", "dolomite"],
-  "power-energy": ["thermal-coal", "coking-coal", "petroleum-coke", "carbon-materials"],
-  "industrial-manufacturing": ["aluminium-metal", "zinc", "copper-cathode", "nickel-metal"],
+  "steel-metallurgy": ["iron-ore", "manganese-ore", "silicomanganese", "quartz"],
+  cement: ["bauxite", "iron-ore", "thermal-coal", "petroleum-coke"],
+  "power-energy": ["thermal-coal", "petroleum-coke"],
+  "glass-ceramics": ["quartz", "silica-sand", "feldspar", "kaolin"],
+  "electrical-cable": ["copper-cathode", "copper-concentrate"],
+  "paints-chemicals-fertilisers": ["rutile", "zircon", "ilmenite", "phosphate-rock"],
+  "construction-infrastructure": ["granite", "granite-slabs", "natural-stone-blocks"],
 };
 export const commodityBySlug = (slug: string) => COMMODITIES.find((c) => c.slug === slug);

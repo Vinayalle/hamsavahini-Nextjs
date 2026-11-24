@@ -19,6 +19,7 @@ export default function Header() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
+  const [mobileGroup, setMobileGroup] = useState<string | null>(null);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
   const bar = useRef<HTMLElement>(null);
 
@@ -67,19 +68,34 @@ export default function Header() {
                     {item.label}
                     <LuChevronDown className={`size-4 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`} aria-hidden />
                   </button>
-                  <div className={`absolute left-1/2 top-full -translate-x-1/2 pt-4 transition-all duration-200 ${item.wide ? "w-[min(720px,90vw)]" : "w-[320px]"} ${expanded ? "visible translate-y-0 opacity-100" : "invisible -translate-y-2 opacity-0"}`}>
-                    <div className={`rounded-2xl border border-neutral-200 bg-white p-2 shadow-[0_20px_60px_rgba(0,0,0,0.14)] ${item.wide ? "grid grid-cols-2 gap-1" : ""}`}>
-                      {item.children.map((child) => (
-                        <Link key={child.href + child.label} href={child.href} tabIndex={expanded ? 0 : -1} className="group flex items-start gap-3 rounded-xl px-3.5 py-3 transition-colors hover:bg-neutral-50 focus-visible:bg-neutral-50">
-                          {child.icon && <span aria-hidden className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-gold-50 text-gold-700 transition-colors group-hover:bg-gold-500 group-hover:text-white"><child.icon className="size-[18px]" /></span>}
-                          <span className="min-w-0 flex-1">
-                            <span className="block text-sm font-bold text-neutral-900 group-hover:text-gold-700">{child.label}</span>
-                            {child.description && <span className="mt-0.5 block text-xs leading-5 text-neutral-500">{child.description}</span>}
-                          </span>
-                          <FaArrowRight className="mt-1.5 size-3 shrink-0 text-neutral-300 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-gold-700" aria-hidden />
-                        </Link>
-                      ))}
-                    </div>
+                  <div className={`absolute left-1/2 top-full -translate-x-1/2 pt-4 transition-all duration-200 ${item.groups ? "w-[min(720px,94vw)]" : item.wide ? "w-[min(720px,90vw)]" : "w-[320px]"} ${expanded ? "visible translate-y-0 opacity-100" : "invisible -translate-y-2 opacity-0"}`}>
+                    {item.groups ? (
+                      <div className="grid grid-cols-3 gap-x-5 gap-y-4 rounded-2xl border border-neutral-200 bg-white p-5 shadow-[0_20px_60px_rgba(0,0,0,0.14)]">
+                        {item.groups.map((g) => (
+                          <div key={g.title}>
+                            <p className="mb-1.5 border-b border-gold-600/25 pb-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-gold-700">{g.title}</p>
+                            <ul className="space-y-0.5">
+                              {g.links.map((l) => (
+                                <li key={l.label}><Link href={l.href} tabIndex={expanded ? 0 : -1} className="group/l flex items-start gap-2 rounded-lg px-1.5 py-1 text-[13px] leading-[18px] text-neutral-700 transition-colors hover:bg-gold-50 hover:text-gold-700"><span aria-hidden className="mt-[6px] size-1 shrink-0 rotate-45 bg-gold-400 transition-transform group-hover/l:scale-125" />{l.label}</Link></li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                        <div className={`rounded-2xl border border-neutral-200 bg-white p-2 shadow-[0_20px_60px_rgba(0,0,0,0.14)] ${item.wide ? "grid grid-cols-2 gap-1" : ""}`}>
+                          {item.children.map((child) => (
+                            <Link key={child.href + child.label} href={child.href} tabIndex={expanded ? 0 : -1} className="group flex items-start gap-3 rounded-xl px-3.5 py-3 transition-colors hover:bg-neutral-50 focus-visible:bg-neutral-50">
+                              {child.icon && <span aria-hidden className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-gold-50 text-gold-700 transition-colors group-hover:bg-gold-500 group-hover:text-white"><child.icon className="size-[18px]" /></span>}
+                              <span className="min-w-0 flex-1">
+                                <span className="block text-sm font-bold text-neutral-900 group-hover:text-gold-700">{child.label}</span>
+                                {child.description && <span className="mt-0.5 block text-xs leading-5 text-neutral-500">{child.description}</span>}
+                              </span>
+                              <FaArrowRight className="mt-1.5 size-3 shrink-0 text-neutral-300 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-gold-700" aria-hidden />
+                            </Link>
+                          ))}
+                        </div>
+                    )}
                   </div>
                 </div>
               );
@@ -111,11 +127,27 @@ export default function Header() {
                     <LuChevronDown className={`size-5 transition-transform ${mobileSection === item.label ? "rotate-180" : ""}`} aria-hidden />
                   </button>
                   {mobileSection === item.label && (
-                    <ul className="pb-3 pl-2">
+                    <div className="pb-3 pl-2">
+                    {item.groups ? item.groups.map((g) => {
+                      const on = mobileGroup === g.title;
+                      return (
+                        <div key={g.title} className="border-b border-neutral-100 last:border-b-0">
+                          <button type="button" aria-expanded={on} onClick={() => setMobileGroup(on ? null : g.title)} className="flex w-full cursor-pointer items-center justify-between px-3 py-3 text-left text-[13px] font-bold uppercase tracking-[0.1em] text-gold-700">
+                            {g.title}
+                            <LuChevronDown className={`size-4 transition-transform ${on ? "rotate-180" : ""}`} aria-hidden />
+                          </button>
+                          {on && <ul className="pb-2">{g.links.map((l) => <li key={l.label}><Link href={l.href} className="block rounded-lg px-5 py-2 text-[15px] text-neutral-700 hover:bg-neutral-50 hover:text-gold-700">{l.label}</Link></li>)}</ul>}
+                        </div>
+                      );
+                    }) : (
+
+                    <ul>
                       {item.children.map((child) => (
                         <li key={child.href + child.label}><Link href={child.href} className="block rounded-lg px-3 py-2.5 text-[15px] text-neutral-700 hover:bg-neutral-50 hover:text-gold-700">{child.label}</Link></li>
                       ))}
                     </ul>
+                    )}
+                    </div>
                   )}
                 </>
               ) : (

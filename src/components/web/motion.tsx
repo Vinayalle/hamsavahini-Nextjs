@@ -101,7 +101,8 @@ export function TimelineRail({ children, className }: { children: ReactNode; cla
  * A number that counts up from 0 the first time it scrolls into view. The final number is in the page HTML (search engines, no JavaScript,
  * and visitors who prefer reduced motion all see it at once); the counting is only decoration.
  */
-export function CountUp({ to, suffix = "", duration = 1600 }: { to: number; suffix?: string; duration?: number }) {
+export function CountUp({ to, suffix = "", duration = 1600, format = true }: { to: number; suffix?: string; duration?: number; /** false for numbers such as a year, which must not get a thousands separator */ format?: boolean }) {
+  const show = (n: number) => (format ? n.toLocaleString("en-US") : String(n));
   const [node, setNode] = useState<HTMLElement | null>(null);
   const [value, setValue] = useState(to);
   useEffect(() => {
@@ -121,7 +122,7 @@ export function CountUp({ to, suffix = "", duration = 1600 }: { to: number; suff
     io.observe(node);
     return () => { io.disconnect(); cancelAnimationFrame(frame); };
   }, [node, to, duration]);
-  return <span ref={setNode}><span aria-hidden>{value.toLocaleString("en-US")}{suffix}</span><span className="sr-only">{to.toLocaleString("en-US")}{suffix}</span></span>;
+  return <span ref={setNode}><span aria-hidden>{show(value)}{suffix}</span><span className="sr-only">{show(to)}{suffix}</span></span>;
 }
 
 /**

@@ -18,8 +18,7 @@
     "mutation:check": "node scripts/mutation-check.mjs",
     "postinstall": "prisma generate",
     "brand:build": "node scripts/build-brand.mjs",
-    "uploads:cleanup": "tsx scripts/cleanup-uploads.ts",
-    "locations:sample": "tsx scripts/sample-locations.ts"
+    "uploads:cleanup": "tsx scripts/cleanup-uploads.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.0",

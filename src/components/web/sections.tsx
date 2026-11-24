@@ -2,12 +2,12 @@ import { FaArrowRight } from "react-icons/fa";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { IconType } from "react-icons";
-import { LuCalendar, LuCircleCheck, LuClock, LuMapPin, LuPackage, LuTag } from "react-icons/lu";
+import { LuCalendar, LuCircleCheck, LuClock, LuMapPin, LuPackage } from "react-icons/lu";
 import type { Industry, Mineral, Point } from "@/content/site";
-import type { CareerCard, PostCard, ProductCard, ProjectCard } from "@/server/services/public";
+import type { CareerCard, PostCard, ProductCard } from "@/server/services/public";
 import { COMMODITY_PHOTOS, MINERAL_GALLERY, type Photo } from "@/content/photos";
 import { Reveal, Tilt } from "./motion";
-import { ButtonLink, Tag, badge, card, cardHover, formatDate, headingFont } from "./ui";
+import { ButtonLink, badge, card, cardHover, formatDate, headingFont } from "./ui";
 
 /** Reusable page sections of the public website. */
 
@@ -75,24 +75,6 @@ export function PostGridCard({ post, icon, index = 0 }: { post: PostCard; icon: 
           <h3 className="mb-2 text-xl font-bold leading-snug text-neutral-900 group-hover:text-gold-700">{post.title}</h3>
           <p className="flex-1 text-base leading-7 text-neutral-600">{post.excerpt}</p>
           <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-gold-700">Read article <FaArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden /></span>
-        </div>
-      </Link>
-    </Reveal>
-  );
-}
-
-export function ProjectGridCard({ project, icon, index = 0 }: { project: ProjectCard; icon: IconType; index?: number }) {
-  return (
-    <Reveal as="li" delay={(index % 3) * 90}>
-      <Link href={`/projects/${project.slug}`} className={`${card} ${cardHover} group flex h-full flex-col overflow-hidden`}>
-        <CardArt icon={icon} label={project.stage} />
-        <div className="flex flex-1 flex-col p-6">
-          <h3 className="mb-2 text-xl font-bold leading-snug text-neutral-900 group-hover:text-gold-700">{project.title}</h3>
-          <p className="flex-1 text-base leading-7 text-neutral-600">{project.summary}</p>
-          <ul className="mt-4 flex flex-wrap gap-2" aria-label="Project details">
-            <li><Tag><LuTag className="mr-1 size-3.5" aria-hidden />{project.commodity}</Tag></li>
-            <li><Tag><LuMapPin className="mr-1 size-3.5" aria-hidden />{project.region}</Tag></li>
-          </ul>
         </div>
       </Link>
     </Reveal>
@@ -208,9 +190,9 @@ export function SplitFeature({ eyebrow, title, children, icon: Icon, action, fli
  * A process flow: numbered steps joined by a line, side by side on a wide screen (with arrows between them) and one under another on a phone.
  * Each step lights up a little as it scrolls into view, one after the other.
  */
-export function ProcessFlow({ steps }: { steps: Point[] }) {
+export function ProcessFlow({ steps, numbered = true }: { steps: Point[]; numbered?: boolean }) {
   return (
-    <ol style={{ "--flow-edge": steps.length === 3 ? "16.6%" : "10%" } as React.CSSProperties} className={`relative grid gap-12 lg:gap-6 ${steps.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-5"}`}>
+    <ol style={{ "--flow-edge": ({ 3: "16.6%", 4: "12.5%" } as Record<number, string>)[steps.length] ?? "10%" } as React.CSSProperties} className={`relative grid gap-12 lg:gap-6 ${({ 3: "lg:grid-cols-3", 4: "lg:grid-cols-4" } as Record<number, string>)[steps.length] ?? "lg:grid-cols-5"}`}>
       {/* The line: along the circles on a wide screen (with a gold light that travels along it), down the left side on a phone */}
       <div aria-hidden className="absolute bottom-6 left-8 top-6 w-px bg-gradient-to-b from-gold-400 via-gold-300 to-gold-200 lg:bottom-auto lg:left-[var(--flow-edge)] lg:right-[var(--flow-edge)] lg:top-10 lg:h-px lg:w-auto lg:bg-gradient-to-r" />
       <div aria-hidden className="absolute left-[var(--flow-edge)] right-[var(--flow-edge)] top-10 hidden h-px overflow-hidden lg:block"><span className="flow-light absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-gold-500 to-transparent" /></div>
@@ -218,11 +200,11 @@ export function ProcessFlow({ steps }: { steps: Point[] }) {
         <Reveal key={s.title} as="li" delay={i * 130} className="relative flex gap-5 lg:flex-col lg:items-center lg:gap-0 lg:text-center">
           <div className="relative shrink-0 lg:z-10">
             <span aria-hidden className={`${badge} relative z-10 size-16 shadow-xl shadow-gold-500/30 ring-8 ring-[var(--band)] transition duration-500 group-hover/step:scale-110 lg:size-20`}><s.icon className="size-7 lg:size-9" strokeWidth={1.6} /></span>
-            <span aria-hidden className="absolute -right-1 -top-1 z-20 flex size-7 items-center justify-center rounded-full bg-ink text-xs font-bold text-gold-200 ring-2 ring-[var(--band)]">{i + 1}</span>
+            {numbered && <span aria-hidden className="absolute -right-1 -top-1 z-20 flex size-7 items-center justify-center rounded-full bg-ink text-xs font-bold text-gold-200 ring-2 ring-[var(--band)]">{i + 1}</span>}
           </div>
           <div className="group/step relative min-w-0 flex-1 overflow-hidden rounded-3xl border border-neutral-200 bg-white p-5 shadow-lg shadow-neutral-900/5 transition duration-300 hover:-translate-y-1.5 hover:border-gold-300 hover:shadow-2xl hover:shadow-gold-500/15 lg:-mt-6 lg:flex-none lg:self-stretch lg:px-5 lg:pb-7 lg:pt-12">
-            <span aria-hidden className="pointer-events-none absolute -bottom-3 right-3 select-none text-[88px] font-bold leading-none text-gold-100/70">{String(i + 1).padStart(2, "0")}</span>
-            <p className="relative text-xs font-bold uppercase tracking-[0.18em] text-gold-700">Step {i + 1}</p>
+            {numbered && <span aria-hidden className="pointer-events-none absolute -bottom-3 right-3 select-none text-[88px] font-bold leading-none text-gold-100/70">{String(i + 1).padStart(2, "0")}</span>}
+            {numbered && <p className="relative text-xs font-bold uppercase tracking-[0.18em] text-gold-700">Step {i + 1}</p>}
             <h3 className="relative mt-1.5 text-lg font-bold leading-snug text-neutral-900">{s.title}</h3>
             <p className="relative mt-2.5 text-[15px] leading-7 text-neutral-600">{s.text}</p>
           </div>
@@ -260,11 +242,10 @@ export function Steps({ steps }: { steps: Point[] }) {
   return (
     <ol className="relative space-y-6">
       <div aria-hidden className="absolute bottom-4 left-6 top-4 w-px bg-gradient-to-b from-gold-400 via-gold-300 to-transparent md:left-8" />
-      {steps.map((s, i) => (
+      {steps.map((s) => (
         <Reveal key={s.title} as="li" className="relative pl-[4.5rem] md:pl-28">
           <div aria-hidden className={`${badge} absolute left-0 top-1 size-12 ring-4 ring-[var(--band)] md:size-16`}><s.icon className="size-6 md:size-7" /></div>
           <div className={`${card} p-6 md:p-7`}>
-            <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-gold-700">Step {i + 1}</p>
             <h3 className="mb-1.5 text-xl font-bold text-neutral-900">{s.title}</h3>
             <p className="text-base leading-7 text-neutral-600">{s.text}</p>
           </div>

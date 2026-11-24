@@ -8,7 +8,7 @@ import { MineralGallery } from "@/components/web/MineralGallery";
 import { MineralVisual } from "@/components/web/MineralVisual";
 import { CheckList, MineralCard, ProcessFlow } from "@/components/web/sections";
 import { ButtonLink, CtaBand, PageHero, SectionHeading, Tag, badge, bodyFont, card, container, headingFont } from "@/components/web/ui";
-import { MINERALS, industryBySlug, mineralBySlug } from "@/content/site";
+import { INDUSTRIES, MINERALS, mineralBySlug } from "@/content/site";
 import { MINERAL_GALLERY } from "@/content/photos";
 import { pageMeta } from "@/content/seo";
 
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function MineralPage({ params }: Params) {
   const mineral = mineralBySlug((await params).slug);
   if (!mineral) notFound();
-  const industries = mineral.industries.map((s) => industryBySlug(s)).filter((i) => !!i);
+  const industries = INDUSTRIES.filter((i) => i.minerals.includes(mineral.slug));
   const related = MINERALS.filter((m) => m.slug !== mineral.slug).slice(0, 3);
   const gallery = MINERAL_GALLERY[mineral.slug] ?? [];
   const quote = `/request-a-quote?mineral=${encodeURIComponent(mineral.name)}`;
@@ -39,8 +39,8 @@ export default async function MineralPage({ params }: Params) {
       <section aria-label="At a glance" className="relative isolate overflow-hidden bg-gradient-to-br from-gold-800 via-gold-700 to-gold-600 text-white">
         <div aria-hidden className="about-grid absolute inset-0 -z-10 opacity-[0.1]" />
         <div aria-hidden className="about-float absolute -left-16 top-0 -z-10 size-64 rounded-full bg-gold-300/25 blur-3xl" />
-        <dl className={`${container} grid grid-cols-3 gap-4 py-8 text-center md:py-10`}>
-          {[{ n: mineral.uses.length, l: "Common uses" }, { n: industries.length, l: "Industries served" }, { n: DOCUMENTS.length, l: "Documents with every shipment" }].map((f, i) => (
+        <dl className={`${container} grid ${industries.length > 0 ? "grid-cols-3" : "grid-cols-2"} gap-4 py-8 text-center md:py-10`}>
+          {[{ n: mineral.uses.length, l: "Common uses" }, { n: industries.length, l: "Industries served" }, { n: DOCUMENTS.length, l: "Documents with every shipment" }].filter((f) => f.n > 0).map((f, i) => (
             <Reveal key={f.l} variant="scale" delay={i * 120}>
               <dd className={`${headingFont} order-1 text-[40px] leading-none text-gold-100 md:text-[60px]`}><CountUp to={f.n} /></dd>
               <dt className="mt-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white/85 md:text-sm">{f.l}</dt>
@@ -97,7 +97,7 @@ export default async function MineralPage({ params }: Params) {
       <section aria-labelledby="handling" className="bg-neutral-50">
         <div className={`${container} py-10 md:py-14`}>
           <SectionHeading id="handling" eyebrow="How we supply it" title="Sourced, tested and delivered" />
-          <div className="mt-12 md:mt-14"><ProcessFlow steps={mineral.handling.map((h, i) => ({ title: h.title, text: h.text, icon: [LuPickaxe, LuFlaskConical, LuShip][i] ?? LuShip }))} /></div>
+          <div className="mt-12 md:mt-14"><ProcessFlow steps={mineral.handling.map((h, i) => ({ title: h.title, text: h.text, icon: [LuPickaxe, LuFlaskConical, LuShip][i] ?? LuShip }))} numbered={false} /></div>
         </div>
       </section>
 

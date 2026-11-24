@@ -10,7 +10,7 @@ export const metadata = pageMeta("Minerals", "Iron ore, quartz and silica, bauxi
 export default function MineralsPage() {
   return (
     <div className={`${bodyFont} text-neutral-800`}>
-      <PageHero eyebrow="What we supply" title="Minerals we source and supply" description="Every mineral is sourced from verified producers, tested against your specification and delivered with full documentation." crumbs={[{ label: "Minerals" }]} />
+      <PageHero eyebrow="What we supply" title="Minerals & Commodities" description="Every mineral is sourced from verified producers, tested against your specification and delivered with full documentation." crumbs={[{ label: "Minerals" }]} />
       <section aria-labelledby="all-minerals" className="bg-white">
         <div className={`${container} py-10 md:py-14`}>
           <SectionHeading id="all-minerals" title="Choose a mineral to see how we supply it" description="Not sure which grade you need? Tell us your end use and we will match it to the right source." />
